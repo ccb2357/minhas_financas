@@ -1,0 +1,27 @@
+# Credenciais e configurações locais
+.env
+.env.*
+!.env.example
+auth.json
+*.key
+*.pem
+
+# Dependências
+/vendor/
+/node_modules/
+/backend/vendor/
+/frontend/node_modules/
+
+# Arquivos gerados pelo frontend
+/frontend/dist/
+
+# Logs
+*.log
+
+# Editor e sistema operacional
+/.idea/
+/.vscode/
+.DS_Store
+Thumbs.db
+
+/init/
