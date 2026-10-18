@@ -1,72 +1,61 @@
 # Minhas Finanças — Backend e ambiente local
 
-PWA financeiro pessoal para lançamentos manuais de receitas e despesas.
-Moeda exclusiva: real brasileiro (BRL).
+PWA financeiro pessoal para lançamentos manuais de receitas e despesas, exclusivamente em real brasileiro (BRL).
 
 ## Estado do projeto
 
-Sprint 0 em andamento. A próxima sprint depende de aprovação.
+Sprint 0 implementada, aguardando aceite. Nenhuma próxima sprint deve começar sem aprovação.
 
-Implementado e validado:
+Validado:
 
-- Laravel conectado ao MySQL com banco e usuário exclusivos.
-- Migration inicial de usuários.
-- Health check pelo Nginx e pelo proxy do Vite.
-- Framework7 Core e Apache ECharts funcionando no frontend.
-- Build do frontend.
-- Autenticação Sanctum por sessão e cookies.
-- Login, consulta de sessão e logout.
-- Rejeição de senha incorreta e de requisição sem token CSRF.
-- Composer executado com o PHP do container.
-- Dependências PHP em volume Docker para melhorar o desempenho local.
+- Laravel, conexão MySQL e migration de usuários.
+- Health check direto pelo Nginx e pelo proxy do Vite.
+- Framework7 Core, Apache ECharts, build e viewport mobile.
+- Login, consulta de sessão e logout com Sanctum por cookies.
+- Rejeição de credenciais incorretas e requisição sem proteção CSRF.
+- Quatro testes de autenticação, com 23 verificações.
+- Composer executado no PHP do container.
+- Correção do desempenho local com `vendor` em volume Docker.
+- Conferência dos demais sites após a recriação do PHP-FPM.
 
-Pendente:
+Pendências registradas:
 
-- Validar o limite de tentativas de login, cujo teste foi adiado.
-- Validar integralmente a preparação em outro computador.
-- Concluir os demais critérios da Sprint 0 e obter aprovação.
+- Teste do limite de tentativas de login adiado pelo responsável.
+- Procedimento de instalação em outro computador documentado, ainda não validado integralmente em uma segunda máquina.
+- Otimização do tamanho do frontend.
 
-A interface atual é uma página técnica de teste.
-As telas definitivas seguirão as referências visuais aprovadas.
+A interface atual é técnica. As telas definitivas seguirão as referências visuais aprovadas.
 
-## Stack instalada
+## Stack
 
-- PHP 8.2.29 no container.
-- Laravel 12.70.0 e Laravel Sanctum.
+- PHP 8.2.29 no container e Laravel 12.70.0 com Sanctum.
 - MySQL 8.0.45.
-- Framework7 Core 9.2.0, JavaScript e Framework7 Icons 5.0.5.
-- Apache ECharts 6.1.0.
-- Vite 8.3.4.
-- Node 22 e npm pelo Docker.
+- Framework7 Core 9.2.0 e Framework7 Icons 5.0.5, com JavaScript.
+- Apache ECharts 6.1.0 e Vite 8.3.4.
+- Node 22 pelo Docker.
 - Nginx e Docker Compose da infraestrutura existente.
 
-Os arquivos composer.lock e frontend/package-lock.json registram
-as versões das dependências e devem permanecer no Git.
+`composer.lock` e `frontend/package-lock.json` registram as versões das dependências e devem permanecer no Git.
 
-## Organização local
+## Organização
 
-Projeto no Windows:
+| Item | Caminho |
+| --- | --- |
+| Projeto no Windows | `C:\var\www\minhas_financas` |
+| Projeto em Nginx/PHP | `/var/www/minhas_financas` |
+| Infraestrutura compartilhada | `C:\var\www\infra` |
 
-    C:\var\www\minhas_financas
+O Compose e as configurações Nginx compartilhadas ficam fora deste repositório. Não substituí-los por arquivos genéricos.
 
-Projeto nos containers Nginx e PHP:
+## Infraestrutura utilizada
 
-    /var/www/minhas_financas
+Serviços existentes: `nginx`, `php-fpm` e `mysql`, na rede `infra_network`.
 
-Infraestrutura compartilhada:
+Além da montagem existente de `/var/www`, o PHP-FPM utiliza:
 
-    C:\var\www\infra
-
-O Compose e as configurações Nginx compartilhadas ficam fora deste
-repositório. Não substituí-los por arquivos genéricos do projeto.
-
-## Infraestrutura necessária
-
-Reutilizamos os serviços nginx, php-fpm e mysql na rede infra_network.
-
-No serviço php-fpm, o volume exclusivo do vendor é montado em:
-
-    minhas_financas_vendor:/var/www/minhas_financas/backend/vendor
+```yaml
+- minhas_financas_vendor:/var/www/minhas_financas/backend/vendor
+```
 
 Declaração no bloco de volumes do Compose:
 
@@ -76,204 +65,296 @@ minhas_financas_vendor:
     name: minhas_financas_vendor
 ```
 
-O serviço auxiliar minhas-financas-node utiliza:
+O serviço `minhas-financas-node` utiliza `node:22-alpine`, perfil `dev`, diretório `/app`, montagem `../minhas_financas/frontend:/app`, volume `minhas_financas_node_modules:/app/node_modules`, porta `127.0.0.1:5173:5173` e rede `infra_network`.
 
-- Imagem node:22-alpine.
-- Perfil dev.
-- Diretório de trabalho /app.
-- Montagem ../minhas_financas/frontend:/app.
-- Volume minhas_financas_node_modules em /app/node_modules.
-- Porta 127.0.0.1:5173:5173.
-- Rede infra_network.
+Recriar o PHP-FPM compartilhado interrompe brevemente os outros projetos PHP. Seu entrypoint também reaplica permissões sobre `/var/www`. Planejar essa operação antes de executá-la.
 
-O volume externo deve existir antes de iniciar o PHP-FPM:
+## Instalação em outro computador — somente www/infra já está pronta
+
+### Premissas
+
+- Windows com Docker Desktop funcionando e Git disponível (`git --version`). Instalar Git for Windows caso esse comando não exista.
+- `C:\var\www\infra` já contém o Compose atualizado, Dockerfile, `php.ini` e configurações Nginx, inclusive o site `minhas-financas.localhost`, o serviço Node e a montagem do volume `vendor` descritos acima.
+- Os serviços existentes da infraestrutura estão disponíveis. Não executar `docker compose down` nem apagar volumes.
+- A pasta do projeto ainda não existe. Se existir, não clonar por cima: conferir seu conteúdo primeiro.
+- Este procedimento cria uma instalação local independente, com banco inicialmente vazio. Não transfere dados financeiros do outro computador.
+
+Infraestrutura atualizada não significa que os volumes, o banco ou as dependências do aplicativo já existam. As etapas abaixo preparam esses itens.
+
+### 1. Clonar o projeto
 
 ```bat
-docker volume create minhas_financas_vendor
+cd /d C:\var\www
+git clone -b master https://github.com/ccb2357/minhas_financas.git minhas_financas
+cd minhas_financas
 ```
 
-Em ambiente novo, preencher esse volume pelo Composer no container.
-Não copiar o vendor do Windows como procedimento habitual.
+Autenticar no GitHub quando solicitado. A conta precisa ter acesso ao repositório privado.
 
-Recriar o PHP-FPM compartilhado interrompe brevemente outros projetos.
-Seu entrypoint também reaplica permissões sobre /var/www.
-Mudanças nesse serviço exigem planejamento e autorização.
+### 2. Disponibilizar o Composer
 
-## Configuração privada
+Criar a pasta caso ela não exista:
 
-O backend/.env não é versionado.
+```bat
+if not exist tools mkdir tools
+```
 
-Usar backend/.env.example como modelo e preencher as credenciais
-exclusivas do banco minhas_financas.
+Copiar `tools\composer.phar` do computador em que o projeto já funciona para:
 
-- Host MySQL no Docker: mysql.
-- Porta: 3306.
-- Sessões e cache: arquivos.
-- Fila: execução síncrona.
-- Cookie de sessão: minhas_financas_session.
-- Domínios Sanctum locais: localhost:5173 e minhas-financas.localhost.
+```text
+C:\var\www\minhas_financas\tools\composer.phar
+```
 
-APP_DEBUG=true e SESSION_SECURE_COOKIE=false são configurações locais.
-Na produção HTTPS, usar APP_DEBUG=false e SESSION_SECURE_COOKIE=true.
+Alternativamente, se Composer já estiver instalado pelo instalador Windows no novo PC:
 
-Nunca enviar .env, senhas, cookies, backups ou tokens ao GitHub.
+```bat
+copy "C:\ProgramData\ComposerSetup\bin\composer.phar" "C:\var\www\minhas_financas\tools\composer.phar"
+```
 
-## Composer pelo container
+Se esse arquivo não existir, usar a cópia do primeiro computador ou obter o Composer pelo site oficial https://getcomposer.org/. Não usar arquivos de origem desconhecida.
+
+`tools\composer.cmd` vem do Git; o binário `composer.phar` é ignorado. Não é necessário instalar PHP no Windows para executar esse atalho: ele utiliza o PHP do container.
+
+### 3. Criar a configuração local
 
 Na raiz do projeto:
 
 ```bat
-tools\composer.cmd --version
-tools\composer.cmd check-platform-reqs
-tools\composer.cmd install
+copy backend\.env.example backend\.env
 ```
 
-O atalho executa o Composer com o PHP do serviço php-fpm e utiliza
-o vendor do volume Docker.
+Esse comando é para a primeira instalação. Não sobrescrever um `.env` já configurado.
 
-Não executar composer install ou composer require diretamente pelo
-PHP do Windows para atualizar as dependências utilizadas pelo container:
-o vendor local do Windows fica oculto pela montagem do volume.
+Editar `backend\.env` e conferir:
 
-O arquivo tools/composer.phar é ignorado pelo Git. Na instalação
-Windows atual, ele foi copiado de:
+```dotenv
+APP_NAME="Minhas Finanças"
+APP_ENV=local
+APP_DEBUG=true
+APP_URL=http://minhas-financas.localhost
 
-    C:\ProgramData\ComposerSetup\bin\composer.phar
+APP_LOCALE=pt_BR
+APP_FALLBACK_LOCALE=en
+APP_FAKER_LOCALE=pt_BR
 
-Em outro computador, disponibilizar o Composer nessa mesma pasta tools,
-obtendo-o de uma instalação confiável do Composer.
+DB_CONNECTION=mysql
+DB_HOST=mysql
+DB_PORT=3306
+DB_DATABASE=minhas_financas
+DB_USERNAME=minhas_financas
+DB_PASSWORD=
 
-## Comandos Laravel
+SESSION_DRIVER=file
+SESSION_COOKIE=minhas_financas_session
+SESSION_DOMAIN=null
+SESSION_SECURE_COOKIE=false
+SESSION_SAME_SITE=lax
 
-Executados pelo PHP do container:
+CACHE_STORE=file
+QUEUE_CONNECTION=sync
+SANCTUM_STATEFUL_DOMAINS=localhost:5173,minhas-financas.localhost
+```
+
+Manter `APP_KEY=` vazia por enquanto. A senha do banco será preenchida na etapa 6. Se houver `DB_URL` configurada, removê-la para usar os campos `DB_*` acima. Não duplicar variáveis.
+
+### 4. Criar o volume de dependências e conectar ao PHP-FPM
 
 ```bat
-docker exec -w /var/www/minhas_financas/backend php-fpm php artisan --version
-docker exec -w /var/www/minhas_financas/backend php-fpm php artisan db:show
-docker exec -w /var/www/minhas_financas/backend php-fpm php artisan migrate:status
+docker volume create minhas_financas_vendor
+cd /d C:\var\www\infra
+docker compose --profile dev config --quiet
+```
+
+Se a validação apresentar erro, parar e corrigir antes de continuar.
+
+Com a configuração validada, em uma janela adequada para a breve interrupção dos projetos PHP:
+
+```bat
+docker compose up -d --no-deps --no-build --force-recreate php-fpm
+```
+
+O entrypoint pode demorar devido ao ajuste de permissões existente. O volume recém-criado ainda não contém dependências. Não copiar `vendor` do Windows para preenchê-lo; a próxima etapa fará a instalação diretamente no volume.
+
+### 5. Instalar as dependências PHP e gerar a chave local
+
+```bat
+cd /d C:\var\www\minhas_financas
+tools\composer.cmd --version
+tools\composer.cmd install
+tools\composer.cmd check-platform-reqs
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan key:generate
 docker exec -w /var/www/minhas_financas/backend php-fpm php artisan config:clear
 ```
 
-Aplicar migrations somente após conferir o banco de destino:
+O Composer deve informar PHP 8.2.29, e os requisitos devem passar. Se algum comando falhar, parar e investigar.
+
+Não usar `composer update` para reproduzir a instalação: `install` utiliza o arquivo de lock. Não executar o Composer diretamente com o PHP do Windows para atualizar o `vendor` usado pelo container.
+
+Gerar uma chave própria para este novo ambiente local. Não executar `key:generate` posteriormente em um ambiente existente que precisa preservar sua chave.
+
+### 6. Criar banco e usuário pelo phpMyAdmin
+
+Entrar no phpMyAdmin da infraestrutura como administrador. Primeiro conferir se o banco `minhas_financas` já existe. Se existir, parar e revisar antes de aplicar migrations.
+
+Para uma instalação nova, na aba SQL:
+
+```sql
+CREATE DATABASE minhas_financas
+    CHARACTER SET utf8mb4
+    COLLATE utf8mb4_unicode_ci;
+```
+
+Em **Contas de usuário → Adicionar conta de usuário**:
+
+- Nome: `minhas_financas`.
+- Host: `%`, para permitir conexão pela rede Docker com IPs variáveis.
+- Definir uma senha exclusiva, usando o gerador do phpMyAdmin se desejado, e guardá-la.
+- Não conceder privilégios globais nem opção de conceder permissões a terceiros.
+- Após criar, conceder os privilégios necessários somente sobre `minhas_financas.*`, incluindo os de criação/alteração de tabelas para migrations.
+
+Preencher `DB_PASSWORD` em `backend\.env` com essa senha, respeitando a sintaxe do arquivo dotenv. Não enviar senha ao GitHub.
+
+Conferir a conexão antes de criar tabelas:
+
+```bat
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan config:clear
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan db:show
+```
+
+O resultado deve mostrar banco `minhas_financas`, usuário `minhas_financas`, host `mysql` e conexão bem-sucedida.
+
+### 7. Criar tabelas e usuário de acesso
+
+Somente após conferir o banco de destino:
 
 ```bat
 docker exec -w /var/www/minhas_financas/backend php-fpm php artisan migrate
-```
-
-Criar usuário inicial sem cadastro público:
-
-```bat
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan migrate:status
 docker exec -it -w /var/www/minhas_financas/backend php-fpm php artisan app:create-user
 ```
 
-A senha é solicitada de forma oculta e armazenada como hash.
-Não executar novamente para um e-mail já cadastrado.
+Informar nome, e-mail e senha quando solicitado. A senha de acesso ao aplicativo é independente da senha MySQL. Não executar seeders padrão para criar usuários de demonstração.
 
-## Frontend
-
-Executar os comandos abaixo na pasta da infraestrutura.
-
-Instalar dependências após clonar ou atualizar o arquivo de lock:
+### 8. Conferir o Nginx existente
 
 ```bat
-docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci
+docker exec nginx nginx -t
 ```
 
-Iniciar o desenvolvimento:
+Somente se o teste passar, recarregar a configuração para atualizar também a resolução do PHP-FPM recriado:
+
+```bat
+docker exec nginx nginx -s reload
+```
+
+Abrir http://minhas-financas.localhost/up. Deve aparecer **Application up**.
+
+Se o nome não resolver, conferir a resolução local e a porta 80 do Docker. Não alterar o endereço ou as configurações de outros sites para contornar o problema.
+
+### 9. Instalar o frontend e validar o build
+
+Na pasta da infraestrutura:
+
+```bat
+cd /d C:\var\www\infra
+docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci
+docker compose --profile dev run --rm --no-deps minhas-financas-node npm run build
+```
+
+O Compose cria o volume de `node_modules` quando necessário. Não repetir `npm init` nem os comandos iniciais de instalação de cada pacote: `npm ci` utiliza `package-lock.json`.
+
+### 10. Iniciar e conferir a aplicação
 
 ```bat
 docker compose --profile dev run --rm --no-deps --service-ports minhas-financas-node npm run dev
 ```
 
-Manter o terminal aberto. Encerrar com Ctrl+C.
+Manter o terminal aberto e acessar http://localhost:5173.
 
-Gerar o build:
+Conferir:
+
+- Página Framework7 e gráfico ECharts.
+- http://localhost:5173/up respondendo.
+- Login com o usuário criado neste computador.
+- Consulta de sessão e logout.
+- Consulta após logout retornando HTTP 401.
+- Outros sites da infraestrutura continuando disponíveis.
+
+Em outro terminal, executar os testes:
+
+```bat
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan config:clear
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan test
+```
+
+Na configuração versionada, os testes usam SQLite em memória, com cache e sessões em memória. Não devem usar o banco MySQL de desenvolvimento. Não alterar essa configuração para apontar os testes ao banco real.
+
+Para encerrar apenas o Vite, pressionar `Ctrl+C` no terminal onde ele está executando.
+
+### O que o Git não transfere
+
+- `.env`, credenciais e chave da aplicação.
+- Banco MySQL, usuários e dados financeiros.
+- Volumes Docker e dependências instaladas.
+- `tools/composer.phar`.
+- Sessões, logs, arquivos privados e build `dist`.
+- Compose e arquivos Nginx compartilhados, que pertencem à infraestrutura externa ao repositório.
+
+Não copiar senhas do primeiro computador para o README nem desativar o `.gitignore` para transferir esses itens. Uma migração de dados existentes exige procedimento separado de backup e restauração.
+
+## Comandos de uso diário
+
+Na raiz do projeto:
+
+```bat
+tools\composer.cmd --version
+tools\composer.cmd install
+tools\composer.cmd check-platform-reqs
+```
+
+Na pasta da infraestrutura, iniciar Vite:
+
+```bat
+docker compose --profile dev run --rm --no-deps --service-ports minhas-financas-node npm run dev
+```
+
+Gerar build:
 
 ```bat
 docker compose --profile dev run --rm --no-deps minhas-financas-node npm run build
 ```
 
-O resultado fica em frontend/dist e não é versionado.
+Após alterar `.env`, limpar a configuração em cache:
 
-Node não precisa executar na VPS quando o frontend é compilado antes
-da publicação.
-
-## Endereços locais
-
-- Frontend: http://localhost:5173
-- Laravel: http://minhas-financas.localhost
-- Health check direto: http://minhas-financas.localhost/up
-- Health check pelo Vite: http://localhost:5173/up
-
-O Vite encaminha /api, /sanctum e /up ao Nginx existente,
-com Host minhas-financas.localhost.
-
-A configuração Nginx atual serve backend/public.
-A configuração para publicação do frontend ainda será preparada.
+```bat
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan config:clear
+```
 
 ## Autenticação
 
-Rotas:
+| Método | Rota | Finalidade |
+| --- | --- | --- |
+| GET | `/sanctum/csrf-cookie` | Preparar cookies CSRF |
+| POST | `/api/v1/auth/login` | Entrar |
+| GET | `/api/v1/me` | Consultar usuário autenticado |
+| POST | `/api/v1/auth/logout` | Encerrar sessão |
 
-- GET /sanctum/csrf-cookie
-- POST /api/v1/auth/login
-- GET /api/v1/me
-- POST /api/v1/auth/logout
+As chamadas são centralizadas em `frontend/src/js/api.js`. Operações de escrita enviam `X-XSRF-TOKEN`. Não armazenar senhas ou tokens de autenticação em `localStorage`.
 
-Fluxo:
-
-1. Preparar os cookies CSRF.
-2. Enviar login com o cabeçalho X-XSRF-TOKEN.
-3. Consultar o usuário autenticado.
-4. Encerrar a sessão pelo logout.
-
-O frontend centraliza as chamadas em frontend/src/js/api.js.
-Não armazenar senha ou token de autenticação em localStorage.
-
-Respostas verificadas:
-
-- 204: preparação de cookies e logout.
-- 200: login e consulta autenticada.
-- 401: consulta sem autenticação.
-- 419: requisição sem proteção CSRF.
-- 422: credenciais incorretas.
-
-O login possui throttle:5,1, limitado a cinco requisições por minuto
-por IP para clientes não autenticados. O teste de HTTP 429 foi adiado.
+O login possui `throttle:5,1`. O teste do bloqueio HTTP 429 foi adiado. Os testes automatizados não comprovam proteção CSRF, pois essa proteção é desabilitada no ambiente de testes; o retorno HTTP 419 foi verificado manualmente.
 
 ## Desempenho local
 
-O backend está montado a partir do Windows. No diagnóstico realizado:
+Na medição realizada, a inicialização CLI do mesmo backend levou 2567 ms na montagem do Windows e 85 ms na cópia interna do container. Após mover `vendor` para volume Docker, o health check HTTP apresentou aproximadamente 46–67 ms nas chamadas aquecidas.
 
-- Inicialização CLI na montagem Windows: 2567 ms.
-- Mesma inicialização em cópia interna do container: 85 ms.
+São medições locais, sem garantia de desempenho em produção. A cópia temporária usada no diagnóstico não faz parte da instalação nem deve ser usada para desenvolvimento.
 
-Após mover vendor para o volume Docker, o health check HTTP respondeu
-em aproximadamente 46–67 ms nas chamadas aquecidas.
+## Segurança e publicação
 
-Essas medições são locais e não constituem garantia de desempenho
-em produção.
+Não versionar `.env`, senhas, cookies, tokens, backups ou chaves privadas. O Git ignora `vendor`, `node_modules`, `dist` e o binário Composer.
 
-## Preparação em outro computador
+`APP_DEBUG=true` e `SESSION_SECURE_COOKIE=false` são configurações locais. Na produção HTTPS, usar `APP_DEBUG=false` e `SESSION_SECURE_COOKIE=true`.
 
-1. Clonar o repositório na pasta minhas_financas.
-2. Preparar a infraestrutura compartilhada e revisar suas configurações.
-3. Criar o volume externo e configurar sua montagem no PHP-FPM.
-4. Disponibilizar tools/composer.phar.
-5. Copiar backend/.env.example para backend/.env e preencher os dados locais.
-6. Executar tools\composer.cmd install.
-7. Gerar uma APP_KEY própria para o novo ambiente local.
-8. Preparar o banco exclusivo, aplicar migrations e criar o usuário.
-9. Executar npm ci pelo serviço Node.
-10. Iniciar Vite e repetir os testes da Sprint 0.
-
-Não copiar APP_KEY de outro ambiente para uma instalação nova.
-Em restauração de um ambiente existente, preservar a chave original.
-
-## Publicação
-
-A publicação na VPS ainda não foi executada nem validada.
-Será preparada em etapa própria, com HTTPS, configuração de produção,
-backup e instruções de atualização e rollback.
+A publicação na VPS ainda não foi executada nem validada. Será preparada em etapa própria, incluindo HTTPS, backup, atualização e rollback. Node não precisa rodar na VPS quando o frontend é compilado antes da publicação.
 
 Não executar alterações na VPS sem autorização.
