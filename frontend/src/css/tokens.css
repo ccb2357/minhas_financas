@@ -1,0 +1,27 @@
+:root {
+    --mf-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mf-primary: #1564ff;
+    --mf-primary-deep: #0845ed;
+    --mf-title: #0c1c55;
+    --mf-text: #455479;
+    --mf-muted: #7886a7;
+    --mf-placeholder: #a0acc7;
+    --mf-background: #f6f9ff;
+    --mf-surface: #ffffff;
+    --mf-border: #e9eef8;
+    --mf-income: #05944a;
+    --mf-expense: #e92b3b;
+    --mf-radius-card: 22px;
+    --mf-radius-field: 16px;
+    --mf-radius-button: 17px;
+    --mf-shadow-card: 0 6px 24px rgb(32 67 132 / 4%);
+    --mf-shadow-primary: 0 12px 25px rgb(21 100 255 / 18%);
+    --mf-space-1: 4px;
+    --mf-space-2: 8px;
+    --mf-space-3: 12px;
+    --mf-space-4: 16px;
+    --mf-space-5: 24px;
+    --mf-space-6: 32px;
+    --f7-theme-color: var(--mf-primary);
+    --f7-font-family: var(--mf-font);
+}
