@@ -25,3 +25,4 @@ auth.json
 Thumbs.db
 
 /init/
+/tools/composer.phar
