@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\BudgetController;
 use App\Http\Controllers\Api\V1\DashboardController;
 use App\Http\Controllers\Api\V1\ReportController;
 use App\Http\Controllers\Api\V1\TransactionController;
@@ -31,6 +32,12 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('/dashboard', DashboardController::class);
     Route::get('/reports', ReportController::class);
+
+    Route::get('/budgets', [BudgetController::class, 'index']);
+    Route::post('/budgets', [BudgetController::class, 'store']);
+    Route::get('/budgets/{budget}', [BudgetController::class, 'show'])->whereNumber('budget');
+    Route::patch('/budgets/{budget}', [BudgetController::class, 'update'])->whereNumber('budget');
+    Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->whereNumber('budget');
 
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);
