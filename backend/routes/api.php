@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\CategoryController;
+use App\Http\Controllers\Api\V1\TransactionController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -25,4 +26,13 @@ Route::middleware('auth:sanctum')->group(function (): void {
         ->whereNumber('category');
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
         ->whereNumber('category');
+
+    Route::get('/transactions', [TransactionController::class, 'index']);
+    Route::post('/transactions', [TransactionController::class, 'store']);
+    Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])
+        ->whereNumber('transaction');
+    Route::patch('/transactions/{transaction}', [TransactionController::class, 'update'])
+        ->whereNumber('transaction');
+    Route::delete('/transactions/{transaction}', [TransactionController::class, 'destroy'])
+        ->whereNumber('transaction');
 });
