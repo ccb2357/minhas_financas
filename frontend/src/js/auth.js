@@ -1,21 +1,19 @@
 import { apiRequest, prepareCsrf } from './api.js';
 import { createValidation, validationRules } from './validation.js';
 
-export function mountAuth() {
+export function mountAuth({ onAuthenticated, onSignedOut } = {}) {
     const form = document.querySelector('#login-form');
     const fields = document.querySelector('#login-fields');
     const email = document.querySelector('#login-email');
     const password = document.querySelector('#login-password');
     const remember = document.querySelector('#login-remember');
     const errorMessage = document.querySelector('#auth-error');
-    const sessionError = document.querySelector('#session-error');
     const loginPanel = document.querySelector('#login-panel');
-    const sessionPanel = document.querySelector('#session-panel');
     const loading = document.querySelector('#auth-loading');
     const toggle = document.querySelector('#password-toggle');
     const passwordIcon = document.querySelector('#password-icon');
-    const logout = document.querySelector('#logout-button');
     let submitting = false;
+    let signingOut = false;
 
     const validation = createValidation(form, {
         email: {
@@ -76,19 +74,15 @@ export function mountAuth() {
 
     function showLogin() {
         loading.hidden = true;
-        sessionPanel.hidden = true;
         loginPanel.hidden = false;
-        document.querySelector('#session-name').textContent = '';
         document.title = 'Entrar · Minhas Finanças';
+        onSignedOut?.();
     }
 
     function showSession(user) {
         loading.hidden = true;
         loginPanel.hidden = true;
-        sessionPanel.hidden = false;
-        sessionError.hidden = true;
-        document.querySelector('#session-name').textContent = user.name;
-        document.title = 'Minhas Finanças';
+        onAuthenticated?.(user);
     }
 
     function setBusy(busy) {
@@ -126,35 +120,24 @@ export function mountAuth() {
         passwordIcon.setAttribute('href', visible ? '#icon-eye' : '#icon-eye-off');
     });
 
-    logout.addEventListener('click', async () => {
-        if (logout.disabled) return;
-        logout.disabled = true;
-        logout.textContent = 'Saindo...';
-        sessionError.hidden = true;
+    async function signOut() {
+        if (signingOut) return;
+        signingOut = true;
         try {
             await prepareCsrf();
             await apiRequest('/auth/logout', { method: 'POST' });
-            resetPassword();
-            validation.reset();
-            clearGeneralError();
-            remember.checked = false;
-            showLogin();
-            email.focus();
         } catch (error) {
-            if (error.status === 401) {
-                resetPassword();
-                validation.reset();
-                clearGeneralError();
-                showLogin();
-            } else {
-                sessionError.textContent = messageFor(error);
-                sessionError.hidden = false;
-            }
+            if (error.status !== 401) throw new Error(messageFor(error));
         } finally {
-            logout.disabled = false;
-            logout.textContent = 'Sair da conta';
+            signingOut = false;
         }
-    });
+        resetPassword();
+        validation.reset();
+        clearGeneralError();
+        remember.checked = false;
+        showLogin();
+        email.focus();
+    }
 
     async function restoreSession() {
         try {
@@ -169,5 +152,5 @@ export function mountAuth() {
     }
 
     void restoreSession();
-    return () => validation.destroy();
+    return { logout: signOut, destroy: () => validation.destroy() };
 }

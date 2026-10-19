@@ -18,7 +18,7 @@
             <symbol id="icon-check" viewBox="0 0 24 24"><path d="m5 12 4.5 4.5L19 7"/></symbol>
         </svg>
         <div id="app">
-            <div class="view view-main">
+            <div id="auth-view" class="view view-main">
                 <div class="page auth-page" data-name="login">
                     <div class="page-content auth-scroll">
                         <main class="auth-shell">
@@ -87,19 +87,22 @@
                                 </form>
                             </section>
 
-                            <section id="session-panel" class="session-card" aria-labelledby="session-title" hidden>
-                                <span class="session-badge" aria-hidden="true"><svg class="mf-icon"><use href="#icon-check"/></svg></span>
-                                <h2 id="session-title">Bem-vindo!</h2>
-                                <p id="session-name"></p>
-                                <p class="session-description">Sua sessão está ativa.</p>
-                                <button id="logout-button" class="mf-button mf-button-secondary" type="button">Sair da conta</button>
-                                <p id="session-error" class="auth-error" role="alert" hidden></p>
-                            </section>
-
                             <footer class="auth-footer"><span class="footer-rule" aria-hidden="true"></span><p>Acesse seu controle financeiro pessoal</p></footer>
                         </main>
                     </div>
                 </div>
+            </div>
+            <div id="workspace" class="workspace" hidden>
+                <div id="finance-view" class="view"></div>
+                <div class="toolbar toolbar-bottom workspace-toolbar">
+                    <nav class="toolbar-inner workspace-nav" aria-label="Navegação principal">
+                        <a class="nav-link external" href="/inicio/" data-section="inicio"><i class="f7-icons" aria-hidden="true">house_fill</i><span>Início</span></a>
+                        <a class="nav-link external" href="/historico/" data-section="historico"><i class="f7-icons" aria-hidden="true">clock</i><span>Histórico</span></a>
+                        <a class="nav-link external" href="/relatorios/" data-section="relatorios"><i class="f7-icons" aria-hidden="true">chart_bar_fill</i><span>Relatórios</span></a>
+                        <a class="nav-link external" href="/mais/" data-section="mais"><i class="f7-icons" aria-hidden="true">ellipsis</i><span>Mais</span></a>
+                    </nav>
+                </div>
+                <button id="new-transaction" class="new-transaction" type="button" aria-label="Ver prévia de novo lançamento"><i class="f7-icons" aria-hidden="true">plus</i></button>
             </div>
         </div>
         <script type="module" src="/src/js/app.js"></script>

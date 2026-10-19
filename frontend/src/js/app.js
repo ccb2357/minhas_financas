@@ -1,16 +1,23 @@
-import Framework7 from "framework7/bundle";
-import "framework7/css/bundle";
-import "framework7-icons/css/framework7-icons.css";
-import "../css/tokens.css";
-import "../css/app.css";
-import { mountAuth } from "./auth.js";
+import Framework7 from 'framework7/bundle';
+import 'framework7/css/bundle';
+import 'framework7-icons/css/framework7-icons.css';
+import '../css/tokens.css';
+import '../css/app.css';
+import '../css/dashboard.css';
+import { mountAuth } from './auth.js';
+import { createWorkspace } from './workspace.js';
 
 const app = new Framework7({
-    el: "#app",
-    name: "Minhas Finanças",
-    theme: "ios",
+    el: '#app',
+    name: 'Minhas Finanças',
+    theme: 'ios',
     darkMode: false,
+    dialog: { buttonOk: 'Entendi', buttonCancel: 'Cancelar' },
 });
 
-app.views.create(".view-main");
-mountAuth();
+app.views.create('#auth-view', { router: false });
+const workspace = createWorkspace(app, { logout: () => auth.logout() });
+const auth = mountAuth({
+    onAuthenticated: user => workspace.show(user),
+    onSignedOut: () => workspace.hide(),
+});
