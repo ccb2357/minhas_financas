@@ -19,3 +19,17 @@ export function amountText(cents) {
 }
 
 export const moneyText = cents => `R$\u00a0${amountText(cents)}`;
+
+
+// Totais consolidados podem ser negativos ou maiores que um lançamento único.
+export function formatMoney(cents) {
+    if (!Number.isSafeInteger(cents)) return '—';
+    const value = Math.abs(cents);
+    const whole = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(Math.floor(value / 100));
+    return `${cents < 0 ? '−' : ''}R$\u00a0${whole},${String(value % 100).padStart(2, '0')}`;
+}
+
+// Abreviação visual dos eixos/rótulos; os dados dos gráficos continuam em centavos.
+export const compactMoney = cents => new Intl.NumberFormat('pt-BR', {
+    notation: 'compact', maximumFractionDigits: 1,
+}).format(cents / 100);

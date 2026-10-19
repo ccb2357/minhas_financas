@@ -9,7 +9,7 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
     const financeView = document.querySelector('#finance-view');
     const newButton = document.querySelector('#new-transaction');
     const cleanups = new Set();
-    const state = { month: INITIAL_MONTH, historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
+    const state = { month: INITIAL_MONTH, dashboardMonth: todayBrazil().slice(0, 7), dashboardFeedback: '', historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
     let view, editor;
     const context = {
         app, state, logout, cleanups, expireSession: onSessionExpired, events: new EventTarget(),
@@ -23,8 +23,13 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
                 onSaved(row, kind) {
                     if (kind !== 'deleted') state.historyMonth = row.transaction_date.slice(0, 7);
                     state.historyFeedback = { created: 'Lançamento salvo.', updated: 'Lançamento atualizado.', deleted: 'Lançamento excluído.' }[kind];
+                    const onDashboard = (view.router.currentRoute.route?.path || view.router.currentRoute.path) === '/inicio/';
+                    if (onDashboard) {
+                        if (kind !== 'deleted') state.dashboardMonth = row.transaction_date.slice(0, 7);
+                        state.dashboardFeedback = state.historyFeedback;
+                    }
                     context.events.dispatchEvent(new CustomEvent('transactions:changed', { detail: { row, kind } }));
-                    if (view.router.currentRoute.path !== '/historico/') view.router.navigate(`/historico/?month=${state.historyMonth}`);
+                    if (!onDashboard && view.router.currentRoute.path !== '/historico/') view.router.navigate(`/historico/?month=${state.historyMonth}`);
                 },
             });
         },
@@ -85,6 +90,8 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
             authView.classList.add('view-main');
             state.user = null;
             state.month = INITIAL_MONTH;
+            state.dashboardMonth = todayBrazil().slice(0, 7);
+            state.dashboardFeedback = '';
             state.historyMonth = todayBrazil().slice(0, 7);
             state.historyFeedback = '';
             if (wasActive) window.history.replaceState({}, '', window.location.pathname + window.location.search);

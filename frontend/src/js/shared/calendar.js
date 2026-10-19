@@ -24,10 +24,10 @@ export function shiftMonth(value, delta) {
     return `${date.getUTCFullYear()}-${String(date.getUTCMonth() + 1).padStart(2, '0')}`;
 }
 
-export function monthLabel(value) {
-    const text = new Intl.DateTimeFormat('pt-BR', { month: 'long', year: 'numeric', timeZone: 'UTC' })
+export function monthLabel(value, short = false) {
+    const text = new Intl.DateTimeFormat('pt-BR', { month: short ? 'short' : 'long', ...(short ? {} : { year: 'numeric' }), timeZone: 'UTC' })
         .format(new Date(`${value}-01T12:00:00Z`));
-    return text[0].toUpperCase() + text.slice(1);
+    return text[0].toUpperCase() + text.slice(1).replace('.', '');
 }
 
 export function dateText(value) {

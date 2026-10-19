@@ -1,4 +1,5 @@
-import { mountDashboard, mountReports, mountMore } from './demo/pages.js';
+import { mountDashboard } from './dashboard/page.js';
+import { mountReports, mountMore } from './demo/pages.js';
 import { mountCategories } from './categories/page.js';
 import { mountHistory } from './transactions/history.js';
 

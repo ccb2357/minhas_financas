@@ -41,28 +41,6 @@ function pageEvents(root, ctx, getRows) {
     return () => controller.abort();
 }
 
-export function mountDashboard(root, ctx) {
-    const charts = chartLoader(root);
-    let current;
-    function render() {
-        charts.destroy();
-        current = summarize(ctx.state.month);
-        const previous = series(ctx.state.month, 2)[0];
-        const change = previous.result > 0 ? (current.result - previous.result) / previous.result * 100 : null;
-        const comparison = change === null ? '<span class="result-comparison-empty">Sem comparação</span>' : `<span class="result-change ${change < 0 ? 'negative' : ''}">${icon(change >= 0 ? 'chevron_up' : 'chevron_down')}${change > 0 ? '+' : ''}${Math.round(change)}%</span><small>em relação<br>a ${monthLabel(previous.month).split(' de ')[0]}</small>`;
-        root.innerHTML = `${header('Minhas Finanças')}${monthPicker(ctx.state.month)}<section class="result-card" aria-label="Resultado disponível do mês"><div class="result-copy"><p>Resultado disponível do mês <button class="result-info" type="button" aria-label="Entender o resultado do mês" data-action="result-info">${icon('info_circle')}</button></p><strong data-total="result">${money(current.result)}</strong><div class="result-breakdown"><span>Entradas: ${money(current.income)}</span><span>Saídas: ${money(current.expense)}</span></div></div><div class="result-comparison">${comparison}</div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>${summaryCards(current)}<div class="charts-grid"><section class="finance-card category-card"><div class="card-heading"><h2>Gastos por categoria</h2><a class="link icon-button" href="/relatorios/" aria-label="Ver relatório por categoria">${icon('chevron_right')}</a></div>${categoryChart(current)}</section><section class="finance-card bar-card"><div class="card-heading"><h2>Últimos 6 meses</h2><a class="link icon-button" href="/relatorios/" aria-label="Ver evolução nos relatórios">${icon('chevron_right')}</a></div><div class="mini-bar-chart" data-chart="six-months" role="img" aria-label="Resultado disponível nos últimos seis meses"></div><p class="chart-caption">Resultado de cada mês</p></section></div><section class="finance-card latest-card"><div class="card-heading"><h2>Últimos lançamentos</h2><a class="link all-transactions" href="/historico/">Ver todos ${icon('chevron_right')}</a></div>${transactionRows(current.rows.slice(0, 4))}</section>`;
-        charts.render(current, series(ctx.state.month));
-    }
-    const unbindMonth = wireMonthPicker(root, () => ctx.state.month, month => { ctx.state.month = month; render(); });
-    const unbindPage = pageEvents(root, ctx, () => current.rows);
-    const onInfo = event => {
-        if (event.target.closest('[data-action="result-info"]')) ctx.app.dialog.alert('É a diferença entre as entradas e as saídas do mês selecionado. Não inclui valores acumulados de meses anteriores nem representa um saldo bancário.', 'Resultado do mês');
-    };
-    root.addEventListener('click', onInfo);
-    render();
-    return { refresh: render, destroy() { charts.destroy(); unbindMonth(); unbindPage(); root.removeEventListener('click', onInfo); } };
-}
-
 export function mountReports(root, ctx) {
     const charts = chartLoader(root);
     let period = 1;
@@ -90,7 +68,7 @@ export function mountReports(root, ctx) {
 
 export function mountMore(root, ctx) {
     function render() {
-        root.innerHTML = `${header('Mais', { demo: false })}<section class="finance-card profile-card"><span class="profile-avatar">${icon('person_crop_circle')}</span><div><h2 data-profile-name></h2><p data-profile-email></p></div></section><a href="/categorias/" class="finance-card settings-row categories-menu-link"><span class="settings-icon">${icon('square_grid_2x2')}</span><span><strong>Categorias</strong><small>Organize suas receitas e despesas</small></span>${icon('chevron_right')}</a><section class="finance-card more-settings"><div class="settings-row"><span class="settings-icon">${icon('money_dollar_circle')}</span><span><strong>Moeda</strong><small>Real brasileiro</small></span><b>BRL (R$)</b></div><div class="settings-row"><span class="settings-icon">${icon('sun_max')}</span><span><strong>Aparência</strong><small>Tema claro</small></span></div></section><section class="finance-card demo-explanation"><h2>Conheça o aplicativo</h2><p>Início e Relatórios ainda apresentam dados de demonstração. Categorias e Histórico usam os dados salvos na sua conta.</p><a class="link" href="/inicio/">Voltar ao início ${icon('arrow_right')}</a></section><button type="button" class="finance-card settings-row logout-row" data-action="logout"><span class="settings-icon">${icon('arrow_right_square')}</span><span><strong>Sair da conta</strong><small>Encerrar sua sessão com segurança</small></span>${icon('chevron_right')}</button>`;
+        root.innerHTML = `${header('Mais', { demo: false })}<section class="finance-card profile-card"><span class="profile-avatar">${icon('person_crop_circle')}</span><div><h2 data-profile-name></h2><p data-profile-email></p></div></section><a href="/categorias/" class="finance-card settings-row categories-menu-link"><span class="settings-icon">${icon('square_grid_2x2')}</span><span><strong>Categorias</strong><small>Organize suas receitas e despesas</small></span>${icon('chevron_right')}</a><section class="finance-card more-settings"><div class="settings-row"><span class="settings-icon">${icon('money_dollar_circle')}</span><span><strong>Moeda</strong><small>Real brasileiro</small></span><b>BRL (R$)</b></div><div class="settings-row"><span class="settings-icon">${icon('sun_max')}</span><span><strong>Aparência</strong><small>Tema claro</small></span></div></section><section class="finance-card demo-explanation"><h2>Conheça o aplicativo</h2><p>Somente Relatórios ainda apresenta dados de demonstração. Início, Categorias e Histórico usam os dados salvos na sua conta.</p><a class="link" href="/inicio/">Voltar ao início ${icon('arrow_right')}</a></section><button type="button" class="finance-card settings-row logout-row" data-action="logout"><span class="settings-icon">${icon('arrow_right_square')}</span><span><strong>Sair da conta</strong><small>Encerrar sua sessão com segurança</small></span>${icon('chevron_right')}</button>`;
         root.querySelector('[data-profile-name]').textContent = ctx.state.user.name;
         root.querySelector('[data-profile-email]').textContent = ctx.state.user.email;
     }
