@@ -1,6 +1,7 @@
 import { createRoutes } from './routes.js';
 import { INITIAL_MONTH } from './demo/data.js';
-import { openTransactionPreview } from './demo/ui.js';
+import { openTransactionForm } from './transactions/form.js';
+import { todayBrazil } from './shared/calendar.js';
 
 export function createWorkspace(app, { logout, onSessionExpired }) {
     const container = document.querySelector('#workspace');
@@ -8,9 +9,26 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
     const financeView = document.querySelector('#finance-view');
     const newButton = document.querySelector('#new-transaction');
     const cleanups = new Set();
-    const state = { month: INITIAL_MONTH, user: null };
-    let view;
-    const context = { app, state, logout, cleanups, expireSession: onSessionExpired };
+    const state = { month: INITIAL_MONTH, historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
+    let view, editor;
+    const context = {
+        app, state, logout, cleanups, expireSession: onSessionExpired, events: new EventTarget(),
+        navigate: path => view?.router.navigate(path),
+        beforeLeave(resolve, reject) { if (editor) editor.beforeLeave(resolve, reject); else resolve(); },
+        openTransaction(options = {}) {
+            if (!state.user || editor) return;
+            editor = openTransactionForm(context, {
+                ...options,
+                onClosed() { editor = null; },
+                onSaved(row, kind) {
+                    if (kind !== 'deleted') state.historyMonth = row.transaction_date.slice(0, 7);
+                    state.historyFeedback = { created: 'Lançamento salvo.', updated: 'Lançamento atualizado.', deleted: 'Lançamento excluído.' }[kind];
+                    context.events.dispatchEvent(new CustomEvent('transactions:changed', { detail: { row, kind } }));
+                    if (view.router.currentRoute.path !== '/historico/') view.router.navigate(`/historico/?month=${state.historyMonth}`);
+                },
+            });
+        },
+    };
 
     function updateNavigation(route) {
         const section = route.path?.split('/').filter(Boolean)[0] || 'inicio';
@@ -32,7 +50,7 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
         event.preventDefault();
         view.router.navigate(link.getAttribute('href'));
     });
-    newButton.addEventListener('click', () => { if (state.user) openTransactionPreview(app); });
+    newButton.addEventListener('click', () => context.openTransaction());
 
     return {
         show(user) {
@@ -57,6 +75,7 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
         hide() {
             const wasActive = Boolean(state.user);
             container.hidden = true;
+            editor?.close(true);
             for (const cleanup of [...cleanups]) cleanup();
             view?.destroy();
             view = null;
@@ -66,6 +85,8 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
             authView.classList.add('view-main');
             state.user = null;
             state.month = INITIAL_MONTH;
+            state.historyMonth = todayBrazil().slice(0, 7);
+            state.historyFeedback = '';
             if (wasActive) window.history.replaceState({}, '', window.location.pathname + window.location.search);
         },
     };

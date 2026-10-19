@@ -12,6 +12,7 @@
     "echarts": "6.1.0",
     "framework7": "9.2.0",
     "framework7-icons": "5.0.5",
+    "imask": "7.6.1",
     "just-validate": "4.3.0"
   },
   "devDependencies": {

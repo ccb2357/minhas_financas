@@ -63,33 +63,6 @@ export function mountDashboard(root, ctx) {
     return { refresh: render, destroy() { charts.destroy(); unbindMonth(); unbindPage(); root.removeEventListener('click', onInfo); } };
 }
 
-export function mountHistory(root, ctx, route) {
-    let type = ['income', 'expense'].includes(route.query?.tipo) ? route.query.tipo : 'all';
-    let query = '';
-    let category = '';
-    let current;
-    function renderList() {
-        const rows = current.rows.filter(item => (type === 'all' || item.type === type) && (!category || item.category === category) && item.description.toLocaleLowerCase('pt-BR').includes(query.toLocaleLowerCase('pt-BR')));
-        const dates = [...new Set(rows.map(item => item.date))];
-        root.querySelector('[data-history-list]').innerHTML = dates.length ? dates.map(date => `<section class="history-group"><div class="history-group-heading"><h2>${dateLabel(date)}</h2><span>${rows.filter(item => item.date === date).length} lançamentos</span></div><div class="finance-card">${transactionRows(rows.filter(item => item.date === date))}</div></section>`).join('') : transactionRows([]);
-        root.querySelector('[data-result-count]').textContent = `${rows.length} lançamentos encontrados`;
-        for (const button of root.querySelectorAll('[data-filter]')) button.setAttribute('aria-pressed', String(button.dataset.filter === type));
-    }
-    function render() {
-        current = summarize(ctx.state.month);
-        root.innerHTML = `${header('Histórico')}${monthPicker(ctx.state.month)}<label class="history-search">${icon('search')}<input type="search" value="${esc(query)}" placeholder="Buscar lançamentos" aria-label="Buscar lançamentos por descrição"></label><div class="history-filters" aria-label="Filtrar lançamentos"><button type="button" class="filter-chip" data-filter="all">Todos</button><button type="button" class="filter-chip" data-filter="income">${icon('arrow_up')} Entradas</button><button type="button" class="filter-chip" data-filter="expense">${icon('arrow_down')} Saídas</button><label class="category-filter">${icon('tag')}<select aria-label="Filtrar por categoria"><option value="">Categorias</option>${Object.entries(categories).map(([key, item]) => `<option value="${key}" ${key === category ? 'selected' : ''}>${item.name}</option>`).join('')}</select></label></div><p class="sr-only" data-result-count role="status"></p><div data-history-list></div>`;
-        renderList();
-    }
-    const controller = new AbortController();
-    root.addEventListener('input', event => { if (event.target.matches('input[type="search"]')) { query = event.target.value; renderList(); } }, { signal: controller.signal });
-    root.addEventListener('change', event => { if (event.target.matches('.category-filter select')) { category = event.target.value; renderList(); } }, { signal: controller.signal });
-    root.addEventListener('click', event => { const button = event.target.closest('[data-filter]'); if (button) { type = button.dataset.filter; renderList(); } }, { signal: controller.signal });
-    const unbindMonth = wireMonthPicker(root, () => ctx.state.month, month => { ctx.state.month = month; render(); });
-    const unbindPage = pageEvents(root, ctx, () => current.rows);
-    render();
-    return { refresh: render, destroy() { controller.abort(); unbindMonth(); unbindPage(); } };
-}
-
 export function mountReports(root, ctx) {
     const charts = chartLoader(root);
     let period = 1;
@@ -117,7 +90,7 @@ export function mountReports(root, ctx) {
 
 export function mountMore(root, ctx) {
     function render() {
-        root.innerHTML = `${header('Mais', { demo: false })}<section class="finance-card profile-card"><span class="profile-avatar">${icon('person_crop_circle')}</span><div><h2 data-profile-name></h2><p data-profile-email></p></div></section><a href="/categorias/" class="finance-card settings-row categories-menu-link"><span class="settings-icon">${icon('square_grid_2x2')}</span><span><strong>Categorias</strong><small>Organize suas receitas e despesas</small></span>${icon('chevron_right')}</a><section class="finance-card more-settings"><div class="settings-row"><span class="settings-icon">${icon('money_dollar_circle')}</span><span><strong>Moeda</strong><small>Real brasileiro</small></span><b>BRL (R$)</b></div><div class="settings-row"><span class="settings-icon">${icon('sun_max')}</span><span><strong>Aparência</strong><small>Tema claro</small></span></div></section><section class="finance-card demo-explanation"><h2>Conheça o aplicativo</h2><p>Início, Histórico e Relatórios ainda apresentam dados de demonstração. Suas categorias são salvas na sua conta.</p><a class="link" href="/inicio/">Voltar ao início ${icon('arrow_right')}</a></section><button type="button" class="finance-card settings-row logout-row" data-action="logout"><span class="settings-icon">${icon('arrow_right_square')}</span><span><strong>Sair da conta</strong><small>Encerrar sua sessão com segurança</small></span>${icon('chevron_right')}</button>`;
+        root.innerHTML = `${header('Mais', { demo: false })}<section class="finance-card profile-card"><span class="profile-avatar">${icon('person_crop_circle')}</span><div><h2 data-profile-name></h2><p data-profile-email></p></div></section><a href="/categorias/" class="finance-card settings-row categories-menu-link"><span class="settings-icon">${icon('square_grid_2x2')}</span><span><strong>Categorias</strong><small>Organize suas receitas e despesas</small></span>${icon('chevron_right')}</a><section class="finance-card more-settings"><div class="settings-row"><span class="settings-icon">${icon('money_dollar_circle')}</span><span><strong>Moeda</strong><small>Real brasileiro</small></span><b>BRL (R$)</b></div><div class="settings-row"><span class="settings-icon">${icon('sun_max')}</span><span><strong>Aparência</strong><small>Tema claro</small></span></div></section><section class="finance-card demo-explanation"><h2>Conheça o aplicativo</h2><p>Início e Relatórios ainda apresentam dados de demonstração. Categorias e Histórico usam os dados salvos na sua conta.</p><a class="link" href="/inicio/">Voltar ao início ${icon('arrow_right')}</a></section><button type="button" class="finance-card settings-row logout-row" data-action="logout"><span class="settings-icon">${icon('arrow_right_square')}</span><span><strong>Sair da conta</strong><small>Encerrar sua sessão com segurança</small></span>${icon('chevron_right')}</button>`;
         root.querySelector('[data-profile-name]').textContent = ctx.state.user.name;
         root.querySelector('[data-profile-email]').textContent = ctx.state.user.email;
     }

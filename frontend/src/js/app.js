@@ -5,6 +5,7 @@ import '../css/tokens.css';
 import '../css/app.css';
 import '../css/dashboard.css';
 import '../css/categories.css';
+import '../css/transactions.css';
 import { mountAuth } from './auth.js';
 import { createWorkspace } from './workspace.js';
 

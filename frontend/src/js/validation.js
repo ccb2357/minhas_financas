@@ -91,6 +91,13 @@ export function createValidation(formSelector, schema, {
         }
     }
 
+    function handleMaskError(event) {
+        const entry = entries.find(item => item.input === event.target);
+        if (!entry || !event.detail?.message) return;
+        validator.showErrors({ [entry.config.selector]: escapeMessage(event.detail.message) });
+        syncPresentation();
+    }
+
     validator.onValidate(schedulePresentation);
     validator.onSuccess(() => {
         syncPresentation();
@@ -100,6 +107,7 @@ export function createValidation(formSelector, schema, {
     form.addEventListener('focusout', handleBlur);
     form.addEventListener('input', onInput);
     form.addEventListener('submit', guardSubmit, true);
+    form.addEventListener('mask:invalid', handleMaskError);
 
     return {
         showServerErrors(errors = {}) {
@@ -128,6 +136,7 @@ export function createValidation(formSelector, schema, {
             form.removeEventListener('focusout', handleBlur);
             form.removeEventListener('input', onInput);
             form.removeEventListener('submit', guardSubmit, true);
+            form.removeEventListener('mask:invalid', handleMaskError);
             validator.destroy();
             syncPresentation();
         },
