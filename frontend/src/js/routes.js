@@ -1,3 +1,4 @@
+import { mountBudgets } from './budgets/page.js';
 import { mountDashboard } from './dashboard/page.js';
 import { mountMore } from './demo/pages.js';
 import { mountReports } from './reports/page.js';
@@ -9,7 +10,7 @@ export function createRoutes(context) {
     return [
         ['inicio', mountDashboard], ['historico', mountHistory],
         ['relatorios', mountReports], ['mais', mountMore],
-        ['categorias', mountCategories],
+        ['categorias', mountCategories], ['orcamentos', mountBudgets],
     ].map(([name, mount]) => ({
         path: `/${name}/`,
         ...(name === 'inicio' ? { alias: '/' } : {}),

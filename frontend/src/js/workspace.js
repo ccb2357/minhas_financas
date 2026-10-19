@@ -1,3 +1,4 @@
+import { openBudgetForm } from './budgets/form.js';
 import { createRoutes } from './routes.js';
 import { openTransactionForm } from './transactions/form.js';
 import { todayBrazil } from './shared/calendar.js';
@@ -8,12 +9,23 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
     const financeView = document.querySelector('#finance-view');
     const newButton = document.querySelector('#new-transaction');
     const cleanups = new Set();
-    const state = { dashboardMonth: todayBrazil().slice(0, 7), dashboardFeedback: '', reportsMonth: todayBrazil().slice(0, 7), reportsRange: 'month', historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
+    const state = { budgetMonth: todayBrazil().slice(0, 7), dashboardMonth: todayBrazil().slice(0, 7), dashboardFeedback: '', reportsMonth: todayBrazil().slice(0, 7), reportsRange: 'month', historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
     let view, editor;
     const context = {
         app, state, logout, cleanups, expireSession: onSessionExpired, events: new EventTarget(),
         navigate: path => view?.router.navigate(path),
         beforeLeave(resolve, reject) { if (editor) editor.beforeLeave(resolve, reject); else resolve(); },
+        openBudget(options = {}) {
+            if (!state.user || editor) return;
+            editor = openBudgetForm(context, {
+                ...options,
+                onClosed() { editor = null; },
+                onSaved(row, kind) {
+                    state.budgetMonth = `${row.year}-${String(row.month).padStart(2, '0')}`;
+                    context.events.dispatchEvent(new CustomEvent('budgets:changed', { detail: { row, kind } }));
+                },
+            });
+        },
         openTransaction(options = {}) {
             if (!state.user || editor) return;
             editor = openTransactionForm(context, {
@@ -36,15 +48,15 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
 
     function updateNavigation(route) {
         const section = route.path?.split('/').filter(Boolean)[0] || 'inicio';
-        const navigationSection = section === 'categorias' ? 'mais' : section;
+        const navigationSection = ['categorias', 'orcamentos'].includes(section) ? 'mais' : section;
         for (const link of container.querySelectorAll('[data-section]')) {
             const active = link.dataset.section === navigationSection;
             link.classList.toggle('nav-active', active);
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         }
-        newButton.hidden = ['mais', 'relatorios', 'categorias'].includes(section);
-        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias' };
+        newButton.hidden = ['mais', 'relatorios', 'categorias', 'orcamentos'].includes(section);
+        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', orcamentos: 'Orçamento mensal' };
         document.title = `${titles[section] || 'Início'} · Minhas Finanças`;
     }
 
@@ -71,7 +83,12 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
                     browserHistory: true,
                     browserHistorySeparator: '#!',
                     animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-                    on: { routeChanged: updateNavigation },
+                    on: {
+                        routeChanged: updateNavigation,
+                        // Framework7 9 atualiza a query sem sincronizar router.url.
+                        // O histórico nativo usa essa URL ao cancelar uma saída.
+                        routeUrlUpdate(route, router) { router.url = route.url; },
+                    },
                 });
             }
             updateNavigation(view.router.currentRoute);
@@ -88,6 +105,7 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
             authView.hidden = false;
             authView.classList.add('view-main');
             state.user = null;
+            state.budgetMonth = todayBrazil().slice(0, 7);
             state.dashboardMonth = todayBrazil().slice(0, 7);
             state.dashboardFeedback = '';
             state.reportsMonth = todayBrazil().slice(0, 7);
