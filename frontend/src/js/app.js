@@ -4,6 +4,7 @@ import 'framework7-icons/css/framework7-icons.css';
 import '../css/tokens.css';
 import '../css/app.css';
 import '../css/dashboard.css';
+import '../css/categories.css';
 import { mountAuth } from './auth.js';
 import { createWorkspace } from './workspace.js';
 
@@ -16,7 +17,10 @@ const app = new Framework7({
 });
 
 app.views.create('#auth-view', { router: false });
-const workspace = createWorkspace(app, { logout: () => auth.logout() });
+const workspace = createWorkspace(app, {
+    logout: () => auth.logout(),
+    onSessionExpired: () => auth.expireSession(),
+});
 const auth = mountAuth({
     onAuthenticated: user => workspace.show(user),
     onSignedOut: () => workspace.hide(),

@@ -2,7 +2,7 @@ import { createRoutes } from './routes.js';
 import { INITIAL_MONTH } from './demo/data.js';
 import { openTransactionPreview } from './demo/ui.js';
 
-export function createWorkspace(app, { logout }) {
+export function createWorkspace(app, { logout, onSessionExpired }) {
     const container = document.querySelector('#workspace');
     const authView = document.querySelector('#auth-view');
     const financeView = document.querySelector('#finance-view');
@@ -10,18 +10,19 @@ export function createWorkspace(app, { logout }) {
     const cleanups = new Set();
     const state = { month: INITIAL_MONTH, user: null };
     let view;
-    const context = { app, state, logout, cleanups };
+    const context = { app, state, logout, cleanups, expireSession: onSessionExpired };
 
     function updateNavigation(route) {
         const section = route.path?.split('/').filter(Boolean)[0] || 'inicio';
+        const navigationSection = section === 'categorias' ? 'mais' : section;
         for (const link of container.querySelectorAll('[data-section]')) {
-            const active = link.dataset.section === section;
+            const active = link.dataset.section === navigationSection;
             link.classList.toggle('nav-active', active);
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         }
-        newButton.hidden = section === 'mais' || section === 'relatorios';
-        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais' };
+        newButton.hidden = ['mais', 'relatorios', 'categorias'].includes(section);
+        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias' };
         document.title = `${titles[section] || 'Início'} · Minhas Finanças`;
     }
 

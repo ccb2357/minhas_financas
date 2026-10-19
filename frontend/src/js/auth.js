@@ -152,5 +152,17 @@ export function mountAuth({ onAuthenticated, onSignedOut } = {}) {
     }
 
     void restoreSession();
-    return { logout: signOut, destroy: () => validation.destroy() };
+    return {
+        logout: signOut,
+        expireSession() {
+            resetPassword();
+            validation.reset();
+            remember.checked = false;
+            showLogin();
+            errorMessage.textContent = 'Sua sessão expirou. Entre novamente para continuar.';
+            errorMessage.hidden = false;
+            email.focus();
+        },
+        destroy: () => validation.destroy(),
+    };
 }

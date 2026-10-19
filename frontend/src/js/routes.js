@@ -1,10 +1,12 @@
 import { mountDashboard, mountHistory, mountReports, mountMore } from './demo/pages.js';
+import { mountCategories } from './categories/page.js';
 
 export function createRoutes(context) {
     const mounted = new WeakMap();
     return [
         ['inicio', mountDashboard], ['historico', mountHistory],
         ['relatorios', mountReports], ['mais', mountMore],
+        ['categorias', mountCategories],
     ].map(([name, mount]) => ({
         path: `/${name}/`,
         ...(name === 'inicio' ? { alias: '/' } : {}),
@@ -29,6 +31,9 @@ export function createRoutes(context) {
             },
             pageBeforeRemove(_event, page) {
                 mounted.get(page.el)?.destroy();
+            },
+            pageBeforeOut(_event, page) {
+                mounted.get(page.el)?.controller.leave?.();
             },
         },
     }));

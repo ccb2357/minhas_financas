@@ -1,11 +1,11 @@
 import { categories, money, dateLabel, monthLabel, shiftMonth, validMonth } from './data.js';
 
-export const escapeHtml = value => String(value).replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[char]);
-export const icon = name => `<i class="f7-icons" aria-hidden="true">${escapeHtml(name)}</i>`;
+import { escapeHtml, icon } from '../shared/html.js';
+export { escapeHtml, icon } from '../shared/html.js';
 export const badge = (category, extra = '') => `<span class="category-badge ${extra}" style="--category-color:${category.color}">${icon(category.icon)}</span>`;
 
-export function header(title) {
-    return `<header class="finance-header"><a href="/mais/" class="link icon-button" aria-label="Abrir configurações">${icon('gear_alt')}</a><h1 tabindex="-1">${escapeHtml(title)}</h1><button class="icon-button" data-action="demo-info" type="button" aria-label="Sobre os dados de demonstração">${icon('info_circle')}</button></header><p class="demo-caption">Dados de demonstração</p>`;
+export function header(title, { demo = true } = {}) {
+    return `<header class="finance-header"><a href="/mais/" class="link icon-button" aria-label="Abrir configurações">${icon('gear_alt')}</a><h1 tabindex="-1">${escapeHtml(title)}</h1><button class="icon-button" data-action="demo-info" type="button" aria-label="Sobre os dados de demonstração">${icon('info_circle')}</button></header>${demo ? '<p class="demo-caption">Dados de demonstração</p>' : ''}`;
 }
 export function monthPicker(month) {
     return `<div class="month-picker"><button class="icon-button" type="button" data-month-step="-1" aria-label="Mês anterior">${icon('chevron_left')}</button><label class="month-picker-label">${icon('calendar')}<span>${monthLabel(month)}</span>${icon('chevron_down')}<input type="month" value="${month}" min="1900-01" max="2100-12" aria-label="Selecionar mês"></label><button class="icon-button" type="button" data-month-step="1" aria-label="Próximo mês">${icon('chevron_right')}</button></div>`;
