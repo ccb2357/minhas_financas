@@ -1,7 +1,7 @@
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { moneyText } from '../shared/money.js';
 import { validMonth, dateText, dayLabel, todayBrazil } from '../shared/calendar.js';
-import { monthPicker, wireMonthPicker } from '../demo/ui.js';
+import { monthPicker, wireMonthPicker } from '../shared/month-picker.js';
 import { safeIcon, safeColor } from '../categories/catalog.js';
 import { listTransactions, getTransaction, categoryOptions, transactionError } from './api.js';
 

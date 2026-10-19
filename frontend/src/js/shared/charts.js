@@ -42,7 +42,7 @@ export function mountCharts(root, summary, history) {
         legend: { top: 0, icon: 'circle', itemWidth: 9, itemHeight: 9, textStyle: { color: '#54638b', fontSize: 11 } },
         grid: { left: 45, right: 15, top: 38, bottom: 30 },
         tooltip: { trigger: 'axis', valueFormatter: money, confine: true, renderMode: 'richText' },
-        xAxis: { type: 'category', data: history.map(item => monthLabel(item.month, true)), axisTick: { show: false }, axisLine: { show: false }, axisLabel: { fontSize: 11, interval: 0 } },
+        xAxis: { type: 'category', data: history.map(item => monthLabel(item.month, true)), axisTick: { show: false }, axisLine: { show: false }, axisLabel: { fontSize: 11, interval: history.length > 6 ? 'auto' : 0, hideOverlap: true } },
         yAxis: { type: 'value', axisLabel: { formatter: compactMoney, fontSize: 10 }, splitLine: { lineStyle: { color: '#edf1f8' } } },
         series: [
             { name: 'Entradas', type: 'bar', barMaxWidth: 24, itemStyle: { color: '#19bd60', borderRadius: [3, 3, 0, 0] }, data: history.map(item => item.income) },
@@ -53,7 +53,7 @@ export function mountCharts(root, summary, history) {
         legend: { top: 0, icon: 'circle', itemWidth: 9, itemHeight: 9, textStyle: { color: '#54638b', fontSize: 11 } },
         grid: { left: 45, right: 15, top: 38, bottom: 30 },
         tooltip: { trigger: 'axis', valueFormatter: money, confine: true, renderMode: 'richText' },
-        xAxis: { type: 'category', data: history.map(item => monthLabel(item.month, true)), axisTick: { show: false }, axisLine: { lineStyle: { color: '#dde5f4' } }, axisLabel: { fontSize: 11, interval: 0 } },
+        xAxis: { type: 'category', data: history.map(item => monthLabel(item.month, true)), axisTick: { show: false }, axisLine: { lineStyle: { color: '#dde5f4' } }, axisLabel: { fontSize: 11, interval: history.length > 6 ? 'auto' : 0, hideOverlap: true } },
         yAxis: { type: 'value', axisLabel: { formatter: compactMoney, fontSize: 10 }, splitLine: { lineStyle: { color: '#edf1f8' } } },
         series: [ ['Entradas', 'income', '#19bd60'], ['Saídas', 'expense', '#ff6258'], ['Resultado', 'result', '#1a61ff'] ].map(([name, key, color]) => ({ name, type: 'line', smooth: .3, data: history.map(item => item[key]), symbol: 'circle', symbolSize: 7, itemStyle: { color, borderColor: '#fff', borderWidth: 2 }, lineStyle: { width: 2 }, areaStyle: { color, opacity: .04 } })),
     });

@@ -1,5 +1,4 @@
 import { createRoutes } from './routes.js';
-import { INITIAL_MONTH } from './demo/data.js';
 import { openTransactionForm } from './transactions/form.js';
 import { todayBrazil } from './shared/calendar.js';
 
@@ -9,7 +8,7 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
     const financeView = document.querySelector('#finance-view');
     const newButton = document.querySelector('#new-transaction');
     const cleanups = new Set();
-    const state = { month: INITIAL_MONTH, dashboardMonth: todayBrazil().slice(0, 7), dashboardFeedback: '', historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
+    const state = { dashboardMonth: todayBrazil().slice(0, 7), dashboardFeedback: '', reportsMonth: todayBrazil().slice(0, 7), reportsRange: 'month', historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
     let view, editor;
     const context = {
         app, state, logout, cleanups, expireSession: onSessionExpired, events: new EventTarget(),
@@ -89,9 +88,10 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
             authView.hidden = false;
             authView.classList.add('view-main');
             state.user = null;
-            state.month = INITIAL_MONTH;
             state.dashboardMonth = todayBrazil().slice(0, 7);
             state.dashboardFeedback = '';
+            state.reportsMonth = todayBrazil().slice(0, 7);
+            state.reportsRange = 'month';
             state.historyMonth = todayBrazil().slice(0, 7);
             state.historyFeedback = '';
             if (wasActive) window.history.replaceState({}, '', window.location.pathname + window.location.search);

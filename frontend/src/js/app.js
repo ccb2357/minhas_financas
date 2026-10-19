@@ -5,6 +5,7 @@ import '../css/tokens.css';
 import '../css/app.css';
 import '../css/dashboard.css';
 import '../css/dashboard-real.css';
+import '../css/reports.css';
 import '../css/categories.css';
 import '../css/transactions.css';
 import { mountAuth } from './auth.js';
