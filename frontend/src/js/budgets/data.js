@@ -15,3 +15,11 @@ export function shortPercentLabel(value) {
     const full = percentLabel(value);
     return full.length <= 8 || !Number.isFinite(value) ? full : `${new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 1 }).format(value)}%`;
 }
+
+// Cores do anel do resumo, independentes dos estados retornados pela API.
+export function budgetRingTone(value) {
+    if (!Number.isFinite(value)) return 'neutral';
+    if (value <= 75) return 'green';
+    if (value <= 90) return 'orange';
+    return 'red';
+}

@@ -10,8 +10,8 @@
 .budget-summary-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .budget-summary-ring circle { fill: none; stroke-width: 14; }
 .budget-ring-track { stroke: rgb(255 255 255 / 23%); }
-.budget-ring-value { stroke: #fff; stroke-linecap: round; }
-.budget-summary-ring strong { position: absolute; inset: 0; display: grid; place-items: center; padding: 12px; font-size: 21px; text-align: center; overflow-wrap: anywhere; }
+.budget-ring-value { stroke: var(--budget-ring-color, #fff); stroke-linecap: round; }
+.budget-summary-ring strong { position: absolute; inset: 0; display: grid; place-items: center; padding: 12px; font-size: 15px; text-align: center; white-space: nowrap; }
 .budget-count, .budget-unbudgeted { margin: 12px 2px; color: #7181a2; font-size: 12px; line-height: 1.6; }
 .budget-unbudgeted { padding: 10px 13px; border: 1px solid #e3eafa; border-radius: 12px; background: #eef4ff; color: #36598f; }
 .budget-list { display: grid; gap: 12px; }
@@ -74,7 +74,7 @@
     .budget-summary-copy > strong { font-size: 34px; }
     .budget-summary-values { font-size: 11px; }
     .budget-summary-ring { flex-basis: 80px; width: 80px; height: 80px; }
-    .budget-summary-ring strong { font-size: 17px; }
+    .budget-summary-ring strong { font-size: 12px; }
     .finance-card.budget-card { gap: 9px; padding: 15px 11px; }
     .budget-category-icon { flex-basis: 34px; width: 34px; height: 34px; }
     .budget-category-icon .f7-icons { font-size: 23px; }
@@ -86,7 +86,7 @@
     .budget-summary-copy > strong { font-size: 68px; }
     .budget-summary-values { font-size: 19px; }
     .budget-summary-ring { flex-basis: 145px; width: 145px; height: 145px; }
-    .budget-summary-ring strong { font-size: 32px; }
+    .budget-summary-ring strong { font-size: 21px; }
     .budget-list { gap: 18px; }
     .finance-card.budget-card { padding: 23px; gap: 20px; border-radius: 25px; }
     .budget-category-icon { flex-basis: 70px; width: 70px; height: 70px; }
@@ -94,7 +94,7 @@
     .budget-card-heading > strong { font-size: 23px; }
     .budget-pill { font-size: 15px; padding: 7px 13px; }
     .budget-card-values { font-size: 20px; }
-    .budget-progress-row { font-size: 17px; gap: 15px; }
+    .budget-progress-row { font-size: 12px; gap: 15px; }
     .budget-progress-track { height: 13px; }
     .budget-remaining { font-size: 12px; }
     .budget-create-button { font-size: 20px; min-height: 62px; padding: 15px 25px; }
@@ -102,9 +102,13 @@
 
 .budget-pill { max-width: 100%; overflow-wrap: anywhere; line-height: 1.5; }
 .budget-progress-row > span:last-child { max-width: 40%; overflow-wrap: anywhere; }
-.budget-summary-ring.budget-ring-compact strong { font-size: 14px; line-height: 1.4; }
+.budget-summary-ring.budget-ring-compact strong { font-size: 11px; line-height: 1.4; }
 
 .budget-error-slot { min-height: 14px; }
 .budget-field .field-error { font-size: 12px; line-height: 1.5; }
 
 .budget-summary-copy > strong.budget-percent-compact { font-size: clamp(18px, 3.4vw, 32px); letter-spacing: -.4px; line-height: 1.4; }
+
+.budget-ring-green { --budget-ring-color: #4ade80; }
+.budget-ring-orange { --budget-ring-color: #ffb340; }
+.budget-ring-red { --budget-ring-color: #ff5a65; }

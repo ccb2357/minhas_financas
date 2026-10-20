@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { progressPercent, percentLabel, shortPercentLabel, budgetTone, remainingLabel } from '../src/js/budgets/data.js';
+import { progressPercent, percentLabel, shortPercentLabel, budgetRingTone, budgetTone, remainingLabel } from '../src/js/budgets/data.js';
 
 test('desenho da barra é limitado sem esconder o percentual real acima de cem', () => {
     assert.equal(progressPercent(125), 100);
@@ -37,4 +37,12 @@ test('percentual extremo só é abreviado no anel, mantendo o valor integral dis
     assert.ok(shortPercentLabel(value).length < percentLabel(value).length);
     assert.equal(progressPercent(value), 100);
     assert.match(percentLabel(value), /9.999.999.999.900%/);
+});
+
+
+test('anel fica verde até 75%, laranja até 90% e vermelho acima de 90%', () => {
+    for (const value of [0, 50, 75]) assert.equal(budgetRingTone(value), 'green');
+    for (const value of [75.01, 80, 90]) assert.equal(budgetRingTone(value), 'orange');
+    for (const value of [90.01, 90.91, 100, 150]) assert.equal(budgetRingTone(value), 'red');
+    for (const value of [null, undefined, NaN, Infinity]) assert.equal(budgetRingTone(value), 'neutral');
 });
