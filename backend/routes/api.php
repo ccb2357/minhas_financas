@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\ProfileController;
 use App\Http\Controllers\Api\V1\CategoryController;
 use App\Http\Controllers\Api\V1\BudgetController;
 use App\Http\Controllers\Api\V1\DashboardController;
@@ -22,6 +23,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
             'email' => $request->user()->email,
         ]);
     });
+
+    Route::patch('/me', [ProfileController::class, 'update'])->middleware('throttle:10,1');
+    Route::put('/me/password', [ProfileController::class, 'password'])->middleware('throttle:5,1');
 
     Route::get('/categories', [CategoryController::class, 'index']);
     Route::post('/categories', [CategoryController::class, 'store']);
