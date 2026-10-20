@@ -8,6 +8,7 @@
 .settings-profile-copy > span { color: #8391af; font-size: 13px; overflow-wrap: anywhere; }
 .settings-profile-button > .f7-icons { color: #7d8eb2; font-size: 15px; }
 .settings-container .settings-links { margin: 15px 0; padding: 0; overflow: hidden; }
+.settings-container .settings-links .logout-row { margin: 0; border-radius: 0; }
 .settings-container button.settings-row { border: 0; background: #fff; cursor: pointer; font-family: inherit; }
 .settings-container .settings-row + .settings-row { border-top: 1px solid #edf1f9; }
 .settings-container .settings-row > span:nth-child(2) { flex: 1; min-width: 0; }

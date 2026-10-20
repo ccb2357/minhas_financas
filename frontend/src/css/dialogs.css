@@ -1,0 +1,46 @@
+/* Shared editorial style for Framework7 information and confirmation dialogs. */
+#app .mf-dialog.dialog {
+    --f7-dialog-width:min(400px, calc(100vw - 40px));
+    --f7-dialog-bg-color:var(--mf-surface);
+    --f7-dialog-border-radius:26px;
+    --f7-dialog-title-text-color:var(--mf-title);
+    --f7-dialog-text-color:var(--mf-text);
+    max-height:calc(100dvh - 48px - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+    border:1px solid var(--mf-border);
+    background:var(--mf-surface);
+    color:var(--mf-text);
+    text-align:left;
+    box-shadow:0 20px 70px rgb(12 28 85 / 18%);
+    backdrop-filter:none;
+}
+#app .mf-dialog.modal-in,#app .mf-dialog.modal-out { display:flex !important; flex-direction:column; }
+#app .mf-dialog .dialog-inner { min-height:0; flex:1 1 auto; padding:24px 24px 20px; overflow-y:auto; overscroll-behavior:contain; }
+.mf-dialog-icon { display:grid; place-items:center; width:48px; height:48px; border-radius:16px; margin-bottom:16px; color:var(--mf-primary); background:#edf3ff; }
+.mf-dialog-icon .f7-icons { font-size:27px; }
+.mf-dialog-confirm .mf-dialog-icon { background:#fff4e6; color:#c47a11; }
+#app .mf-dialog .dialog-title { color:var(--mf-title); font-size:21px; font-weight:750; line-height:1.3; letter-spacing:-.35px; overflow-wrap:anywhere; }
+#app .mf-dialog .dialog-text { margin-top:12px; color:var(--mf-text); font-size:15px; line-height:1.65; overflow-wrap:anywhere; }
+#app .mf-dialog .dialog-buttons { flex-shrink:0; display:flex; flex-direction:column; gap:10px; height:auto; padding:0 24px 24px; }
+#app .mf-dialog .dialog-button {
+    flex:none; display:flex; align-items:center; justify-content:center;
+    width:100%; min-width:0; height:auto; min-height:50px; padding:12px 16px;
+    border:1px solid transparent; border-radius:16px;
+    background:var(--mf-primary); color:white;
+    font-family:var(--mf-font); font-size:16px; font-weight:650; line-height:1.4;
+    text-transform:none; letter-spacing:normal; white-space:normal;
+    overflow:visible; text-overflow:clip; overflow-wrap:anywhere;
+    box-shadow:none; backdrop-filter:none; cursor:pointer;
+}
+#app .mf-dialog .dialog-button::before,#app .mf-dialog .dialog-button::after { display:none; }
+#app .mf-dialog-confirm .dialog-button:last-child { background:#fff1f2; border-color:#ffe0e4; color:#c62d43; }
+@media(hover:hover) {
+    #app .mf-dialog .dialog-button:hover { background:var(--mf-primary-deep); }
+    #app .mf-dialog-confirm .dialog-button:last-child:hover { background:#ffe4e8; }
+}
+@media(max-height:500px) {
+    #app .mf-dialog .dialog-inner { padding:16px 20px 12px; }
+    .mf-dialog-icon { width:40px; height:40px; margin-bottom:10px; border-radius:13px; }
+    .mf-dialog-icon .f7-icons { font-size:24px; }
+    #app .mf-dialog .dialog-buttons { padding:0 20px 16px; gap:8px; }
+}
+@media(prefers-reduced-motion:reduce) { #app .mf-dialog { transition-duration:0ms !important; } }

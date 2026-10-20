@@ -1,3 +1,4 @@
+import { THEME_EVENT, getTheme } from './theme.js';
 import { init, use } from 'echarts/core';
 import { PieChart, BarChart, LineChart } from 'echarts/charts';
 import { GridComponent, TooltipComponent, LegendComponent } from 'echarts/components';
@@ -10,13 +11,31 @@ use([PieChart, BarChart, LineChart, GridComponent, TooltipComponent, LegendCompo
 export function mountCharts(root, summary, history) {
     const instances = [];
     const fontFamily = getComputedStyle(root).fontFamily;
-    const base = { animationDuration: 350, textStyle: { fontFamily, color: '#657498' } };
+    function themed(option) {
+        const dark = getTheme() === 'dark';
+        const text = dark ? '#c3cee3' : '#657498';
+        const muted = dark ? '#9baac6' : '#6e7079';
+        const surface = dark ? '#151f33' : '#ffffff';
+        const replacements = dark ? { '#ffffff':surface, '#fff':surface, '#e9eef7':'#2b3851', '#edf1f8':'#2b3851', '#dde5f4':'#2b3851', '#54638b':text, '#bdd8ff':'#547bb9' } : {};
+        function copy(value) {
+            if (Array.isArray(value)) return value.map(copy);
+            if (value && typeof value === 'object') return Object.fromEntries(Object.entries(value).map(([key,item])=>[key,copy(item)]));
+            return typeof value === 'string' ? replacements[value] || value : value;
+        }
+        const result = { animationDuration:350, ...copy(option), textStyle:{fontFamily,color:text} };
+        for (const key of ['xAxis','yAxis']) if (result[key]) {
+            result[key].axisLabel = { ...result[key].axisLabel, color:muted };
+        }
+        for (const series of result.series || []) if (series.label) series.label.color = text;
+        if (result.tooltip) result.tooltip = { ...result.tooltip, backgroundColor:surface, borderColor:dark ? '#2b3851' : '#e9eef8', textStyle:{color:text,fontFamily} };
+        return result;
+    }
     function create(selector, option) {
         const element = root.querySelector(selector);
         if (!element) return;
         const chart = init(element, null, { renderer: 'canvas' });
-        chart.setOption({ ...base, ...option });
-        instances.push({ chart, element });
+        chart.setOption(themed(option));
+        instances.push({ chart, element, option });
     }
     create('[data-chart="categories"]', {
         tooltip: { trigger: 'item', valueFormatter: money, confine: true, renderMode: 'richText' },
@@ -57,9 +76,11 @@ export function mountCharts(root, summary, history) {
         yAxis: { type: 'value', axisLabel: { formatter: compactMoney, fontSize: 10 }, splitLine: { lineStyle: { color: '#edf1f8' } } },
         series: [ ['Entradas', 'income', '#19bd60'], ['Saídas', 'expense', '#ff6258'], ['Resultado', 'result', '#1a61ff'] ].map(([name, key, color]) => ({ name, type: 'line', smooth: .3, data: history.map(item => item[key]), symbol: 'circle', symbolSize: 7, itemStyle: { color, borderColor: '#fff', borderWidth: 2 }, lineStyle: { width: 2 }, areaStyle: { color, opacity: .04 } })),
     });
+    const onTheme = () => { for (const {chart,option} of instances) if (!chart.isDisposed()) chart.setOption(themed(option), { notMerge:true }); };
+    window.addEventListener(THEME_EVENT, onTheme);
     const observer = new ResizeObserver(() => {
         for (const { chart, element } of instances) if (element.clientWidth && element.clientHeight && !chart.isDisposed()) chart.resize();
     });
     for (const { element } of instances) observer.observe(element);
-    return () => { observer.disconnect(); for (const { chart } of instances) chart.dispose(); };
+    return () => { window.removeEventListener(THEME_EVENT, onTheme); observer.disconnect(); for (const { chart } of instances) chart.dispose(); };
 }

@@ -63,7 +63,7 @@ export function mountBudgets(root, ctx, route) {
     }
     const unbindMonth = wireMonthPicker(root, () => ctx.state.budgetMonth, month => {
         ctx.state.budgetMonth = month; showFeedback(''); void load();
-    });
+    }, ctx.app);
     root.addEventListener('click', async event => {
         const button = event.target.closest('button');
         if (!button) return;
@@ -85,7 +85,7 @@ export function mountBudgets(root, ctx, route) {
     }, { signal: events.signal });
     ctx.events.addEventListener('budgets:changed', event => {
         if (alive && root.closest('.page').classList.contains('page-current')) {
-            showFeedback({ created: 'Orçamento salvo.', updated: 'Limite atualizado.', deleted: 'Orçamento removido. Seus lançamentos foram preservados.' }[event.detail.kind]);
+            showFeedback('');
             void load();
         }
     }, { signal: events.signal });

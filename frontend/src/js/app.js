@@ -12,6 +12,13 @@ import '../css/categories.css';
 import '../css/transactions.css';
 import '../css/mobile.css';
 import '../css/smart-select.css';
+import '../css/date-picker.css';
+import '../css/dialogs.css';
+import '../css/icon-picker.css';
+import '../css/notifications.css';
+import '../css/theme.css';
+import { installTheme } from './shared/theme.js';
+import { installDialogs } from './shared/dialogs.js';
 import { mountAuth } from './auth.js';
 import { createWorkspace } from './workspace.js';
 
@@ -19,12 +26,16 @@ const app = new Framework7({
     el: '#app',
     name: 'Minhas Finanças',
     theme: 'ios',
-    darkMode: false,
+    darkMode: document.documentElement.classList.contains('dark'),
     dialog: { buttonOk: 'Entendi', buttonCancel: 'Cancelar' },
 });
 
+const theme = installTheme(app);
+installDialogs(app);
+
 app.views.create('#auth-view', { router: false });
 const workspace = createWorkspace(app, {
+    theme,
     logout: () => auth.logout(),
     onSessionExpired: () => auth.expireSession(),
     onPasswordChanged: email => auth.passwordChanged(email),

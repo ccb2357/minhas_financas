@@ -98,7 +98,7 @@ export function mountReports(root, ctx, route) {
             if (alive && current === revision) content.setAttribute('aria-busy', 'false');
         }
     }
-    const unbindMonth = wireMonthPicker(root, () => ctx.state.reportsMonth, month => { ctx.state.reportsMonth = month; void load(); });
+    const unbindMonth = wireMonthPicker(root, () => ctx.state.reportsMonth, month => { ctx.state.reportsMonth = month; void load(); }, ctx.app);
     root.addEventListener('click', event => {
         const button = event.target.closest('button');
         if (!button) return;

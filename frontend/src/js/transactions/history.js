@@ -99,7 +99,7 @@ export function mountHistory(root, ctx, route) {
         ctx.state.historyMonth = month;
         root.querySelector('[data-history-month]').innerHTML = monthPicker(month);
         feedback.hidden = true; void load();
-    });
+    }, ctx.app);
     root.addEventListener('input', event => {
         if (event.target !== searchInput) return;
         search = searchInput.value; feedback.hidden = true;
@@ -141,14 +141,14 @@ export function mountHistory(root, ctx, route) {
         }
         searchInput.value = search; filters();
         root.querySelector('[data-history-month]').innerHTML = monthPicker(ctx.state.historyMonth);
-        feedback.textContent = ctx.state.historyFeedback; feedback.hidden = false;
+        feedback.textContent = ctx.state.historyFeedback; feedback.hidden = !ctx.state.historyFeedback;
         if (root.closest('.page').classList.contains('page-current')) void load();
     }, { signal: events.signal });
 
     return {
         refresh() {
             root.querySelector('[data-history-month]').innerHTML = monthPicker(ctx.state.historyMonth);
-            if (ctx.state.historyFeedback) { feedback.textContent = ctx.state.historyFeedback; feedback.hidden = false; }
+            if (ctx.state.historyFeedback) { feedback.textContent = ctx.state.historyFeedback; feedback.hidden = !ctx.state.historyFeedback; }
             void loadOptions(); void load();
         },
         destroy() { smartSelects.destroy(); alive = false; revision++; optionsRevision++; clearTimeout(debounce); events.abort(); unbindMonth(); },

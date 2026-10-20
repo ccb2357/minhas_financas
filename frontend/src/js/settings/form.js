@@ -8,7 +8,7 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
     const passwordMode = mode === 'password', prefix = `settings-form-${++sequence}`;
     const original = { ...ctx.state.user }, previousFocus = document.activeElement;
     const events = new AbortController();
-    let alive = true, busy = false, confirming = false, validation, confirmation;
+    let alive = true, busy = false, confirming = false, closing = false, validation, confirmation, afterClose;
     const field = (name, label, { type = 'text', value = '', autocomplete = '', maxLength = '' } = {}) => `<div class="settings-field" data-field><label for="${prefix}-${name}">${label}</label><div class="settings-input-wrap"><input id="${prefix}-${name}" name="${name}" type="${type}" value="${esc(value)}" autocomplete="${autocomplete}" ${maxLength ? `maxlength="${maxLength}"` : ''} ${type === 'password' ? '' : 'autocapitalize="none"'}>${type === 'password' ? `<button type="button" data-settings-toggle="${name}" aria-label="Mostrar ${label.toLowerCase()}" aria-controls="${prefix}-${name}" aria-pressed="false">${icon('eye')}</button>` : ''}</div><div class="settings-error-slot"><div class="field-error" id="${prefix}-${name}-error" hidden></div></div></div>`;
     const popup = ctx.app.popup.create({
         closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
@@ -22,6 +22,7 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
                 for (const input of instance.el.querySelectorAll('input')) input.value = '';
                 const element = instance.el; instance.destroy(); element.remove(); onClosed?.();
                 if (previousFocus?.isConnected) previousFocus.focus();
+                afterClose?.();
             },
         },
     });
@@ -35,10 +36,15 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
         for (const button of popup.el.querySelectorAll('button')) button.disabled = value;
         save.textContent = value ? 'Salvando...' : passwordMode ? 'Salvar nova senha' : 'Salvar perfil';
     }
-    function finishClose(done = () => {}) { if (!alive) return; popup.close(false); done(); }
+    function finishClose(done = () => {}) {
+        if (!alive || closing) return;
+        closing = true;
+        afterClose = done;
+        popup.close(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
     function confirmLeave(done, cancel = () => {}) {
         if (!alive) { done(); return; }
-        if (busy || confirming) { cancel(); return; }
+        if (busy || confirming || closing) { cancel(); return; }
         if (!dirty()) { finishClose(done); return; }
         confirming = true;
         confirmation = ctx.app.dialog.create({ title: 'Descartar alterações?', text: 'As alterações ainda não foram salvas.', buttons: [
@@ -47,7 +53,7 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
         ] }).open();
     }
     async function submit() {
-        if (!alive || busy || confirming) return;
+        if (!alive || busy || confirming || closing) return;
         const payload = passwordMode ? { current_password: fields.current_password.value, password: fields.password.value, password_confirmation: fields.password_confirmation.value }
             : profilePayload(fields.name.value, fields.email.value, fields.current_password.value, original.email);
         setBusy(true); errorBox.hidden = true;
@@ -82,7 +88,7 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
         current_password: config('current_password', [{ validator: value => !emailChanged(fields.email.value, original.email) || Boolean(value), errorMessage: 'Informe sua senha atual para alterar o e-mail.' }]),
     };
     validation = createValidation(form, schema, {
-        onValid: submit, isBusy: () => busy || confirming,
+        onValid: submit, isBusy: () => busy || confirming || closing,
         onInput(event) {
             errorBox.hidden = true;
             if (!passwordMode && event.target === fields.email) {
@@ -94,7 +100,7 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
     });
     popup.el.addEventListener('click', event => {
         const button = event.target.closest('button');
-        if (!button || busy || confirming) return;
+        if (!button || busy || confirming || closing) return;
         if (button.hasAttribute('data-settings-close')) confirmLeave(() => {});
         if (button.dataset.settingsToggle) {
             const input = fields[button.dataset.settingsToggle], show = input.type === 'password';
@@ -114,5 +120,5 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
         else if (!event.shiftKey && (document.activeElement === last || !controls.includes(document.activeElement))) { event.preventDefault(); first?.focus(); }
     }, { signal: events.signal });
     popup.open();
-    return { close(force = false) { if (force) finishClose(); else confirmLeave(() => {}); }, beforeLeave: confirmLeave };
+    return { close(force = false) { if (force) { afterClose = undefined; popup.close(false); } else confirmLeave(() => {}); }, beforeLeave: confirmLeave };
 }

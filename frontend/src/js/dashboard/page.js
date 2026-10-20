@@ -83,7 +83,7 @@ export function mountDashboard(root, ctx, route) {
     }
     const unbindMonth = wireMonthPicker(root, () => ctx.state.dashboardMonth, month => {
         ctx.state.dashboardMonth = month; ctx.state.dashboardFeedback = ''; showFeedback(''); void load();
-    });
+    }, ctx.app);
     root.addEventListener('click', async event => {
         const button = event.target.closest('button');
         if (!button) return;

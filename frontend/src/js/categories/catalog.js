@@ -1,16 +1,11 @@
-export const CATEGORY_ICONS = [
-    ['cart', 'Alimentação'], ['car_fill', 'Transporte'], ['house', 'Moradia'],
-    ['heart', 'Saúde'], ['film', 'Lazer'], ['book', 'Educação'], ['bag', 'Compras'],
-    ['gift', 'Presentes'], ['briefcase', 'Trabalho'], ['money_dollar_circle', 'Dinheiro'],
-    ['creditcard', 'Assinaturas'], ['airplane', 'Viagens'], ['paw', 'Animais'],
-    ['phone', 'Telefone'], ['wifi', 'Internet'], ['bolt', 'Energia'],
-    ['sportscourt', 'Esportes'], ['wrench', 'Serviços'], ['tag', 'Etiqueta'],
-    ['ellipsis_circle', 'Outros'],
-];
+import { ICON_CATALOG } from './icon-catalog.js';
+
+export const CATEGORY_ICONS = ICON_CATALOG.map(item => [item.id, item.label]);
 
 export const CATEGORY_COLORS = [
-    '#FF503F', '#F59E0B', '#7950F2', '#05944A', '#A33CFF',
-    '#F43F6B', '#1599F8', '#00A58A', '#2463EB', '#64748B',
+    '#FF503F', '#F43F6B', '#F59E0B', '#EAB308', '#05944A', '#00A58A',
+    '#1599F8', '#2463EB', '#7950F2', '#A33CFF', '#EC4899', '#DB2777',
+    '#F97316', '#84CC16', '#14B8A6', '#0EA5E9', '#64748B', '#334155',
 ];
 
 export function safeColor(value) {

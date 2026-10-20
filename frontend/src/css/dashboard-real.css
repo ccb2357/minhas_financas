@@ -1,3 +1,4 @@
+.dashboard-real .charts-grid { grid-template-columns: minmax(0, 1fr); }
 .dashboard-real .finance-header { margin-bottom: 10px; }
 .dashboard-feedback { margin: 8px 2px 12px; color: #167444; font-size: 13px; overflow-wrap: anywhere; }
 .dashboard-state { display: flex; flex-direction: column; align-items: center; justify-content: center; min-height: 235px; gap: 12px; padding: 26px 18px; text-align: center; color: #6c7e9f; }

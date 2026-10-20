@@ -1,3 +1,4 @@
+import { mountDateFields } from '../shared/date-picker.js';
 import { safeIcon, safeColor } from '../categories/catalog.js';
 import { mountSmartSelects } from '../shared/smart-select.js';
 import { createValidation, validationRules as rules } from '../validation.js';
@@ -22,7 +23,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
             opened() { popup.el.querySelector('h2').focus(); },
             closed(instance) {
                 if (!alive) return;
-                alive = false; confirmation?.close?.(false); events.abort(); smartSelects.destroy(); validation?.destroy(); masks.destroy();
+                alive = false; confirmation?.close?.(false); events.abort(); dateFields.destroy(); smartSelects.destroy(); validation?.destroy(); masks.destroy();
                 const element = instance.el; instance.destroy(); element.remove(); onClosed?.();
                 if (previousFocus?.isConnected) previousFocus.focus();
             },
@@ -30,6 +31,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     });
     const form = popup.el.querySelector('form'), fields = form.elements;
     const smartSelects = mountSmartSelects(form, ctx.app);
+    const dateFields = mountDateFields(form, ctx.app);
     const masks = mountMasks(form), limitMask = masks.get(fields.limit);
     const errorBox = form.querySelector('.budget-form-error'), save = form.querySelector('[data-budget-save]');
     function values() { return { period: fields.period.value, category_id: fields.category_id.value, limit: limitMask.getCents() ?? fields.limit.value.trim() }; }

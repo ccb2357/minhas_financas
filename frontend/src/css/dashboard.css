@@ -67,9 +67,13 @@
 .all-transactions { display: inline-flex; align-items: center; gap: 3px; color: #1b56c5; font-size: 11px; white-space: nowrap; }
 .all-transactions .f7-icons { font-size: 12px; }
 .transaction-list { list-style: none; padding: 0 12px; margin: 0; }
-.transaction-list li + li { border-top: 1px solid #edf1f9; }
-.transaction-row { display: flex; align-items: center; width: 100%; min-height: 65px; padding: 9px 0; gap: 9px; border: 0; background: transparent; text-align: left; cursor: pointer; }
-.transaction-row:hover { background: #f8faff; }
+.transaction-list li + li { border-top: 0; }
+.transaction-row { display: flex; align-items: center; width: 100%; min-height: 65px; padding: 9px 0; gap: 9px; border: 0; border-radius: 12px; background: transparent; text-align: left; cursor: pointer; }
+/* Pointer feedback follows the current surface; touch must not leave hover stuck. */
+@media (hover: hover) {
+    .transaction-row:hover { background: color-mix(in srgb, var(--mf-primary) 6%, var(--mf-surface)); }
+}
+.transaction-row:active, .transaction-row.active-state { background: color-mix(in srgb, var(--mf-primary) 10%, var(--mf-surface)); }
 .category-badge { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--category-color) 13%, white); color: var(--category-color); }
 .category-badge .f7-icons { font-size: 20px; }
 .transaction-copy { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 4px; }
@@ -79,12 +83,14 @@
 .transaction-row > .f7-icons { font-size: 10px; color: #8997b2; }
 .workspace .workspace-toolbar.toolbar { position: absolute; bottom: 0; top: auto; left: 0; z-index: 30; height: calc(71px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgb(255 255 255 / 97%); border-top: 1px solid #e3eaf6; backdrop-filter: blur(12px); }
 .workspace-toolbar::before { display: none; }
-.workspace-toolbar .workspace-nav { display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; width: 100%; max-width: 1080px; height: 71px; margin: 0 auto; padding: 0; position: relative; }
+.workspace-toolbar .workspace-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; width: 100%; max-width: 1080px; height: 71px; margin: 0 auto; padding: 0; position: relative; }
 .workspace-nav .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 5px; color: #8290ab; font-size: 11px; }
 .workspace-nav .nav-link .f7-icons { font-size: 25px; }
 .workspace-nav .nav-active { color: #1c65ff; }
-.new-transaction { position: absolute; right: max(16px, calc((100% - 1050px) / 2)); bottom: calc(87px + env(safe-area-inset-bottom)); z-index: 20; display: grid; place-items: center; width: 52px; height: 52px; padding: 0; border: 1px solid #1559ee; border-radius: 50%; background: linear-gradient(120deg, #0967ff, #2966ff); color: white; box-shadow: 0 7px 15px rgb(24 81 203 / 25%); cursor: pointer; }
-.new-transaction .f7-icons { font-size: 29px; }
+.workspace-nav .new-transaction { position: relative; align-self: stretch; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 5px; min-width: 0; min-height: 44px; padding: 0 0 10px; border: 0; background: transparent; color: #1c65ff; font: inherit; font-size: 11px; line-height: normal; cursor: pointer; overflow: visible; }
+.new-transaction-circle { display: grid; place-items: center; flex-shrink: 0; width: 56px; height: 56px; border: 1px solid #1559ee; border-radius: 50%; background: linear-gradient(120deg, #0967ff, #2966ff); color: white; box-shadow: 0 7px 15px rgb(24 81 203 / 22%); }
+.new-transaction-circle .f7-icons { font-size: 29px; }
+.workspace-nav .new-transaction:active .new-transaction-circle { filter: brightness(.94); }
 .history-search { display: flex; align-items: center; gap: 9px; padding: 0 14px; min-height: 45px; margin: 12px 0; border-radius: 14px; background: #eaf0fa; color: #697a9e; }
 .history-search .f7-icons { font-size: 20px; }
 .history-search input { width: 100%; padding: 10px 0; border: 0; background: transparent; color: var(--mf-title); font-size: 14px; }

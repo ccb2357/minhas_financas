@@ -1,3 +1,4 @@
+import { mountDateFields } from '../shared/date-picker.js';
 import { mountSmartSelects } from '../shared/smart-select.js';
 import { createValidation, validationRules as rules } from '../validation.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
@@ -14,7 +15,8 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
     const prefix = `transaction-form-${++sequence}`;
     let type = transaction?.type || 'income';
     let alive = true, busy = false, loading = true, failed = false, confirming = false;
-    let categories = [], validation, confirmation;
+    let categories = [], validation, confirmation, afterClose;
+    let closing = false;
     const listeners = new AbortController();
     const previousFocus = document.activeElement;
     const popup = ctx.app.popup.create({
@@ -26,17 +28,19 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
                 alive = false;
                 confirmation?.close?.(false);
                 listeners.abort();
-                smartSelects.destroy(); validation?.destroy();
+                dateFields.destroy(); smartSelects.destroy(); validation?.destroy();
                 masks.destroy();
                 const element = instance.el;
                 instance.destroy(); element.remove();
                 onClosed?.();
                 if (previousFocus?.isConnected) previousFocus.focus();
+                afterClose?.();
             },
         },
     });
     const form = popup.el.querySelector('form');
     const smartSelects = mountSmartSelects(form, ctx.app);
+    const dateFields = mountDateFields(form, ctx.app);
     const fields = form.elements;
     const masks = mountMasks(form);
     const amountMask = masks.get(fields.amount);
@@ -102,10 +106,15 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         }
     }
 
-    function finishClose(done = () => {}) { popup.close(false); done(); }
+    function finishClose(done = () => {}, force = false) {
+        if (!alive || closing) return;
+        closing = true;
+        afterClose = done;
+        popup.close(!force && !window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
     function confirmLeave(done, cancel = () => {}) {
         if (!alive) { done(); return; }
-        if (busy || confirming) { cancel(); return; }
+        if (busy || confirming || closing) { cancel(); return; }
         if (!dirty()) { finishClose(done); return; }
         confirming = true;
         confirmation = ctx.app.dialog.create({ title: 'Descartar alterações?', text: 'As alterações ainda não foram salvas.', buttons: [
@@ -147,7 +156,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         ] },
         notes: { selector: `#${prefix}-notes`, errorsContainer: `#${prefix}-notes-error`, rules: [rules.maxLength(2000)] },
     }, {
-        isBusy: () => busy || loading || failed || confirming,
+        isBusy: () => busy || loading || failed || confirming || closing,
         onInput() { errorBox.hidden = true; form.querySelector('[data-tx-note-count]').textContent = `${fields.notes.value.length}/2000`; },
         onValid() {
             const data = { type, amount_cents: amountMask.getCents(), category_id: Number(select.value),
@@ -159,7 +168,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
 
     popup.el.addEventListener('click', event => {
         const target = event.target.closest('button');
-        if (!target || busy || confirming) return;
+        if (!target || busy || confirming || closing) return;
         if (target.dataset.txType && target.dataset.txType !== type) {
             type = target.dataset.txType; fields.type.value = type;
             for (const button of form.querySelectorAll('[data-tx-type]')) button.setAttribute('aria-pressed', String(button === target));
@@ -191,7 +200,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
     form.querySelector('[data-tx-note-count]').textContent = `${fields.notes.value.length}/2000`;
     popup.open(); void loadCategories();
     return {
-        close(force = false) { if (force) finishClose(); else confirmLeave(() => {}); },
+        close(force = false) { if (force) { afterClose = undefined; popup.close(false); } else confirmLeave(() => {}); },
         beforeLeave(resolve, reject) { confirmLeave(resolve, reject); },
     };
 }
