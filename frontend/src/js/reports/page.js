@@ -1,9 +1,10 @@
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { formatMoney as money } from '../shared/money.js';
-import { validMonth } from '../shared/calendar.js';
+import { safeIcon, safeColor } from '../categories/catalog.js';
+import { validMonth, dateText } from '../shared/calendar.js';
 import { monthPicker, wireMonthPicker } from '../shared/month-picker.js';
 import { getReport } from './api.js';
-import { REPORT_RANGES, validRange, reportData, periodLabel, comparisonLabel } from './data.js';
+import { REPORT_RANGES, validRange, reportData, periodLabel, comparisonLabel, changePresentation, expenseFrequencyLabel } from './data.js';
 
 export function mountReports(root, ctx, route) {
     let alive = true, revision = 0, chartRevision = 0;
@@ -25,8 +26,32 @@ export function mountReports(root, ctx, route) {
         }
         periodNote.textContent = periodLabel(ctx.state.reportsMonth, ctx.state.reportsRange);
     }
-    function summaryCards(summary) {
-        return `<div class="summary-grid">${[['income', 'Entradas', 'arrow_up', summary.income, summary.incomeCount], ['expense', 'Saídas', 'arrow_down', summary.expense, summary.expenseCount]].map(([type, label, glyph, total, count]) => `<div class="finance-card summary-card ${money(total).length > 11 ? 'summary-card-wide' : ''}"><span class="summary-icon ${type}">${icon(glyph)}</span><span><span class="summary-label">${label}</span><strong class="${type}" data-report-total="${type}">${money(total)}</strong><small>${count} ${count === 1 ? 'lançamento' : 'lançamentos'}</small></span></div>`).join('')}</div>`;
+    function changeMarkup(data, type) {
+        const change = data.changes?.[type];
+        if (!change || !data.previous_period) return '';
+        const view = changePresentation(change, type);
+        const previous = money(data.previous_period.totals[`${type}_cents`]);
+        const difference = view.difference === null ? '—' : `${view.difference > 0 ? '+ ' : ''}${money(view.difference)}`;
+        return `<span class="report-change ${view.tone}" data-report-change="${type}">${esc(view.label)}</span><small class="report-previous">Anterior: ${esc(previous)}</small><small class="report-difference">Diferença: ${esc(difference)}</small>`;
+    }
+    function summaryCards(summary, data) {
+        return `<div class="summary-grid">${[['income', 'Entradas', 'arrow_up', summary.income, summary.incomeCount], ['expense', 'Saídas', 'arrow_down', summary.expense, summary.expenseCount]].map(([type, label, glyph, total, count]) => `<div class="finance-card summary-card ${money(total).length > 11 ? 'summary-card-wide' : ''}"><span class="summary-icon ${type}">${icon(glyph)}</span><span><span class="summary-label">${label}</span><strong class="${type}" data-report-total="${type}">${money(total)}</strong><small>${count} ${count === 1 ? 'lançamento' : 'lançamentos'}</small>${changeMarkup(data, type)}</span></div>`).join('')}</div>`;
+    }
+    function calendarNotice(data) {
+        const status = data.period_status;
+        if (status?.state === 'in_progress') return `<p class="report-calendar-note" role="status" data-report-calendar>Período em andamento (${esc(dateText(status.as_of_date))}). Comparação com o período anterior completo; lançamentos em datas futuras também entram nos totais.</p>`;
+        if (status?.state === 'future') return '<p class="report-calendar-note" role="status" data-report-calendar>Período futuro. Os valores correspondem aos lançamentos já registrados para essas datas.</p>';
+        return '';
+    }
+    function comparisonSummary(data) {
+        if (!data.previous_period || !data.changes) return '';
+        return `<section class="finance-card report-result-comparison" aria-label="Comparação do resultado do período"><div><span>Resultado do período</span><strong class="${data.totals.result_cents < 0 ? 'expense' : 'income'}" data-report-total="result">${money(data.totals.result_cents)}</strong></div><div class="report-result-change">${changeMarkup(data, 'result')}</div><p>Comparado com ${esc(comparisonLabel(data.previous_period))}. Resultado é a diferença entre entradas e saídas. A variação percentual só é calculada quando a base anterior é positiva.</p></section>`;
+    }
+    function insightCards(data) {
+        if (!data.insights) return '';
+        const largest = data.insights.largest_expense, frequent = data.insights.most_used_expense_category;
+        const badge = (category, fallback, tone) => `<span class="report-insight-icon ${tone}" style="--category-color:${safeColor(category?.color)}">${icon(category ? safeIcon(category.icon) : fallback)}</span>`;
+        return `<div class="report-insights-grid"><section class="finance-card report-insight-card" data-report-insight="largest">${badge(largest?.category, 'tag', 'report-icon-warm')}<div><h2>Maior gasto</h2>${largest ? `<p class="report-insight-name">${esc(largest.description)}</p><p class="report-insight-meta">${esc(largest.category.name)} · ${esc(dateText(largest.transaction_date))}${largest.category.is_active ? '' : ' · Categoria inativa'}</p><strong class="expense">${money(largest.amount_cents)}</strong>` : '<p class="report-insight-empty">Nenhuma despesa no período.</p>'}</div></section><section class="finance-card report-insight-card" data-report-insight="frequent">${badge(frequent?.category, 'tag', 'report-icon-purple')}<div><h2>Categoria mais usada</h2>${frequent ? `<p class="report-insight-name">${esc(frequent.category.name)}${frequent.category.is_active ? '' : ' (inativa)'}</p><p class="report-insight-meta">${esc(expenseFrequencyLabel(frequent.transaction_count, data.totals.expense_count))}</p><small>Por quantidade de despesas, não pelo valor gasto.</small>` : '<p class="report-insight-empty">Nenhuma despesa no período.</p>'}</div></section></div>`;
     }
     function categoryChart(summary) {
         return `<div class="category-chart-layout"><div class="donut-container"><div class="donut-chart" data-chart="categories" role="img" aria-label="Despesas por categoria: ${esc(money(summary.expense))}"></div><div class="donut-label"><strong>${money(summary.expense)}</strong><span>no período</span></div></div><ul class="category-legend">${summary.byCategory.length ? summary.byCategory.map(category => `<li><span class="category-dot" style="background:${category.color}"></span><span class="report-category-name" title="${esc(category.name)}">${esc(category.name)}</span><strong>${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(category.amount / summary.expense * 100)}%</strong></li>`).join('') : '<li>Sem despesas neste período</li>'}</ul></div>`;
@@ -46,7 +71,7 @@ export function mountReports(root, ctx, route) {
     function render(data, current) {
         const summary = reportData(data);
         const comparison = esc(comparisonLabel(data.comparison_period));
-        content.innerHTML = `${summaryCards(summary)}${data.totals.income_count + data.totals.expense_count === 0 ? '<p class="report-empty-note" role="status">Nenhum lançamento no período selecionado.</p>' : ''}<div class="reports-grid"><section class="finance-card category-card"><div class="card-heading"><h2>Despesas por categoria</h2></div>${categoryChart(summary)}</section><section class="finance-card"><div class="card-heading"><h2>Entradas × Saídas</h2></div><p class="report-chart-period">${comparison}</p><div class="report-chart" data-chart="comparison" role="img" aria-label="Entradas e saídas: ${comparison}"></div></section></div><section class="finance-card evolution-card"><div class="card-heading"><h2>Evolução mensal</h2></div><p class="report-chart-period">${comparison}</p><div class="report-chart" data-chart="evolution" role="img" aria-label="Evolução das entradas, saídas e resultado: ${comparison}"></div></section>`;
+        content.innerHTML = `${calendarNotice(data)}${summaryCards(summary, data)}${data.previous_period ? `<p class="report-comparison-period" data-report-previous>Comparado com ${esc(comparisonLabel(data.previous_period))}</p>` : ''}${data.totals.income_count + data.totals.expense_count === 0 ? '<p class="report-empty-note" role="status">Nenhum lançamento no período selecionado.</p>' : ''}<div class="reports-grid"><section class="finance-card category-card"><div class="card-heading"><h2>Despesas por categoria</h2></div>${categoryChart(summary)}</section><section class="finance-card"><div class="card-heading"><h2>Entradas × Saídas</h2></div><p class="report-chart-period">${comparison}</p><div class="report-chart" data-chart="comparison" role="img" aria-label="Entradas e saídas: ${comparison}"></div></section></div>${insightCards(data)}<section class="finance-card evolution-card"><div class="card-heading"><h2>Evolução mensal</h2></div><p class="report-chart-period">${comparison}</p><div class="report-chart" data-chart="evolution" role="img" aria-label="Evolução das entradas, saídas e resultado: ${comparison}"></div></section>${comparisonSummary(data)}`;
         void charts(summary, current);
     }
     async function load() {
@@ -77,7 +102,7 @@ export function mountReports(root, ctx, route) {
     root.addEventListener('click', event => {
         const button = event.target.closest('button');
         if (!button) return;
-        if (button.hasAttribute('data-report-help')) ctx.app.dialog.alert('Os totais e categorias seguem o período selecionado. “3 meses” inclui o mês escolhido e os dois anteriores; “Ano” vai de janeiro até o mês escolhido. No modo “Mês”, os gráficos comparam os últimos seis meses, conforme as datas indicadas. O resultado é a diferença entre entradas e saídas, sem acumular saldos de meses anteriores.', 'Seus relatórios');
+        if (button.hasAttribute('data-report-help')) ctx.app.dialog.alert('Os totais e categorias seguem o período selecionado. “3 meses” inclui o mês escolhido e os dois anteriores; “Ano” vai de janeiro até o mês escolhido. No modo “Mês”, os gráficos comparam os últimos seis meses, conforme as datas indicadas. O resultado é a diferença entre entradas e saídas, sem acumular saldos de meses anteriores. A variação dos totais compara o mês com o anterior; três meses com os três anteriores; e Ano com janeiro até o mesmo mês do ano anterior. A categoria mais usada considera a quantidade de despesas. O maior gasto é uma despesa individual.', 'Seus relatórios');
         if (button.hasAttribute('data-report-retry')) void load();
         if (validRange(button.dataset.reportRange) && button.dataset.reportRange !== ctx.state.reportsRange) {
             ctx.state.reportsRange = button.dataset.reportRange; void load();

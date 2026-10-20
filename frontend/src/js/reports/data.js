@@ -29,3 +29,25 @@ export function comparisonLabel(period) {
     const start = period.start_date.slice(0, 7), end = period.end_date.slice(0, 7);
     return start === end ? monthLabel(end) : `${monthLabel(start)} a ${monthLabel(end)}`;
 }
+
+
+// Os centavos e as variações vêm da API; aqui formatamos sua apresentação.
+export function changePresentation(change, type) {
+    const percent = change?.percent;
+    const valid = Number.isFinite(percent);
+    const difference = change?.difference_cents;
+    const tone = !Number.isSafeInteger(difference) || difference === 0 ? 'neutral'
+        : (type === 'expense' ? difference < 0 : difference > 0) ? 'favorable' : 'unfavorable';
+    return {
+        label: valid ? `${percent > 0 ? '+' : percent < 0 ? '−' : ''}${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(Math.abs(percent))}%` : 'Sem base para %',
+        difference: Number.isSafeInteger(difference) ? difference : null,
+        tone,
+    };
+}
+
+export function expenseFrequencyLabel(count, total) {
+    const amount = `${count} ${count === 1 ? 'lançamento de saída' : 'lançamentos de saída'}`;
+    if (!Number.isSafeInteger(count) || count < 0 || !Number.isSafeInteger(total) || total <= 0) return 'Sem despesas no período';
+    const percent = new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 2 }).format(count / total * 100);
+    return `${amount} (${percent}% das saídas)`;
+}

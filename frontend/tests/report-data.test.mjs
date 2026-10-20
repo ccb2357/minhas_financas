@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { reportData, validRange, periodLabel, comparisonLabel } from '../src/js/reports/data.js';
+import { reportData, validRange, periodLabel, comparisonLabel, changePresentation, expenseFrequencyLabel } from '../src/js/reports/data.js';
 
 test('totais do mês não recebem os valores dos meses usados somente na comparação', () => {
     const report = reportData({
@@ -41,4 +41,27 @@ test('datas exibidas distinguem totais do período e comparação dos gráficos'
     assert.match(periodLabel('2026-10', 'year'), /Janeiro até Outubro.*2026/);
     assert.match(comparisonLabel({ start_date: '2026-05-01', end_date: '2026-10-31' }), /Maio.*2026.*Outubro.*2026/);
     assert.equal(periodLabel('2026-01', 'year'), comparisonLabel({ start_date: '2026-01-01', end_date: '2026-01-31' }));
+});
+
+test('variação usa o percentual da API e preserva a diferença em centavos', () => {
+    assert.deepEqual(changePresentation({ percent: 33.33, difference_cents: 100 }, 'income'), { label: '+33,33%', difference: 100, tone: 'favorable' });
+    assert.deepEqual(changePresentation({ percent: -200, difference_cents: -200 }, 'result'), { label: '−200%', difference: -200, tone: 'unfavorable' });
+    assert.equal(changePresentation({ percent: 0, difference_cents: 0 }, 'income').label, '0%');
+});
+
+test('redução de despesas é favorável e aumento é desfavorável', () => {
+    assert.equal(changePresentation({ percent: -12, difference_cents: -1200 }, 'expense').tone, 'favorable');
+    assert.equal(changePresentation({ percent: 12, difference_cents: 1200 }, 'expense').tone, 'unfavorable');
+    assert.equal(changePresentation({ percent: 0, difference_cents: 0 }, 'expense').tone, 'neutral');
+});
+
+test('sem base positiva não inventa percentual mesmo quando há diferença em reais', () => {
+    assert.deepEqual(changePresentation({ percent: null, difference_cents: 100000000000 }, 'income'), { label: 'Sem base para %', difference: 100000000000, tone: 'favorable' });
+    for (const percent of [undefined, NaN, Infinity]) assert.equal(changePresentation({ percent, difference_cents: 0 }, 'result').label, 'Sem base para %');
+});
+
+test('frequência usa quantidade de despesas como denominador e trata singular e vazio', () => {
+    assert.equal(expenseFrequencyLabel(1, 3), '1 lançamento de saída (33,33% das saídas)');
+    assert.equal(expenseFrequencyLabel(12, 20), '12 lançamentos de saída (60% das saídas)');
+    assert.equal(expenseFrequencyLabel(0, 0), 'Sem despesas no período');
 });
