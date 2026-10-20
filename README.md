@@ -330,6 +330,172 @@ Após alterar `.env`, limpar a configuração em cache:
 docker exec -w /var/www/minhas_financas/backend php-fpm php artisan config:clear
 ```
 
+## Testar no Android por USB — procedimento validado
+
+Este procedimento abre o Vite no Chrome do Android pelo cabo USB, usando um túnel do ADB. O endereço utilizado no celular é **http://localhost:5173**. O acesso não depende da comunicação entre os aparelhos pelo Wi-Fi.
+
+### Preparação inicial — uma vez por computador e celular
+
+**No Windows:**
+
+1. Baixar **SDK Platform-Tools for Windows** na página oficial: https://developer.android.com/tools/releases/platform-tools.
+2. Extrair a pasta `platform-tools` para `C:\tools\platform-tools`.
+3. Conferir se existe `C:\tools\platform-tools\adb.exe`. Não é necessário instalar Android Studio nem alterar o PATH.
+
+**No Android:**
+
+1. Ativar as opções do desenvolvedor. No Samsung usado na validação: **Configurações → Sobre o telefone → Informações do software → Número de compilação**, tocando sete vezes e informando o PIN quando solicitado.
+2. Em **Opções do desenvolvedor**, ativar **Depuração USB**.
+3. Conectar o celular ao computador com cabo USB que permita transferência de dados e manter a tela desbloqueada.
+4. Se surgir **Permitir depuração USB?**, autorizar este computador. Marcar a autorização permanente somente se for um computador de confiança.
+
+No Chrome do computador, em `chrome://inspect/#devices`, manter **Enable port forwarding** desmarcado: o encaminhamento deste procedimento será feito pelo ADB. Durante o diagnóstico de autorização que validou este fluxo, **Discover USB devices** também ficou desmarcado.
+
+### 1. Conferir a publicação local do Vite
+
+No serviço `minhas-financas-node` do arquivo `C:\var\www\infra\docker-compose.yml`, a publicação usada neste procedimento é:
+
+```yaml
+ports:
+    - "127.0.0.1:5173:5173"
+```
+
+Se esse valor tiver sido alterado durante algum teste de rede, encerrar o `vite dev` com `Ctrl+C` e executá-lo novamente depois de salvar o Compose. O atalho usa `docker compose run --rm --service-ports`: a nova execução cria outro container com a publicação atualizada. Reiniciar o mesmo container não altera seu mapeamento de portas.
+
+Essa operação se limita ao Node de desenvolvimento. Não executar `docker compose down`, recriar PHP/MySQL ou reiniciar a infraestrutura inteira para este teste.
+
+### 2. Iniciar o Vite e conferir a resposta no computador
+
+Em um terminal **Cmder/CMD**:
+
+```bat
+cd /d C:\var\www\minhas_financas\frontend
+vite dev
+```
+
+Manter esse terminal aberto. Em outro terminal:
+
+```bat
+curl.exe -I http://localhost:5173
+```
+
+A resposta esperada contém **HTTP 200 OK**. Isso confirma que o frontend está disponível no computador antes de configurar o celular.
+
+### 3. Conferir a autorização do Android
+
+No segundo terminal, ainda em **Cmder/CMD**:
+
+```bat
+cd /d C:\tools\platform-tools
+adb start-server
+adb devices -l
+```
+
+A lista deve conter o identificador do aparelho seguido de **`device`**, por exemplo:
+
+```text
+List of devices attached
+IDENTIFICADOR_DO_APARELHO    device product:... model:... device:...
+```
+
+O identificador e os demais campos variam por aparelho. O estado necessário é `device`; `unauthorized` e `offline` ainda não permitem o teste.
+
+Se a autorização estiver pendente, deixar **Discover USB devices** desmarcado no Chrome do PC e executar:
+
+```bat
+adb kill-server
+adb start-server
+adb devices -l
+```
+
+Manter o Android conectado e desbloqueado para aceitar a autorização, caso seja solicitada. Se `adb kill-server` informar que não conseguiu conectar à porta `5037`, o serviço ainda não estava em execução; continuar com `adb start-server`.
+
+Se continuar como `unauthorized` ou `offline`, conferir a depuração USB e a solicitação de autorização no celular antes de prosseguir. A mensagem do Chrome **Pending authentication** não confirma que o aparelho já está autorizado; usar a saída de `adb devices -l` como verificação.
+
+### 4. Criar o túnel USB
+
+Com o aparelho no estado `device`:
+
+```bat
+adb reverse tcp:5173 tcp:5173
+adb reverse --list
+```
+
+A saída da listagem deve conter:
+
+```text
+UsbFfs tcp:5173 tcp:5173
+```
+
+O prefixo pode variar; os dois endpoints devem ser `tcp:5173`. O comando encaminha a porta `5173` do Android para a porta `5173` local do computador.
+
+### 5. Abrir e validar no celular
+
+No **Chrome do Android**, abrir:
+
+```text
+http://localhost:5173
+```
+
+Manter o cabo conectado e o Vite em execução. O terminal dos comandos ADB pode ser fechado após a criação do túnel; o serviço ADB continua em segundo plano.
+
+A abertura da aplicação por esse endereço foi validada no aparelho. A validação de uso deve conferir:
+
+- Login, navegação inferior e retorno entre telas.
+- Novo lançamento: teclado de valor, máscara em centavos, descrição, categoria, data, observação e botão salvar.
+- Edição e exclusão, com atualização dos totais e gráficos.
+- Categorias e orçamentos, incluindo rolagem até os botões dos formulários.
+- Relatórios nos períodos Mês, 3 meses e Ano.
+- Perfil, troca de senha e retorno ao login.
+- Legibilidade em retrato e paisagem, sem campos ou ações encobertos pelo teclado.
+
+Este acesso é para desenvolvimento e revisão no aparelho. Instalação e atualização do PWA em produção serão validadas em etapa própria.
+
+### Uso nas próximas sessões
+
+Com a preparação inicial concluída, a rotina é:
+
+1. Conectar e desbloquear o Android, mantendo a depuração USB ativada.
+2. Iniciar `vite dev` na pasta `frontend`.
+3. Em outro terminal:
+
+```bat
+cd /d C:\tools\platform-tools
+adb devices -l
+adb reverse tcp:5173 tcp:5173
+adb reverse --list
+```
+
+4. Abrir **http://localhost:5173** no Chrome do Android.
+
+Refazer o `adb reverse` se a conexão USB ou o serviço ADB forem reiniciados e o encaminhamento deixar de aparecer na listagem.
+
+### Diagnóstico rápido e encerramento
+
+| Verificação | Resultado esperado | Se não ocorrer |
+| --- | --- | --- |
+| `curl.exe -I http://localhost:5173` no PC | HTTP 200 | Conferir Vite ligado e publicação `127.0.0.1:5173:5173`; recriar apenas o container de desenvolvimento se o Compose mudou. |
+| `adb devices -l` | Aparelho com estado `device` | Conferir cabo, depuração e autorização USB; reiniciar o serviço ADB conforme a etapa 3. |
+| `adb reverse --list` | `tcp:5173 tcp:5173` | Executar novamente `adb reverse tcp:5173 tcp:5173`, com o aparelho autorizado. |
+| Chrome do Android | Login em `http://localhost:5173` | Atualizar a aba e conferir as três verificações anteriores. Se persistir, guardar as saídas e o código exato do erro para diagnóstico. |
+
+Para remover somente este túnel:
+
+```bat
+C:\tools\platform-tools\adb.exe reverse --remove tcp:5173
+```
+
+Para encerrar o Vite, usar `Ctrl+C` no terminal em que ele está rodando.
+
+O túnel USB usa a publicação em `127.0.0.1`; não exige uma regra de entrada da porta 5173 para acesso pela rede Wi-Fi. Caso a regra abaixo tenha sido criada apenas durante esse diagnóstico e não seja mais necessária, removê-la em **PowerShell como administrador**:
+
+```powershell
+Remove-NetFirewallRule -DisplayName "Minhas Financas - Vite Dev 5173"
+```
+
+Referências oficiais: [ADB](https://developer.android.com/tools/adb) e [Platform-Tools](https://developer.android.com/tools/releases/platform-tools).
+
+
 ## Autenticação
 
 | Método | Rota | Finalidade |

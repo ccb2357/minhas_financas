@@ -10,6 +10,7 @@ import '../css/budgets.css';
 import '../css/settings.css';
 import '../css/categories.css';
 import '../css/transactions.css';
+import '../css/mobile.css';
 import { mountAuth } from './auth.js';
 import { createWorkspace } from './workspace.js';
 

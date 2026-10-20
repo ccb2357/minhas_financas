@@ -1,0 +1,46 @@
+/* Ajustes de ergonomia para celulares, preservando o desenho dos componentes. */
+@media (max-width: 759px), (pointer: coarse) {
+    /* A área transparente recebe o toque sem aumentar o desenho do ícone. */
+    .icon-button, .result-info, .all-transactions { position: relative; }
+    .icon-button::before, .card-heading .icon-button::before, .result-info::before, .all-transactions::before {
+        content: '';
+        position: absolute;
+        inset: auto;
+        top: 50%;
+        left: 50%;
+        width: max(100%, 44px);
+        height: max(100%, 44px);
+        transform: translate(-50%, -50%);
+        border-radius: inherit;
+    }
+    .report-period button, .budget-category-actions button { min-height: 44px; }
+
+    /* Campos com menos de 16px podem causar zoom automático ao focar no iOS. */
+    .history-search input,
+    .category-filter select,
+    .category-list-tools select,
+    .transaction-input input,
+    .transaction-input select,
+    .transaction-input textarea,
+    .budget-field > input,
+    .budget-field > select { font-size: 16px; }
+
+    /* Evita que textos e campos entrem na área do recorte em paisagem. */
+    .finance-container {
+        padding-left: max(14px, env(safe-area-inset-left));
+        padding-right: max(14px, env(safe-area-inset-right));
+    }
+    .category-popup-scroll { --mf-mobile-gutter: 20px; }
+    .transaction-popup-scroll { --mf-mobile-gutter: 16px; }
+    .budget-popup-scroll, .settings-popup-scroll { --mf-mobile-gutter: 18px; }
+    .category-popup-scroll, .transaction-popup-scroll, .budget-popup-scroll, .settings-popup-scroll {
+        padding-left: max(var(--mf-mobile-gutter), env(safe-area-inset-left));
+        padding-right: max(var(--mf-mobile-gutter), env(safe-area-inset-right));
+        scroll-padding-top: 20px;
+        scroll-padding-bottom: max(24px, env(safe-area-inset-bottom));
+    }
+    .auth-shell {
+        padding-left: max(24px, env(safe-area-inset-left));
+        padding-right: max(24px, env(safe-area-inset-right));
+    }
+}
