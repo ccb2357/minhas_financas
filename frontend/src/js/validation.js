@@ -79,6 +79,9 @@ export function createValidation(formSelector, schema, {
     }
 
     function handleBlur(event) {
+        // Redirecting focus from the backing select to its visible trigger is
+        // internal to the same field; revalidating here would erase server errors.
+        if (event.target.closest('.mf-smart-control')?.contains(event.relatedTarget)) return;
         if (isBusy()) return;
         const entry = entries.find(item => item.input === event.target);
         if (entry) void validator.revalidateField(entry.config.selector).then(syncPresentation);

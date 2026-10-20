@@ -44,3 +44,48 @@
         padding-right: max(24px, env(safe-area-inset-right));
     }
 }
+
+/* O tema iOS acrescenta 16px ao toolbar-inner; a barra própria já cuida da área segura. */
+.workspace .workspace-toolbar.toolbar-bottom .workspace-nav {
+    padding: 0;
+    top: auto;
+    bottom: auto;
+}
+
+.history-real .category-filter { position: relative; min-width: 0; }
+.history-real .category-filter > [data-history-category-label] {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+.history-real .category-filter select {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    max-width: none;
+    height: 100%;
+    opacity: 0;
+    font-size: 16px;
+    cursor: pointer;
+}
+.history-real .category-filter:focus-within { border-color: #88b1ff; }
+@media (max-width: 759px), (pointer: coarse) {
+    .history-real .history-filters {
+        display: grid;
+        grid-template-columns: .64fr 1fr .86fr 1.22fr;
+        gap: 4px;
+    }
+    .history-real .history-filters > .filter-chip,
+    .history-real .history-filters > .category-filter {
+        min-width: 0;
+        width: 100%;
+        gap: 3px;
+        padding: 7px 4px;
+        font-size: clamp(11px, 3.1vw, 13px);
+        white-space: nowrap;
+    }
+    .history-real .history-filters .f7-icons { flex-shrink: 0; font-size: 13px; }
+}
+.settings-input-wrap:focus-within { box-shadow: none; }
+.history-real .history-filters { flex-wrap: nowrap; }

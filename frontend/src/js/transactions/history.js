@@ -1,3 +1,4 @@
+import { mountSmartSelects } from '../shared/smart-select.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { moneyText } from '../shared/money.js';
 import { validMonth, dateText, dayLabel, todayBrazil } from '../shared/calendar.js';
@@ -13,7 +14,8 @@ export function mountHistory(root, ctx, route) {
     if (validMonth(route.query?.month)) ctx.state.historyMonth = route.query.month;
     const events = new AbortController();
     root.classList.add('history-real');
-    root.innerHTML = `<header class="finance-header"><a class="link icon-button" href="/mais/" aria-label="Abrir configurações">${icon('gear_alt')}</a><h1 tabindex="-1">Histórico</h1><button class="icon-button" data-history-help type="button" aria-label="Sobre o Histórico">${icon('info_circle')}</button></header><div data-history-month></div><label class="history-search">${icon('search')}<input type="search" maxlength="255" placeholder="Buscar lançamentos" aria-label="Buscar lançamentos por descrição"></label><div class="history-filters" role="group" aria-label="Filtrar lançamentos">${[['', 'Todos', ''], ['income', 'Entradas', 'arrow_up'], ['expense', 'Saídas', 'arrow_down']].map(([value, label, glyph]) => `<button type="button" class="filter-chip" data-history-type="${value}" aria-pressed="${value === type}">${glyph ? icon(glyph) : ''}${label}</button>`).join('')}<label class="category-filter">${icon('tag')}<select data-history-category aria-label="Filtrar por categoria"><option value="">Categorias</option></select></label></div><div class="history-category-status" role="status" hidden></div><p class="history-count" role="status" data-history-count></p><p class="history-feedback" role="status" hidden></p><div data-history-list aria-busy="false"></div><div class="history-list-state" role="status"></div><button class="mf-button mf-button-secondary" type="button" data-history-more hidden>Carregar mais</button>`;
+    root.innerHTML = `<header class="finance-header"><a class="link icon-button" href="/mais/" aria-label="Abrir configurações">${icon('gear_alt')}</a><h1 tabindex="-1">Histórico</h1><button class="icon-button" data-history-help type="button" aria-label="Sobre o Histórico">${icon('info_circle')}</button></header><div data-history-month></div><label class="history-search">${icon('search')}<input type="search" maxlength="255" placeholder="Buscar lançamentos" aria-label="Buscar lançamentos por descrição"></label><div class="history-filters" role="group" aria-label="Filtrar lançamentos">${[['', 'Todos', ''], ['income', 'Entradas', 'arrow_up'], ['expense', 'Saídas', 'arrow_down']].map(([value, label, glyph]) => `<button type="button" class="filter-chip" data-history-type="${value}" aria-pressed="${value === type}">${glyph ? icon(glyph) : ''}${label}</button>`).join('')}<label class="category-filter">${icon('tag')}<span data-history-category-label aria-hidden="true">Categorias</span><select data-history-category aria-label="Filtrar por categoria"><option value="">Categorias</option></select></label></div><div class="history-category-status" role="status" hidden></div><p class="history-count" role="status" data-history-count></p><p class="history-feedback" role="status" hidden></p><div data-history-list aria-busy="false"></div><div class="history-list-state" role="status"></div><button class="mf-button mf-button-secondary" type="button" data-history-more hidden>Carregar mais</button>`;
+    const smartSelects = mountSmartSelects(root, ctx.app);
     const list = root.querySelector('[data-history-list]');
     const stateBox = root.querySelector('.history-list-state');
     const categorySelect = root.querySelector('[data-history-category]');
@@ -23,12 +25,18 @@ export function mountHistory(root, ctx, route) {
     const categoryStatus = root.querySelector('.history-category-status');
     root.querySelector('[data-history-month]').innerHTML = monthPicker(ctx.state.historyMonth);
 
+    function categoryLabel() {
+        const text = categorySelect.selectedOptions[0]?.textContent || 'Categorias';
+        root.querySelector('[data-history-category-label]').textContent = text;
+        categorySelect.closest('label').title = text;
+    }
     function filters() {
         for (const button of root.querySelectorAll('[data-history-type]')) button.setAttribute('aria-pressed', String(button.dataset.historyType === type));
         const available = categories.filter(item => !type || item.type === type);
         if (category && !available.some(item => String(item.id) === category)) category = '';
-        categorySelect.innerHTML = '<option value="">Categorias</option>' + available.map(item => `<option value="${item.id}">${esc(item.name)}${item.is_active ? '' : ' (inativa)'}</option>`).join('');
+        categorySelect.innerHTML = '<option value="">Categorias</option>' + available.map(item => `<option value="${item.id}" data-option-icon="${safeIcon(item.icon)}" data-option-color="${safeColor(item.color)}">${esc(item.name)}${item.is_active ? '' : ' (inativa)'}</option>`).join('');
         categorySelect.value = category;
+        categoryLabel();
     }
 
     function renderRows() {
@@ -98,7 +106,7 @@ export function mountHistory(root, ctx, route) {
         revision++; clearTimeout(debounce);
         debounce = setTimeout(() => { void load(); }, 250);
     }, { signal: events.signal });
-    categorySelect.addEventListener('change', () => { category = categorySelect.value; feedback.hidden = true; void load(); }, { signal: events.signal });
+    categorySelect.addEventListener('change', () => { category = categorySelect.value; categoryLabel(); feedback.hidden = true; void load(); }, { signal: events.signal });
     root.addEventListener('click', async event => {
         const button = event.target.closest('button');
         if (!button) return;
@@ -143,6 +151,6 @@ export function mountHistory(root, ctx, route) {
             if (ctx.state.historyFeedback) { feedback.textContent = ctx.state.historyFeedback; feedback.hidden = false; }
             void loadOptions(); void load();
         },
-        destroy() { alive = false; revision++; optionsRevision++; clearTimeout(debounce); events.abort(); unbindMonth(); },
+        destroy() { smartSelects.destroy(); alive = false; revision++; optionsRevision++; clearTimeout(debounce); events.abort(); unbindMonth(); },
     };
 }

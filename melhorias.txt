@@ -1,0 +1,10 @@
+tela de investimento onde eu adciiono dinherio topdo mes e mostar as entrads e retiradas de dinheiro de la
+
+tela de objetivos omnde fica definido o objetivo e quanto de dinheiro ja tem guardado para ele
+
+a notificação de ações deve usar as notificações padrão do framework 7 aquela que voce clica e ela desaparece
+usar skeleton ghost layouts nas partes que carregam depois que a pagina ja esta carregada afimd e evitar que pisque
+
+os icones ali na criação de categortia deve ter um botão que abre uma tela onde a pessoa selelciona o icones
+
+arrumar aquele modal de voltar porque o escrito: Contineu editando fica todo bugado

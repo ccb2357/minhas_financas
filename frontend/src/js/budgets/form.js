@@ -1,3 +1,5 @@
+import { safeIcon, safeColor } from '../categories/catalog.js';
+import { mountSmartSelects } from '../shared/smart-select.js';
 import { createValidation, validationRules as rules } from '../validation.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { amountText } from '../shared/money.js';
@@ -20,13 +22,14 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
             opened() { popup.el.querySelector('h2').focus(); },
             closed(instance) {
                 if (!alive) return;
-                alive = false; confirmation?.close?.(false); events.abort(); validation?.destroy(); masks.destroy();
+                alive = false; confirmation?.close?.(false); events.abort(); smartSelects.destroy(); validation?.destroy(); masks.destroy();
                 const element = instance.el; instance.destroy(); element.remove(); onClosed?.();
                 if (previousFocus?.isConnected) previousFocus.focus();
             },
         },
     });
     const form = popup.el.querySelector('form'), fields = form.elements;
+    const smartSelects = mountSmartSelects(form, ctx.app);
     const masks = mountMasks(form), limitMask = masks.get(fields.limit);
     const errorBox = form.querySelector('.budget-form-error'), save = form.querySelector('[data-budget-save]');
     function values() { return { period: fields.period.value, category_id: fields.category_id.value, limit: limitMask.getCents() ?? fields.limit.value.trim() }; }
@@ -47,7 +50,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
         try {
             const categories = (await categoryOptions('active', () => !alive)).filter(item => item.type === 'expense' && item.is_active);
             if (!alive) return;
-            fields.category_id.innerHTML = '<option value="">Selecione uma categoria</option>' + categories.map(item => `<option value="${item.id}">${esc(item.name)}</option>`).join('');
+            fields.category_id.innerHTML = '<option value="">Selecione uma categoria</option>' + categories.map(item => `<option value="${item.id}" data-option-icon="${safeIcon(item.icon)}" data-option-color="${safeColor(item.color)}">${esc(item.name)}</option>`).join('');
             if (categories.some(item => String(item.id) === chosen)) fields.category_id.value = chosen;
             form.querySelector('[data-budget-category-note]').textContent = categories.length ? 'Uma categoria pode ter um limite por mês.' : 'Crie uma categoria de despesa ativa para definir um orçamento.';
         } catch (error) {

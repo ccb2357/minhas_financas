@@ -1,3 +1,4 @@
+import { mountSmartSelects } from '../shared/smart-select.js';
 import { createValidation, validationRules } from '../validation.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { CATEGORY_ICONS, CATEGORY_COLORS, safeIcon, safeColor, operationMessage } from './catalog.js';
@@ -29,7 +30,7 @@ export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {
                 alive = false;
                 confirmation?.close?.(false);
                 events.abort();
-                validation?.destroy();
+                smartSelects.destroy(); validation?.destroy();
                 const element = instance.el;
                 instance.destroy();
                 element.remove();
@@ -39,6 +40,7 @@ export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {
         },
     });
     const form = popup.el.querySelector('form');
+    const smartSelects = mountSmartSelects(form, ctx.app);
     const name = form.elements.name;
     const type = form.elements.type;
     const color = form.elements.color;

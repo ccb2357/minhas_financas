@@ -1,3 +1,4 @@
+import { closeActiveSmartSelect } from './shared/smart-select.js';
 import { openSettingsForm } from './settings/form.js';
 import { openBudgetForm } from './budgets/form.js';
 import { createRoutes } from './routes.js';
@@ -15,7 +16,7 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
     const context = {
         app, state, logout, cleanups, expireSession: onSessionExpired, events: new EventTarget(),
         navigate: path => view?.router.navigate(path),
-        beforeLeave(resolve, reject) { if (editor) editor.beforeLeave(resolve, reject); else resolve(); },
+        beforeLeave(resolve, reject) { if (closeActiveSmartSelect(app)) { reject(); return; } if (editor) editor.beforeLeave(resolve, reject); else resolve(); },
         openSettings(mode = 'profile') {
             if (!state.user || editor) return;
             editor = openSettingsForm(context, {

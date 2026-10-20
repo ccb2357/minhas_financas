@@ -1,0 +1,74 @@
+/* Shared editorial treatment for Framework7 Smart Selects. */
+#app select.mf-smart-native {
+    position: absolute; width: 1px; height: 1px; min-height: 0;
+    padding: 0; margin: 0; border: 0; opacity: 0; overflow: hidden;
+    clip-path: inset(50%); pointer-events: none;
+}
+.mf-smart-control { position: relative; width: 100%; min-width: 0; flex: 1; }
+.mf-smart-trigger {
+    display: flex; align-items: center; justify-content: space-between; gap: 12px;
+    box-sizing: border-box; width: 100%; min-width: 0; min-height: 52px; padding: 14px 16px;
+    border: 1px solid var(--mf-border); border-radius: var(--mf-radius-field);
+    background: var(--mf-background); color: var(--mf-title);
+    font: inherit; font-size: 16px; text-align: left; cursor: pointer;
+}
+.mf-smart-trigger > span { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+.mf-smart-trigger > .f7-icons { flex-shrink: 0; font-size: 15px; color: var(--mf-muted); }
+.mf-smart-placeholder .mf-smart-trigger { color: var(--mf-muted); }
+.mf-smart-trigger:disabled { opacity: .6; cursor: default; }
+.mf-smart-trigger.mf-input-invalid { border-color: var(--mf-expense); }
+.transaction-input .mf-smart-trigger { padding: 0; min-height: 40px; border: 0; border-radius: 0; background: transparent; }
+.category-list-tools label > .f7-icons,
+.category-filter > .f7-icons,
+.category-filter > [data-history-category-label] { display: none; }
+.category-list-tools .mf-smart-trigger,
+.history-real .category-filter .mf-smart-trigger {
+    min-height: 44px; padding: 0 8px; border: 0; background: transparent;
+    font-size: inherit; gap: 5px;
+}
+.history-real .history-filters > .category-filter { padding: 0; border: 0; height: 44px; }
+.history-real .category-filter .mf-smart-trigger { min-height: 44px; height: 44px; justify-content: center; border: 1px solid #e6ecf8; border-radius: 22px; }
+.history-real .category-filter .mf-smart-trigger > .f7-icons { font-size: 11px; }
+.mf-smart-sheet.sheet-modal {
+    --f7-sheet-height: auto;
+    height: auto; max-height: min(78dvh, 620px); border-radius: 28px 28px 0 0;
+    background: var(--mf-surface); color: var(--mf-title); overflow: hidden;
+    display: flex; flex-direction: column; box-shadow: 0 -12px 48px rgb(12 28 85 / 12%);
+    padding: 0 max(0px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(0px, env(safe-area-inset-left));
+}
+.mf-smart-grip { flex-shrink: 0; width: 38px; height: 4px; border-radius: 4px; background: #d9e1f1; margin: 10px auto 0; }
+.mf-smart-heading { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 20px 12px; }
+.mf-smart-heading h2 { margin: 0; font-size: 20px; line-height: 1.3; font-weight: 750; letter-spacing: -.4px; }
+.mf-smart-heading .icon-button { flex-shrink: 0; width: 44px; height: 44px; border-radius: 50%; background: var(--mf-background); color: var(--mf-primary); }
+.mf-smart-sheet .sheet-modal-inner { min-height: 0; height: auto; overflow: auto; }
+.mf-smart-sheet .page-content { height: auto; padding: 0 16px 16px; overflow: visible; }
+.mf-smart-sheet .list { margin: 0; }
+.mf-smart-sheet .list ul { background: transparent; }
+.mf-smart-sheet .list ul::before, .mf-smart-sheet .list ul::after, .mf-smart-sheet .item-inner::after { display: none; }
+.mf-smart-sheet .item-content { padding: 8px 12px; min-height: 64px; gap: 12px; border-radius: 16px; margin: 3px 0; cursor: pointer; }
+.mf-smart-sheet .item-content:has(input:checked) { background: #edf3ff; }
+.mf-smart-sheet .item-content:focus-within { outline: 2px solid var(--mf-primary); outline-offset: -2px; }
+.mf-smart-sheet .item-inner { padding: 0; min-height: 44px; gap: 10px; }
+.mf-smart-sheet .item-title { white-space: normal; overflow-wrap: anywhere; font-size: 16px; line-height: 1.4; font-weight: 550; }
+.mf-smart-option-icon { display: grid; place-items: center; width: 40px; height: 40px; flex-shrink: 0; border-radius: 13px; color: var(--option-color); background: color-mix(in srgb, var(--option-color) 10%, white); }
+.mf-smart-option-icon .f7-icons { font-size: 21px; }
+.mf-smart-check { color: var(--mf-primary); visibility: hidden; }
+.mf-smart-sheet input:checked ~ .item-inner .mf-smart-check { visibility: visible; }
+.mf-smart-sheet .mf-smart-search { position: relative; top: auto; width: calc(100% - 40px); height: 50px; flex-shrink: 0; margin: 0 20px 10px; background: transparent; }
+.mf-smart-search::after { display: none; }
+.mf-smart-search .searchbar-inner { padding: 0; background: transparent; }
+.mf-smart-search input[type="search"] { font-size: 16px; height: 46px; background: var(--mf-background); border: 1px solid var(--mf-border); border-radius: 14px; }
+.mf-smart-sheet .searchbar-not-found { display: none; text-align: center; color: var(--mf-muted); padding: 24px 12px; }
+@media (min-width: 760px) {
+    .mf-smart-sheet.sheet-modal { max-width: 560px; left: 50%; margin-left: -280px; }
+}
+@media (prefers-reduced-motion: reduce) {
+    .mf-smart-sheet { transition-duration: 0ms !important; }
+}
+/* Keep the backdrop above form popups and below this sheet. */
+#app:has(.mf-smart-sheet.modal-in, .mf-smart-sheet.modal-out) > .sheet-backdrop { z-index: 12499; }
+.mf-smart-search .searchbar-input-wrap { box-shadow: none; }
+
+.ios .mf-smart-search input[type="search"] { box-shadow: none; backdrop-filter: none; color: var(--mf-text); }
+
+.mf-smart-sheet label.item-radio input[type="radio"] { display: block; position: absolute; opacity: 0; width: 1px; height: 1px; pointer-events: none; }

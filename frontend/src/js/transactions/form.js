@@ -1,3 +1,4 @@
+import { mountSmartSelects } from '../shared/smart-select.js';
 import { createValidation, validationRules as rules } from '../validation.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { amountText } from '../shared/money.js';
@@ -25,7 +26,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
                 alive = false;
                 confirmation?.close?.(false);
                 listeners.abort();
-                validation?.destroy();
+                smartSelects.destroy(); validation?.destroy();
                 masks.destroy();
                 const element = instance.el;
                 instance.destroy(); element.remove();
@@ -35,6 +36,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         },
     });
     const form = popup.el.querySelector('form');
+    const smartSelects = mountSmartSelects(form, ctx.app);
     const fields = form.elements;
     const masks = mountMasks(form);
     const amountMask = masks.get(fields.amount);
@@ -74,7 +76,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         const available = categories.filter(item => item.type === type
             && (item.is_active || (editing && item.id === transaction.category_id && type === transaction.type)));
         select.innerHTML = `<option value="">${loading ? 'Carregando categorias...' : failed ? 'Não foi possível carregar' : 'Selecione uma categoria'}</option>`
-            + available.map(item => `<option value="${item.id}">${esc(item.name)}${item.is_active ? '' : ' (inativa)'}</option>`).join('');
+            + available.map(item => `<option value="${item.id}" data-option-icon="${safeIcon(item.icon)}" data-option-color="${safeColor(item.color)}">${esc(item.name)}${item.is_active ? '' : ' (inativa)'}</option>`).join('');
         select.value = available.some(item => String(item.id) === preferred) ? preferred : '';
         select.disabled = loading || failed || available.length === 0;
         categoryNote(); setBusy(busy);
