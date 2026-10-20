@@ -39,6 +39,7 @@ export function mountAuth({ onAuthenticated, onSignedOut } = {}) {
     function clearGeneralError() {
         errorMessage.hidden = true;
         errorMessage.textContent = '';
+        errorMessage.classList.remove('auth-notice');
     }
 
     function messageFor(error) {
@@ -154,7 +155,20 @@ export function mountAuth({ onAuthenticated, onSignedOut } = {}) {
     void restoreSession();
     return {
         logout: signOut,
+        passwordChanged(updatedEmail) {
+            resetPassword();
+            validation.reset();
+            clearGeneralError();
+            remember.checked = false;
+            email.value = updatedEmail;
+            showLogin();
+            errorMessage.textContent = 'Senha alterada com sucesso. Entre com sua nova senha.';
+            errorMessage.classList.add('auth-notice');
+            errorMessage.hidden = false;
+            password.focus();
+        },
         expireSession() {
+            clearGeneralError();
             resetPassword();
             validation.reset();
             remember.checked = false;

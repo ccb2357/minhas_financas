@@ -7,6 +7,7 @@ import '../css/dashboard.css';
 import '../css/dashboard-real.css';
 import '../css/reports.css';
 import '../css/budgets.css';
+import '../css/settings.css';
 import '../css/categories.css';
 import '../css/transactions.css';
 import { mountAuth } from './auth.js';
@@ -24,6 +25,7 @@ app.views.create('#auth-view', { router: false });
 const workspace = createWorkspace(app, {
     logout: () => auth.logout(),
     onSessionExpired: () => auth.expireSession(),
+    onPasswordChanged: email => auth.passwordChanged(email),
 });
 const auth = mountAuth({
     onAuthenticated: user => workspace.show(user),

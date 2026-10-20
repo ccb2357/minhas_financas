@@ -1,9 +1,10 @@
+import { openSettingsForm } from './settings/form.js';
 import { openBudgetForm } from './budgets/form.js';
 import { createRoutes } from './routes.js';
 import { openTransactionForm } from './transactions/form.js';
 import { todayBrazil } from './shared/calendar.js';
 
-export function createWorkspace(app, { logout, onSessionExpired }) {
+export function createWorkspace(app, { logout, onSessionExpired, onPasswordChanged }) {
     const container = document.querySelector('#workspace');
     const authView = document.querySelector('#auth-view');
     const financeView = document.querySelector('#finance-view');
@@ -15,6 +16,18 @@ export function createWorkspace(app, { logout, onSessionExpired }) {
         app, state, logout, cleanups, expireSession: onSessionExpired, events: new EventTarget(),
         navigate: path => view?.router.navigate(path),
         beforeLeave(resolve, reject) { if (editor) editor.beforeLeave(resolve, reject); else resolve(); },
+        openSettings(mode = 'profile') {
+            if (!state.user || editor) return;
+            editor = openSettingsForm(context, {
+                mode,
+                onClosed() { editor = null; },
+                onSaved(user) {
+                    state.user = { id: user.id, name: user.name, email: user.email };
+                    context.events.dispatchEvent(new CustomEvent('profile:changed'));
+                },
+                onPasswordChanged(email) { onPasswordChanged?.(email); },
+            });
+        },
         openBudget(options = {}) {
             if (!state.user || editor) return;
             editor = openBudgetForm(context, {
