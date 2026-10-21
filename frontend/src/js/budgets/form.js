@@ -14,7 +14,8 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     const editing = Boolean(budget), prefix = `budget-form-${++sequence}`;
     const selectedMonth = editing ? `${budget.year}-${String(budget.month).padStart(2, '0')}` : month;
     let alive = true, busy = false, loading = !editing, failed = false, confirming = false;
-    let validation, confirmation;
+    let validation, confirmation, afterClose;
+    let closing = false;
     const events = new AbortController(), previousFocus = document.activeElement;
     const popup = ctx.app.popup.create({
         closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
@@ -26,6 +27,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
                 alive = false; confirmation?.close?.(false); events.abort(); dateFields.destroy(); smartSelects.destroy(); validation?.destroy(); masks.destroy();
                 const element = instance.el; instance.destroy(); element.remove(); onClosed?.();
                 if (previousFocus?.isConnected) previousFocus.focus();
+                afterClose?.();
             },
         },
     });
@@ -61,10 +63,15 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
             failed = true; form.querySelector('[data-budget-category-note]').textContent = 'Não foi possível carregar as categorias. Tente atualizar.';
         } finally { if (alive) { loading = false; setBusy(busy); } }
     }
-    function finishClose(done = () => {}) { popup.close(false); done(); }
+    function finishClose(done = () => {}) {
+        if (!alive || closing) return;
+        closing = true;
+        afterClose = done;
+        popup.close(!window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+    }
     function confirmLeave(done, cancel = () => {}) {
         if (!alive) { done(); return; }
-        if (busy || confirming) { cancel(); return; }
+        if (busy || confirming || closing) { cancel(); return; }
         if (!dirty()) { finishClose(done); return; }
         confirming = true;
         confirmation = ctx.app.dialog.create({ title: 'Descartar alterações?', text: 'As alterações ainda não foram salvas.', buttons: [
@@ -73,7 +80,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
         ] }).open();
     }
     async function mutate(action, kind) {
-        if (!alive || busy) return;
+        if (!alive || busy || closing) return;
         setBusy(true); errorBox.hidden = true;
         try {
             const response = await action();
@@ -99,7 +106,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
         ] };
     }
     validation = createValidation(form, schema, {
-        isBusy: () => busy || loading || failed || confirming,
+        isBusy: () => busy || loading || failed || confirming || closing,
         onInput() { errorBox.hidden = true; },
         onValid() {
             const data = { limit_cents: limitMask.getCents() };
@@ -114,7 +121,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     });
     popup.el.addEventListener('click', event => {
         const button = event.target.closest('button');
-        if (!button || busy || confirming) return;
+        if (!button || busy || confirming || closing) return;
         if (button.hasAttribute('data-budget-close')) confirmLeave(() => {});
         if (button.hasAttribute('data-budget-options-retry') && !loading) void loadOptions();
         if (button.hasAttribute('data-budget-manage')) confirmLeave(() => ctx.navigate('/categorias/'));
@@ -137,7 +144,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     }, { signal: events.signal });
     setBusy(false); popup.open(); if (!editing) void loadOptions();
     return {
-        close(force = false) { if (force) finishClose(); else confirmLeave(() => {}); },
+        close(force = false) { if (force) { afterClose = undefined; popup.close(false); } else confirmLeave(() => {}); },
         beforeLeave(resolve, reject) { confirmLeave(resolve, reject); },
     };
 }

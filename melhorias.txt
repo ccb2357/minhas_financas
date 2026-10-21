@@ -8,3 +8,11 @@ usar skeleton ghost layouts nas partes que carregam depois que a pagina ja esta 
 os icones ali na criação de categortia deve ter um botão que abre uma tela onde a pessoa selelciona o icones
 
 arrumar aquele modal de voltar porque o escrito: Contineu editando fica todo bugado
+
+
+comando para começar no celular: 
+C:\tools\platform-tools\adb.exe reverse tcp:5173 tcp:5173
+
+
+comando para atualizar as dependencias front rodar em /var/www/infra 
+docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci

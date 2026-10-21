@@ -30,3 +30,5 @@
     .dashboard-real .summary-card-wide .summary-label { grid-column: 2; grid-row: 1; }
     .dashboard-real .summary-card-wide strong, .dashboard-real .summary-card-wide small { grid-column: 1 / -1; margin: 0; }
 }
+
+.dashboard-real .finance-empty .mf-button { margin-left:auto; margin-right:auto; }

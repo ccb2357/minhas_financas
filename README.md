@@ -39,11 +39,11 @@ A interface atual é técnica. As telas definitivas seguirão as referências vi
 
 ## Organização
 
-| Item | Caminho |
-| --- | --- |
-| Projeto no Windows | `C:\var\www\minhas_financas` |
-| Projeto em Nginx/PHP | `/var/www/minhas_financas` |
-| Infraestrutura compartilhada | `C:\var\www\infra` |
+| Item                         | Caminho                      |
+| ---------------------------- | ---------------------------- |
+| Projeto no Windows           | `C:\var\www\minhas_financas` |
+| Projeto em Nginx/PHP         | `/var/www/minhas_financas`   |
+| Infraestrutura compartilhada | `C:\var\www\infra`           |
 
 O Compose e as configurações Nginx compartilhadas ficam fora deste repositório. Não substituí-los por arquivos genéricos.
 
@@ -383,6 +383,8 @@ A resposta esperada contém **HTTP 200 OK**. Isso confirma que o frontend está 
 
 ### 3. Conferir a autorização do Android
 
+faça o donwload do sdk tools: https://developer.android.com/tools/releases/platform-tools?hl=pt-br e extraia para C:\tools\platform-tools
+
 No segundo terminal, ainda em **Cmder/CMD**:
 
 ```bat
@@ -472,12 +474,12 @@ Refazer o `adb reverse` se a conexão USB ou o serviço ADB forem reiniciados e 
 
 ### Diagnóstico rápido e encerramento
 
-| Verificação | Resultado esperado | Se não ocorrer |
-| --- | --- | --- |
-| `curl.exe -I http://localhost:5173` no PC | HTTP 200 | Conferir Vite ligado e publicação `127.0.0.1:5173:5173`; recriar apenas o container de desenvolvimento se o Compose mudou. |
-| `adb devices -l` | Aparelho com estado `device` | Conferir cabo, depuração e autorização USB; reiniciar o serviço ADB conforme a etapa 3. |
-| `adb reverse --list` | `tcp:5173 tcp:5173` | Executar novamente `adb reverse tcp:5173 tcp:5173`, com o aparelho autorizado. |
-| Chrome do Android | Login em `http://localhost:5173` | Atualizar a aba e conferir as três verificações anteriores. Se persistir, guardar as saídas e o código exato do erro para diagnóstico. |
+| Verificação                               | Resultado esperado               | Se não ocorrer                                                                                                                         |
+| ----------------------------------------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `curl.exe -I http://localhost:5173` no PC | HTTP 200                         | Conferir Vite ligado e publicação `127.0.0.1:5173:5173`; recriar apenas o container de desenvolvimento se o Compose mudou.             |
+| `adb devices -l`                          | Aparelho com estado `device`     | Conferir cabo, depuração e autorização USB; reiniciar o serviço ADB conforme a etapa 3.                                                |
+| `adb reverse --list`                      | `tcp:5173 tcp:5173`              | Executar novamente `adb reverse tcp:5173 tcp:5173`, com o aparelho autorizado.                                                         |
+| Chrome do Android                         | Login em `http://localhost:5173` | Atualizar a aba e conferir as três verificações anteriores. Se persistir, guardar as saídas e o código exato do erro para diagnóstico. |
 
 Para remover somente este túnel:
 
@@ -495,15 +497,14 @@ Remove-NetFirewallRule -DisplayName "Minhas Financas - Vite Dev 5173"
 
 Referências oficiais: [ADB](https://developer.android.com/tools/adb) e [Platform-Tools](https://developer.android.com/tools/releases/platform-tools).
 
-
 ## Autenticação
 
-| Método | Rota | Finalidade |
-| --- | --- | --- |
-| GET | `/sanctum/csrf-cookie` | Preparar cookies CSRF |
-| POST | `/api/v1/auth/login` | Entrar |
-| GET | `/api/v1/me` | Consultar usuário autenticado |
-| POST | `/api/v1/auth/logout` | Encerrar sessão |
+| Método | Rota                   | Finalidade                    |
+| ------ | ---------------------- | ----------------------------- |
+| GET    | `/sanctum/csrf-cookie` | Preparar cookies CSRF         |
+| POST   | `/api/v1/auth/login`   | Entrar                        |
+| GET    | `/api/v1/me`           | Consultar usuário autenticado |
+| POST   | `/api/v1/auth/logout`  | Encerrar sessão               |
 
 As chamadas são centralizadas em `frontend/src/js/api.js`. Operações de escrita enviam `X-XSRF-TOKEN`. Não armazenar senhas ou tokens de autenticação em `localStorage`.
 
