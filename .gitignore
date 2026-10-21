@@ -24,5 +24,8 @@ auth.json
 .DS_Store
 Thumbs.db
 
+# Outros arquivos
 /init/
 /tools/composer.phar
+/graphify-out/
+projeto.md
