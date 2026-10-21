@@ -16,3 +16,7 @@ C:\tools\platform-tools\adb.exe reverse tcp:5173 tcp:5173
 
 comando para atualizar as dependencias front rodar em /var/www/infra 
 docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci
+
+
+
+TEM QUE VER PORQUE QUANDIO ESTA NA TELA DE HISTORICO E SELECIONA OUTRO MES NAO VEM OS DADOS MESMO TENDO DADOS.
