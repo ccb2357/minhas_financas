@@ -1,4 +1,5 @@
 import { defineConfig } from 'vite';
+import { minhasFinancasPwa } from './build/pwa-plugin.js';
 
 const backend = {
     target: 'http://nginx',
@@ -9,6 +10,7 @@ const backend = {
 };
 
 export default defineConfig({
+    plugins: [minhasFinancasPwa()],
     server: {
         proxy: {
             '/api': { ...backend },

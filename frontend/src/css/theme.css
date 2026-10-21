@@ -1,84 +1,473 @@
 /* Shared theme layer. Light keeps the approved design; dark changes surfaces,
    text and semantic states without filters or changing category swatches. */
-:root { color-scheme:light; --mf-link:#1564ff; }
+:root {
+    color-scheme: light;
+    --mf-link: #1564ff;
+}
 :root.dark {
-    color-scheme:dark;
-    --mf-background:#0b1221;
-    --mf-surface:#151f33;
-    --mf-title:#edf3ff;
-    --mf-text:#c3cee3;
-    --mf-muted:#9baac6;
-    --mf-placeholder:#8b9bb8;
-    --mf-border:#2b3851;
-    --mf-link:#8ab4ff;
-    --mf-income:#51d594;
-    --mf-expense:#ff7e90;
-    --mf-shadow-card:0 6px 24px rgb(0 0 0 / 14%);
-    --mf-shadow-primary:0 12px 25px rgb(0 0 0 / 22%);
-    --mf-raised:#1e2c45;
-    --mf-blue-soft:#203456;
-    --mf-success-soft:#143b30;
-    --mf-warning-soft:#3d311e;
-    --mf-danger-soft:#402331;
-    --f7-text-color:var(--mf-text);
-    --f7-page-bg-color:var(--mf-background);
-    --f7-bars-bg-color:var(--mf-surface);
-    --f7-sheet-bg-color:var(--mf-surface);
-    --f7-picker-bg-color:var(--mf-surface);
-    --f7-calendar-bg-color:var(--mf-surface);
-    --f7-list-bg-color:var(--mf-surface);
-    --f7-list-item-title-text-color:var(--mf-title);
-    --f7-searchbar-bg-color:var(--mf-surface);
-    --f7-searchbar-input-bg-color:var(--mf-raised);
-    --f7-searchbar-input-text-color:var(--mf-title);
+    color-scheme: dark;
+    --mf-background: #0b1221;
+    --mf-surface: #151f33;
+    --mf-title: #edf3ff;
+    --mf-text: #c3cee3;
+    --mf-muted: #9baac6;
+    --mf-placeholder: #8b9bb8;
+    --mf-border: #2b3851;
+    --mf-link: #8ab4ff;
+    --mf-income: #51d594;
+    --mf-expense: #ff7e90;
+    --mf-shadow-card: 0 6px 24px rgb(0 0 0 / 14%);
+    --mf-shadow-primary: 0 12px 25px rgb(0 0 0 / 22%);
+    --mf-raised: #1e2c45;
+    --mf-blue-soft: #203456;
+    --mf-success-soft: #143b30;
+    --mf-warning-soft: #3d311e;
+    --mf-danger-soft: #402331;
+    --f7-text-color: var(--mf-text);
+    --f7-page-bg-color: var(--mf-background);
+    --f7-bars-bg-color: var(--mf-surface);
+    --f7-sheet-bg-color: var(--mf-surface);
+    --f7-picker-bg-color: var(--mf-surface);
+    --f7-calendar-bg-color: var(--mf-surface);
+    --f7-list-bg-color: var(--mf-surface);
+    --f7-list-item-title-text-color: var(--mf-title);
+    --f7-searchbar-bg-color: var(--mf-surface);
+    --f7-searchbar-input-bg-color: var(--mf-raised);
+    --f7-searchbar-input-text-color: var(--mf-title);
 }
 
-.dark #app :where(.finance-page,.finance-popup,.transaction-popup,.category-popup,.settings-popup,.budget-popup) { background:var(--mf-background); }
-.dark #app .auth-scroll { background:radial-gradient(ellipse at 50% 25%,#15233e 0%,#0b1221 85%); }
-.dark #app .auth-waves { color:#28416a; opacity:.45; }
-.dark #app :where(.finance-card,.session-card,.auth-field,.settings-input-wrap,.category-live-preview,.category-icon-trigger,.category-icon-option,.category-field > input:not([type=hidden]),.category-field > select,.budget-field > input,.budget-field > select,.budget-limit-field > div:not(.budget-error-slot),.transaction-category-input,.popup-content dl,.preview-fields,.icon-picker-footer,.mf-calendar-sheet .calendar-header) { background:var(--mf-surface); border-color:var(--mf-border); }
-.dark #app :where(.settings-container button.settings-row,.mf-button-secondary,.category-state-button) { background:var(--mf-surface); border-color:var(--mf-border); }
-.dark #app :where(.month-picker,.history-search,.report-period,.category-tabs,.transaction-type-picker,.transaction-input,.preview-type,.preview-fields input,.preview-fields textarea,.icon-picker-option,.icon-picker-filters button,.category-field > select:disabled) { background:var(--mf-raised); border-color:var(--mf-border); }
-.dark #app :where(.auth-field,.settings-input-wrap,.transaction-input):focus-within { border-color:var(--mf-link); }
-.dark #app :where(.transaction-input input,.transaction-input textarea,.history-search input,.preview-fields input,.preview-fields textarea) { color:var(--mf-title); }
-.dark #app :where(.transaction-input input,.transaction-input textarea,.transaction-amount input)::placeholder { color:var(--mf-placeholder); }
-.dark #app :where(.footer-rule,.budget-progress-track,.mf-smart-grip,.mf-date-grip,.icon-picker-grip) { background:var(--mf-border); }
-.dark #app :where(.transaction-row,.settings-container .settings-row + .settings-row,.settings-links,.category-icon-trigger,.history-real .category-filter .mf-smart-trigger,.filter-chip,.category-filter) { border-color:var(--mf-border); }
-.dark #app :where(.filter-chip,.category-filter) { background:var(--mf-surface); color:var(--mf-text); }
-.dark #app .workspace-toolbar.toolbar { background:rgb(21 31 51 / 97%); border-color:var(--mf-border); }
-.dark #app .workspace-nav .nav-link { color:var(--mf-muted); }
-.dark #app :where(.workspace-nav .nav-active,.workspace-nav .new-transaction,.icon-button,.all-transactions,.transaction-category-actions button,.budget-category-actions button,.mf-button-secondary,.category-state-button,.settings-profile-button > .f7-icons,.settings-container .settings-row > .f7-icons) { color:var(--mf-link); }
-.dark #app .icon-button:hover { background:var(--mf-raised); }
-.dark #app :where(.summary-card small,.summary-card > .f7-icons,.card-heading .icon-button .f7-icons,.donut-label span,.chart-caption,.transaction-copy > span,.transaction-row > .f7-icons,.history-group-heading h2,.history-group-heading span,.history-real .history-count,.finance-empty,.period-note,.report-chart-period,.report-empty-note,.report-comparison-period,.report-result-comparison > div:first-child > span,.report-result-change small,.report-result-comparison > p,.report-insight-name,.report-insight-meta,.report-insight-empty,.report-insight-card small,.settings-profile-copy > span,.settings-row small,.settings-form-intro,.settings-field-note,.settings-input-wrap button,.settings-cancel,.budget-count,.budget-card-values,.budget-progress-row,.budget-remaining,.budget-card > .f7-icons,.budget-list-state,.budget-form-intro,.budget-category-note,.budget-field > small,.budget-cancel,.transaction-amount > label,.transaction-amount > div:not(.field-error),.transaction-field > label > span,.transaction-field-hint,.field-content label,.auth-brand p,.auth-footer,.field-icon,.password-toggle,.dashboard-state,.report-state,.category-inactive .category-card-copy small) { color:var(--mf-muted); }
-.dark #app :where(.income,.field-validation-icon,.budget-pill,.report-change.favorable,.result-change) { color:var(--mf-income); }
-.dark #app :where(.expense,.field-error,.auth-error,.dashboard-feedback-error,.history-category-status,.transaction-delete,.category-deactivate,.budget-remove,.report-change.unfavorable,.result-change.negative,.budget-feedback-error,.budget-card.over_limit .budget-remaining) { color:var(--mf-expense); }
-.dark #app :where(.summary-icon.income,.transaction-type-icon.income,.session-badge,.budget-pill,.report-change.favorable,.result-change,.auth-notice) { background:var(--mf-success-soft); }
-.dark #app :where(.summary-icon.expense,.transaction-type-icon.expense,.auth-error,.transaction-delete,.category-deactivate,.budget-remove,.report-change.unfavorable,.result-change.negative,.budget-feedback-error,.mf-input-invalid,.transaction-field.is-invalid .transaction-input,.auth-field.is-invalid) { background:var(--mf-danger-soft); border-color:#805063; }
-.dark #app :where(.auth-field.is-invalid .field-validation-icon) { color:var(--mf-expense); }
-.dark #app .auth-error.auth-notice { color:var(--mf-income); background:var(--mf-success-soft); border-color:#286c51; }
-.dark #app :where(.profile-avatar,.settings-icon,.category-empty-icon,.history-empty-icon,.budget-empty-icon,.mf-dialog-icon,.category-icon-trigger > span:first-child,.icon-picker-selection > span:first-child,.icon-picker-heading .icon-button,.mf-notification .notification-icon,.mf-smart-sheet .item-content:has(input:checked),.mf-calendar-sheet .calendar-day-today:not(.calendar-day-selected) .calendar-day-number,.picker-center-highlight,.icon-picker-empty button,.budget-unbudgeted) { color:var(--mf-link); background:var(--mf-blue-soft); }
-.dark #app :where(.category-avatar,.category-badge,.budget-category-icon,.tx-category-icon,.report-insight-icon,.mf-smart-option-icon) { background:color-mix(in srgb,var(--category-color,var(--mf-link)) 18%,var(--mf-surface)); }
-.dark #app .category-inactive { background:var(--mf-background); }
-.dark #app .settings-icon-orange { color:#ffc36d; background:var(--mf-warning-soft); }
-.dark #app .settings-icon-purple { color:#c2a5ff; background:#30244d; }
-.dark #app .settings-icon-red { color:var(--mf-expense); background:var(--mf-danger-soft); }
-.dark #app .settings-icon-green { color:var(--mf-income); background:var(--mf-success-soft); }
-.dark #app :where(.budget-card.near_limit .budget-pill,.report-calendar-note,.mf-dialog-confirm .mf-dialog-icon) { color:#ffcc80; background:var(--mf-warning-soft); border-color:#705936; }
-.dark #app :where(.budget-card.at_limit .budget-pill,.budget-card.over_limit .budget-pill) { color:var(--mf-expense); background:var(--mf-danger-soft); }
-.dark #app .reports-real .report-change:not(.favorable):not(.unfavorable) { color:var(--mf-muted); background:var(--mf-raised); }
-.dark #app :where(.budget-field input:disabled,.budget-field select:disabled) { color:var(--mf-muted); -webkit-text-fill-color:var(--mf-muted); }
-.dark #app .icon-picker-search input[type=search] { background:var(--mf-raised); color:var(--mf-title); }
-.dark #app :where(.icon-picker-option[aria-pressed=true],.category-icon-option[aria-pressed=true]) { color:var(--mf-link); background:var(--mf-blue-soft); border-color:var(--mf-link); }
-.dark #app .icon-picker-option { color:var(--mf-link); }
-.dark #app .mf-notification.notification { background:var(--mf-surface); }
-.dark #app .mf-dialog-confirm .dialog-button:last-child { background:var(--mf-danger-soft); border-color:#805063; color:var(--mf-expense); }
-.dark #app .mf-dialog-confirm .dialog-button:last-child:hover { background:#573045; }
+.dark
+    #app
+    :where(
+        .finance-page,
+        .finance-popup,
+        .transaction-popup,
+        .category-popup,
+        .settings-popup,
+        .budget-popup
+    ) {
+    background: var(--mf-background);
+}
+.dark #app .auth-scroll {
+    background: radial-gradient(ellipse at 50% 25%, #15233e 0%, #0b1221 85%);
+}
+.dark #app .auth-waves {
+    color: #28416a;
+    opacity: 0.45;
+}
+.dark
+    #app
+    :where(
+        .finance-card,
+        .session-card,
+        .auth-field,
+        .settings-input-wrap,
+        .category-live-preview,
+        .category-icon-trigger,
+        .category-icon-option,
+        .category-field > input:not([type="hidden"]),
+        .category-field > select,
+        .budget-field > input,
+        .budget-field > select,
+        .budget-limit-field > div:not(.budget-error-slot),
+        .transaction-category-input,
+        .popup-content dl,
+        .preview-fields,
+        .icon-picker-footer,
+        .mf-calendar-sheet .calendar-header
+    ) {
+    background: var(--mf-surface);
+    border-color: var(--mf-border);
+}
+.dark
+    #app
+    :where(
+        .settings-container button.settings-row,
+        .mf-button-secondary,
+        .category-state-button
+    ) {
+    background: var(--mf-surface);
+    border-color: var(--mf-border);
+}
+.dark
+    #app
+    :where(
+        .month-picker,
+        .history-search,
+        .report-period,
+        .category-tabs,
+        .transaction-type-picker,
+        .transaction-input,
+        .preview-type,
+        .preview-fields input,
+        .preview-fields textarea,
+        .icon-picker-option,
+        .icon-picker-filters button,
+        .category-field > select:disabled
+    ) {
+    background: var(--mf-raised);
+    border-color: var(--mf-border);
+}
+.dark
+    #app
+    :where(.auth-field, .settings-input-wrap, .transaction-input):focus-within {
+    border-color: var(--mf-link);
+}
+.dark
+    #app
+    :where(
+        .transaction-input input,
+        .transaction-input textarea,
+        .history-search input,
+        .preview-fields input,
+        .preview-fields textarea
+    ) {
+    color: var(--mf-title);
+}
+.dark
+    #app
+    :where(
+        .transaction-input input,
+        .transaction-input textarea,
+        .transaction-amount input
+    )::placeholder {
+    color: var(--mf-placeholder);
+}
+.dark
+    #app
+    :where(
+        .footer-rule,
+        .budget-progress-track,
+        .mf-smart-grip,
+        .mf-date-grip,
+        .icon-picker-grip
+    ) {
+    background: var(--mf-border);
+}
+.dark
+    #app
+    :where(
+        .transaction-row,
+        .settings-container .settings-row + .settings-row,
+        .settings-links,
+        .category-icon-trigger,
+        .history-real .category-filter .mf-smart-trigger,
+        .filter-chip,
+        .category-filter
+    ) {
+    border-color: var(--mf-border);
+}
+.dark #app :where(.filter-chip, .category-filter) {
+    background: var(--mf-surface);
+    color: var(--mf-text);
+}
+.dark #app .workspace-toolbar.toolbar {
+    background: rgb(21 31 51 / 97%);
+    border-color: var(--mf-border);
+}
+.dark #app .workspace-nav .nav-link {
+    color: var(--mf-muted);
+}
+.dark
+    #app
+    :where(
+        .workspace-nav .nav-active,
+        .workspace-nav .new-transaction,
+        .icon-button,
+        .all-transactions,
+        .transaction-category-actions button,
+        .budget-category-actions button,
+        .mf-button-secondary,
+        .category-state-button,
+        .settings-profile-button > .f7-icons,
+        .settings-container .settings-row > .f7-icons
+    ) {
+    color: var(--mf-link);
+}
+.dark #app .icon-button:hover {
+    background: var(--mf-raised);
+}
+.dark
+    #app
+    :where(
+        .summary-card small,
+        .summary-card > .f7-icons,
+        .card-heading .icon-button .f7-icons,
+        .donut-label span,
+        .chart-caption,
+        .transaction-copy > span,
+        .transaction-row > .f7-icons,
+        .history-group-heading h2,
+        .history-group-heading span,
+        .history-real .history-count,
+        .finance-empty,
+        .period-note,
+        .report-chart-period,
+        .report-empty-note,
+        .report-comparison-period,
+        .report-result-comparison > div:first-child > span,
+        .report-result-change small,
+        .report-result-comparison > p,
+        .report-insight-name,
+        .report-insight-meta,
+        .report-insight-empty,
+        .report-insight-card small,
+        .settings-profile-copy > span,
+        .settings-row small,
+        .settings-form-intro,
+        .settings-field-note,
+        .settings-input-wrap button,
+        .settings-cancel,
+        .budget-count,
+        .budget-card-values,
+        .budget-progress-row,
+        .budget-remaining,
+        .budget-card > .f7-icons,
+        .budget-list-state,
+        .budget-form-intro,
+        .budget-category-note,
+        .budget-field > small,
+        .budget-cancel,
+        .transaction-amount > label,
+        .transaction-amount > div:not(.field-error),
+        .transaction-field > label > span,
+        .transaction-field-hint,
+        .field-content label,
+        .auth-brand p,
+        .auth-footer,
+        .field-icon,
+        .password-toggle,
+        .dashboard-state,
+        .report-state,
+        .category-inactive .category-card-copy small
+    ) {
+    color: var(--mf-muted);
+}
+.dark
+    #app
+    :where(
+        .income,
+        .field-validation-icon,
+        .budget-pill,
+        .report-change.favorable,
+        .result-change
+    ) {
+    color: var(--mf-income);
+}
+.dark
+    #app
+    :where(
+        .expense,
+        .field-error,
+        .auth-error,
+        .dashboard-feedback-error,
+        .history-category-status,
+        .transaction-delete,
+        .category-deactivate,
+        .budget-remove,
+        .report-change.unfavorable,
+        .result-change.negative,
+        .budget-feedback-error,
+        .budget-card.over_limit .budget-remaining
+    ) {
+    color: var(--mf-expense);
+}
+.dark
+    #app
+    :where(
+        .summary-icon.income,
+        .transaction-type-icon.income,
+        .session-badge,
+        .budget-pill,
+        .report-change.favorable,
+        .result-change,
+        .auth-notice
+    ) {
+    background: var(--mf-success-soft);
+}
+.dark
+    #app
+    :where(
+        .summary-icon.expense,
+        .transaction-type-icon.expense,
+        .auth-error,
+        .transaction-delete,
+        .category-deactivate,
+        .budget-remove,
+        .report-change.unfavorable,
+        .result-change.negative,
+        .budget-feedback-error,
+        .mf-input-invalid,
+        .transaction-field.is-invalid .transaction-input,
+        .auth-field.is-invalid
+    ) {
+    background: var(--mf-danger-soft);
+    border-color: #805063;
+}
+.dark #app :where(.auth-field.is-invalid .field-validation-icon) {
+    color: var(--mf-expense);
+}
+.dark #app .auth-error.auth-notice {
+    color: var(--mf-income);
+    background: var(--mf-success-soft);
+    border-color: #286c51;
+}
+.dark
+    #app
+    :where(
+        .profile-avatar,
+        .settings-icon,
+        .category-empty-icon,
+        .history-empty-icon,
+        .budget-empty-icon,
+        .mf-dialog-icon,
+        .category-icon-trigger > span:first-child,
+        .icon-picker-selection > span:first-child,
+        .icon-picker-heading .icon-button,
+        .mf-notification .notification-icon,
+        .mf-smart-sheet .item-content:has(input:checked),
+        .mf-calendar-sheet
+            .calendar-day-today:not(.calendar-day-selected)
+            .calendar-day-number,
+        .picker-center-highlight,
+        .icon-picker-empty button,
+        .budget-unbudgeted
+    ) {
+    color: var(--mf-link);
+    background: var(--mf-blue-soft);
+}
+.dark
+    #app
+    :where(
+        .category-avatar,
+        .category-badge,
+        .budget-category-icon,
+        .tx-category-icon,
+        .report-insight-icon,
+        .mf-smart-option-icon
+    ) {
+    background: color-mix(
+        in srgb,
+        var(--category-color, var(--mf-link)) 18%,
+        var(--mf-surface)
+    );
+}
+.dark #app .category-inactive {
+    background: var(--mf-background);
+}
+.dark #app .settings-icon-orange {
+    color: #ffc36d;
+    background: var(--mf-warning-soft);
+}
+.dark #app .settings-icon-purple {
+    color: #c2a5ff;
+    background: #30244d;
+}
+.dark #app .settings-icon-red {
+    color: var(--mf-expense);
+    background: var(--mf-danger-soft);
+}
+.dark #app .settings-icon-green {
+    color: var(--mf-income);
+    background: var(--mf-success-soft);
+}
+.dark
+    #app
+    :where(
+        .budget-card.near_limit .budget-pill,
+        .report-calendar-note,
+        .mf-dialog-confirm .mf-dialog-icon
+    ) {
+    color: #ffcc80;
+    background: var(--mf-warning-soft);
+    border-color: #705936;
+}
+.dark
+    #app
+    :where(
+        .budget-card.at_limit .budget-pill,
+        .budget-card.over_limit .budget-pill
+    ) {
+    color: var(--mf-expense);
+    background: var(--mf-danger-soft);
+}
+.dark #app .reports-real .report-change:not(.favorable):not(.unfavorable) {
+    color: var(--mf-muted);
+    background: var(--mf-raised);
+}
+.dark #app :where(.budget-field input:disabled, .budget-field select:disabled) {
+    color: var(--mf-muted);
+    -webkit-text-fill-color: var(--mf-muted);
+}
+.dark #app .icon-picker-search input[type="search"] {
+    background: var(--mf-raised);
+    color: var(--mf-title);
+}
+.dark
+    #app
+    :where(
+        .icon-picker-option[aria-pressed="true"],
+        .category-icon-option[aria-pressed="true"]
+    ) {
+    color: var(--mf-link);
+    background: var(--mf-blue-soft);
+    border-color: var(--mf-link);
+}
+.dark #app .icon-picker-option {
+    color: var(--mf-link);
+}
+.dark #app .mf-notification.notification {
+    background: var(--mf-surface);
+}
+.dark #app .mf-dialog-confirm .dialog-button:last-child {
+    background: var(--mf-danger-soft);
+    border-color: #805063;
+    color: var(--mf-expense);
+}
+.dark #app .mf-dialog-confirm .dialog-button:last-child:hover {
+    background: #573045;
+}
 /* Keep white text and the approved blue gradient for selected controls. */
-.dark #app :where(.filter-chip[aria-pressed=true],.report-period button[aria-pressed=true],.icon-picker-filters [aria-pressed=true]) { background:var(--mf-primary); color:white; border-color:var(--mf-primary); }
-.dark #app .category-cancel { background:transparent; border-color:transparent; color:var(--mf-muted); }
-.dark #app .remember-box { background:var(--mf-raised); border-color:var(--mf-border); }
-.dark #app .remember-control input:checked + .remember-box { background:var(--mf-primary); border-color:var(--mf-primary); }
-.dark #app .password-toggle:hover { background:var(--mf-raised); }
+.dark
+    #app
+    :where(
+        .filter-chip[aria-pressed="true"],
+        .report-period button[aria-pressed="true"],
+        .icon-picker-filters [aria-pressed="true"]
+    ) {
+    background: var(--mf-primary);
+    color: white;
+    border-color: var(--mf-primary);
+}
+.dark #app .category-cancel {
+    background: transparent;
+    border-color: transparent;
+    color: var(--mf-muted);
+}
+.dark #app .remember-box {
+    background: var(--mf-raised);
+    border-color: var(--mf-border);
+}
+.dark #app .remember-control input:checked + .remember-box {
+    background: var(--mf-primary);
+    border-color: var(--mf-primary);
+}
+.dark #app .password-toggle:hover {
+    background: var(--mf-raised);
+}
 
-.dark #app .report-period button:not([aria-pressed=true]) { color:var(--mf-muted); }
-.dark #app :where(.category-avatar,.category-badge,.budget-category-icon,.tx-category-icon,.report-insight-icon,.mf-smart-option-icon) { color:color-mix(in srgb,var(--category-color,var(--mf-link)) 70%,white); }
+.dark #app .report-period button:not([aria-pressed="true"]) {
+    color: var(--mf-muted);
+}
+.dark
+    #app
+    :where(
+        .category-avatar,
+        .category-badge,
+        .budget-category-icon,
+        .tx-category-icon,
+        .report-insight-icon,
+        .mf-smart-option-icon
+    ) {
+    color: color-mix(in srgb, var(--category-color, var(--mf-link)) 70%, white);
+}

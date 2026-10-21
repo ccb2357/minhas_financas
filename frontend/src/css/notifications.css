@@ -1,19 +1,60 @@
 /* Framework7 notification, using the same palette and surfaces as the app. */
 #app .notification.mf-notification {
-    --f7-notification-max-width:420px;
-    --f7-notification-margin:14px;
-    --f7-notification-title-text-transform:none;
-    --f7-notification-title-letter-spacing:normal;
-    --f7-notification-title-color:var(--mf-title);
-    --f7-notification-text-color:var(--mf-text);
-    --f7-notification-icon-size:40px;
-    padding:14px 16px; gap:12px;
-    border:1px solid var(--mf-border); border-radius:20px;
-    background:white; box-shadow:0 12px 36px rgb(12 28 85 / 16%); backdrop-filter:none;
+    --f7-notification-max-width: 420px;
+    --f7-notification-margin: 14px;
+    --f7-notification-title-text-transform: none;
+    --f7-notification-title-letter-spacing: normal;
+    --f7-notification-title-color: var(--mf-title);
+    --f7-notification-text-color: var(--mf-text);
+    --f7-notification-icon-size: 40px;
+    padding: 14px 16px;
+    gap: 12px;
+    border: 1px solid var(--mf-border);
+    border-radius: 20px;
+    background: white;
+    box-shadow: 0 12px 36px rgb(12 28 85 / 16%);
+    backdrop-filter: none;
 }
-.mf-notification .notification-icon { display:grid; place-items:center; width:40px; height:40px; border-radius:13px; color:var(--mf-primary); background:#edf3ff; }
-.mf-notification .notification-icon .f7-icons { display:flex; align-items:center; justify-content:center; margin:0; padding:0; font-size:25px; line-height:1; }
-.mf-notification .notification-content { min-width:0; }
-#app .mf-notification .notification-title { font-family:var(--mf-font); font-size:14px; line-height:1.4; font-weight:750; color:var(--mf-title); letter-spacing:normal; text-transform:none; }
-#app .mf-notification .notification-text { margin-top:3px; font-family:var(--mf-font); color:var(--mf-text); font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
-@media(prefers-reduced-motion:reduce) { #app .mf-notification { transition-duration:0ms !important; } }
+.mf-notification .notification-icon {
+    display: grid;
+    place-items: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 13px;
+    color: var(--mf-primary);
+    background: #edf3ff;
+}
+.mf-notification .notification-icon .f7-icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    font-size: 25px;
+    line-height: 1;
+}
+.mf-notification .notification-content {
+    min-width: 0;
+}
+#app .mf-notification .notification-title {
+    font-family: var(--mf-font);
+    font-size: 14px;
+    line-height: 1.4;
+    font-weight: 750;
+    color: var(--mf-title);
+    letter-spacing: normal;
+    text-transform: none;
+}
+#app .mf-notification .notification-text {
+    margin-top: 3px;
+    font-family: var(--mf-font);
+    color: var(--mf-text);
+    font-size: 13px;
+    line-height: 1.5;
+    overflow-wrap: anywhere;
+}
+@media (prefers-reduced-motion: reduce) {
+    #app .mf-notification {
+        transition-duration: 0ms !important;
+    }
+}

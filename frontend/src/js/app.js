@@ -17,6 +17,8 @@ import '../css/dialogs.css';
 import '../css/icon-picker.css';
 import '../css/notifications.css';
 import '../css/theme.css';
+import { createUpdater } from './shared/updates.js';
+import { createInstaller } from './shared/install.js';
 import { installTheme } from './shared/theme.js';
 import { installDialogs } from './shared/dialogs.js';
 import { mountAuth } from './auth.js';
@@ -32,10 +34,12 @@ const app = new Framework7({
 
 const theme = installTheme(app);
 installDialogs(app);
+const installer = createInstaller(app);
+const updates = createUpdater(app);
 
 app.views.create('#auth-view', { router: false });
 const workspace = createWorkspace(app, {
-    theme,
+    theme, installer, updates,
     logout: () => auth.logout(),
     onSessionExpired: () => auth.expireSession(),
     onPasswordChanged: email => auth.passwordChanged(email),

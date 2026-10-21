@@ -1,5 +1,7 @@
 :root {
-    --mf-font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --mf-font:
+        -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial,
+        sans-serif;
     --mf-primary: #1564ff;
     --mf-primary-deep: #0845ed;
     --mf-title: #0c1c55;

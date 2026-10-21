@@ -8,7 +8,7 @@ import { createRoutes } from './routes.js';
 import { openTransactionForm } from './transactions/form.js';
 import { todayBrazil } from './shared/calendar.js';
 
-export function createWorkspace(app, { logout, onSessionExpired, onPasswordChanged, theme }) {
+export function createWorkspace(app, { logout, onSessionExpired, onPasswordChanged, theme, installer, updates }) {
     const container = document.querySelector('#workspace');
     const authView = document.querySelector('#auth-view');
     const financeView = document.querySelector('#finance-view');
@@ -17,7 +17,7 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
     const state = { budgetMonth: todayBrazil().slice(0, 7), dashboardMonth: todayBrazil().slice(0, 7), dashboardFeedback: '', reportsMonth: todayBrazil().slice(0, 7), reportsRange: 'month', historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
     let view, editor;
     const context = {
-        app, state, logout, cleanups, theme, expireSession: onSessionExpired, events: new EventTarget(),
+        app, state, logout, cleanups, theme, installer, updates, expireSession: onSessionExpired, events: new EventTarget(),
         navigate: path => view?.router.navigate(path),
         beforeLeave(resolve, reject) { if (closeActiveIconPicker(app) || closeActiveSmartSelect(app) || closeActiveDatePicker(app)) { reject(); return; } if (editor) editor.beforeLeave(resolve, reject); else resolve(); },
         openSettings(mode = 'profile') {
