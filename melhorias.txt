@@ -18,5 +18,8 @@ comando para atualizar as dependencias front rodar em /var/www/infra
 docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci
 
 
+quando fizer um git pull tem que rodar o comando abaixo para gerar o build
+docker run --rm -v /var/www/minhas_financas/frontend:/app -w /app node:22-alpine sh -c "npm ci && npm run build"
+
 
 TEM QUE VER PORQUE QUANDIO ESTA NA TELA DE HISTORICO E SELECIONA OUTRO MES NAO VEM OS DADOS MESMO TENDO DADOS.
