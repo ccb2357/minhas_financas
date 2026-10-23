@@ -9,7 +9,6 @@ use App\Http\Requests\Budget\UpdateBudgetRequest;
 use App\Http\Resources\BudgetResource;
 use App\Services\BudgetReader;
 use App\Services\BudgetWriter;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -20,9 +19,7 @@ class BudgetController extends Controller
     public function index(ListBudgetRequest $request, BudgetReader $reader): JsonResponse
     {
         $filters = $request->validated();
-        $today = CarbonImmutable::now('America/Sao_Paulo');
-        $start = CarbonImmutable::create($filters['year'] ?? $today->year,
-            $filters['month'] ?? $today->month, 1, 0, 0, 0, 'America/Sao_Paulo');
+        $start = app(\App\Services\FinancialCycles::class)->selected($filters);
 
         return DB::transaction(function () use ($request, $reader, $start, $filters): JsonResponse {
             $overview = $reader->overview($request->user(), $start, (int) ($filters['per_page'] ?? 25));

@@ -1,7 +1,8 @@
+import { knownCycle, cycleDates } from '../cycles/state.js';
 import { listTransactions } from '../transactions/api.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { formatMoney as money } from '../shared/money.js';
-import { dateText, monthLabel } from '../shared/calendar.js';
+import { dateText } from '../shared/calendar.js';
 import { safeIcon, safeColor } from '../categories/catalog.js';
 
 export function openUnbudgetedExpenses(ctx, month, onClosed) {
@@ -9,8 +10,9 @@ export function openUnbudgetedExpenses(ctx, month, onClosed) {
     const focus = document.activeElement;
     const events = new AbortController();
     const popup = ctx.app.popup.create({
+        animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         closeByBackdropClick: true, closeOnEscape: true, swipeToClose: false,
-        content: `<div class="popup unbudgeted-popup" role="dialog" aria-modal="true" aria-labelledby="unbudgeted-title"><div class="unbudgeted-scroll"><div class="unbudgeted-content"><header><h2 id="unbudgeted-title">Despesas sem orçamento</h2><button type="button" class="icon-button" data-unbudgeted-close aria-label="Fechar despesas sem orçamento">${icon('xmark')}</button></header><p class="unbudgeted-period">${esc(monthLabel(month))}</p><div class="finance-card unbudgeted-total"><span>Total sem orçamento</span><strong data-unbudgeted-total>—</strong></div><div class="finance-card unbudgeted-transactions"><ul class="transaction-list" data-unbudgeted-list></ul></div><div class="unbudgeted-state" role="status"></div><button type="button" class="mf-button mf-button-secondary" data-unbudgeted-more hidden>Carregar mais</button></div></div></div>`,
+        content: `<div class="popup unbudgeted-popup" role="dialog" aria-modal="true" aria-labelledby="unbudgeted-title"><div class="unbudgeted-scroll"><div class="unbudgeted-content"><header><h2 id="unbudgeted-title">Despesas sem orçamento</h2><button type="button" class="icon-button" data-unbudgeted-close aria-label="Fechar despesas sem orçamento">${icon('xmark')}</button></header><p class="unbudgeted-period">${esc(cycleDates(knownCycle(month)))}</p><div class="finance-card unbudgeted-total"><span>Total sem orçamento</span><strong data-unbudgeted-total>—</strong></div><div class="finance-card unbudgeted-transactions"><ul class="transaction-list" data-unbudgeted-list></ul></div><div class="unbudgeted-state" role="status"></div><button type="button" class="mf-button mf-button-secondary" data-unbudgeted-more hidden>Carregar mais</button></div></div></div>`,
         on: {
             opened() { popup.el.querySelector('[data-unbudgeted-close]').focus(); },
             closed(instance) {
@@ -36,7 +38,7 @@ export function openUnbudgetedExpenses(ctx, month, onClosed) {
             page = response.meta.current_page; lastPage = response.meta.last_page;
             root.querySelector('[data-unbudgeted-total]').textContent = money(response.meta.total_amount_cents);
             root.querySelector('[data-unbudgeted-list]').innerHTML = rows.map(row => `<li><div class="transaction-row"><span class="category-badge" style="--category-color:${safeColor(row.category.color)}">${icon(safeIcon(row.category.icon))}</span><span class="transaction-copy"><strong>${esc(row.description)}</strong><span>${esc(row.category.name)}${row.category.is_active ? '' : ' (inativa)'} · ${dateText(row.transaction_date)}</span></span><span class="transaction-value expense">− ${money(row.amount_cents)}</span></div></li>`).join('');
-            state.textContent = rows.length ? '' : 'Nenhuma despesa sem orçamento neste mês.';
+            state.textContent = rows.length ? '' : 'Nenhuma despesa sem orçamento neste ciclo.';
             more.hidden = page >= lastPage;
         } catch (error) {
             if (!alive || current !== revision) return;

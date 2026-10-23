@@ -34,6 +34,9 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::delete('/categories/{category}', [CategoryController::class, 'destroy'])
         ->whereNumber('category');
 
+    Route::get('/financial-cycle', [\App\Http\Controllers\Api\V1\FinancialCycleController::class, 'show']);
+    Route::put('/financial-cycle', [\App\Http\Controllers\Api\V1\FinancialCycleController::class, 'update'])->middleware('throttle:10,1');
+
     Route::get('/dashboard', DashboardController::class);
     Route::get('/reports', ReportController::class);
 

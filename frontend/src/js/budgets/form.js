@@ -1,3 +1,5 @@
+import { cycleDates, knownCycle } from '../cycles/state.js';
+import { getCycleConfiguration } from '../cycles/api.js';
 import { mountDateFields } from '../shared/date-picker.js';
 import { safeIcon, safeColor } from '../categories/catalog.js';
 import { mountSmartSelects } from '../shared/smart-select.js';
@@ -19,7 +21,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     const events = new AbortController(), previousFocus = document.activeElement;
     const popup = ctx.app.popup.create({
         closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
-        content: `<div class="popup budget-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="budget-popup-scroll"><div class="budget-form-container"><header><h2 id="${prefix}-title" tabindex="-1">${editing ? 'Editar orçamento' : 'Novo orçamento'}</h2><button type="button" class="icon-button" data-budget-close aria-label="Fechar formulário">${icon('xmark')}</button></header><p class="budget-form-intro">${editing ? 'Ajuste seu limite mensal. Os gastos vêm dos seus lançamentos.' : 'Defina um limite por categoria para acompanhar seus gastos.'}</p><form id="${prefix}" novalidate><fieldset><div class="budget-field" data-field><label for="${prefix}-period">Mês do orçamento</label><input id="${prefix}-period" name="period" type="month" min="1900-01" max="2100-12" value="${esc(selectedMonth)}" ${editing ? 'disabled' : ''}><div class="budget-error-slot"><div class="field-error" id="${prefix}-period-error" hidden></div></div></div><div class="budget-field" data-field><label for="${prefix}-category">Categoria de despesa</label><select id="${prefix}-category" name="category_id" disabled>${editing ? `<option value="${budget.category_id}">${esc(budget.category.name)}${budget.category.is_active ? '' : ' (inativa)'}</option>` : '<option value="">Carregando categorias...</option>'}</select><div class="budget-error-slot"><div class="field-error" id="${prefix}-category-error" hidden></div></div><p class="budget-category-note" data-budget-category-note role="status">${editing ? 'A categoria e o mês são definidos na criação.' : ''}</p>${editing ? '' : '<div class="budget-category-actions"><button type="button" data-budget-options-retry>Atualizar categorias</button><button type="button" data-budget-manage>Criar categoria</button></div>'}</div><div class="budget-field budget-limit-field" data-field><label for="${prefix}-limit">Limite mensal</label><div><span aria-hidden="true">R$</span><input id="${prefix}-limit" name="limit" data-mask="moedaBRL" type="text" inputmode="decimal" autocomplete="off" maxlength="22" placeholder="0,00" aria-label="Limite mensal em reais" value="${editing ? amountText(budget.limit_cents) : ''}"></div><div class="budget-error-slot"><div class="field-error" id="${prefix}-limit-error" hidden></div></div><small>Digite somente os números. Os dois últimos são centavos.</small></div></fieldset><p class="auth-error budget-form-error" role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary" data-budget-save>Salvar orçamento</button>${editing ? `<button type="button" class="budget-remove" data-budget-remove>${icon('trash')} Remover orçamento</button>` : ''}<button type="button" class="budget-cancel" data-budget-close>Cancelar</button></form></div></div></div>`,
+        content: `<div class="popup budget-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="budget-popup-scroll"><div class="budget-form-container"><header><h2 id="${prefix}-title" tabindex="-1">${editing ? 'Editar orçamento' : 'Novo orçamento'}</h2><button type="button" class="icon-button" data-budget-close aria-label="Fechar formulário">${icon('xmark')}</button></header><p class="budget-form-intro">${editing ? 'Ajuste seu limite por ciclo. Os gastos vêm dos seus lançamentos.' : 'Defina um limite por categoria para acompanhar seus gastos.'}</p><form id="${prefix}" novalidate><fieldset><div class="budget-field" data-field><label for="${prefix}-period">Ciclo do orçamento</label><input id="${prefix}-period" name="period" type="month" min="1900-01" max="2100-12" value="${esc(selectedMonth)}" ${editing ? 'disabled' : ''}><p class="budget-cycle-dates" data-budget-cycle-dates></p><div class="budget-error-slot"><div class="field-error" id="${prefix}-period-error" hidden></div></div></div><div class="budget-field" data-field><label for="${prefix}-category">Categoria de despesa</label><select id="${prefix}-category" name="category_id" disabled>${editing ? `<option value="${budget.category_id}">${esc(budget.category.name)}${budget.category.is_active ? '' : ' (inativa)'}</option>` : '<option value="">Carregando categorias...</option>'}</select><div class="budget-error-slot"><div class="field-error" id="${prefix}-category-error" hidden></div></div><p class="budget-category-note" data-budget-category-note role="status">${editing ? 'A categoria e o ciclo são definidos na criação.' : ''}</p>${editing ? '' : '<div class="budget-category-actions"><button type="button" data-budget-options-retry>Atualizar categorias</button><button type="button" data-budget-manage>Criar categoria</button></div>'}</div><div class="budget-field budget-limit-field" data-field><label for="${prefix}-limit">Limite do ciclo</label><div><span aria-hidden="true">R$</span><input id="${prefix}-limit" name="limit" data-mask="moedaBRL" type="text" inputmode="decimal" autocomplete="off" maxlength="22" placeholder="0,00" aria-label="Limite do ciclo em reais" value="${editing ? amountText(budget.limit_cents) : ''}"></div><div class="budget-error-slot"><div class="field-error" id="${prefix}-limit-error" hidden></div></div><small>Digite somente os números. Os dois últimos são centavos.</small></div></fieldset><p class="auth-error budget-form-error" role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary" data-budget-save>Salvar orçamento</button>${editing ? `<button type="button" class="budget-remove" data-budget-remove>${icon('trash')} Remover orçamento</button>` : ''}<button type="button" class="budget-cancel" data-budget-close>Cancelar</button></form></div></div></div>`,
         on: {
             opened() { popup.el.querySelector('h2').focus(); },
             closed(instance) {
@@ -36,6 +38,17 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     const dateFields = mountDateFields(form, ctx.app);
     const masks = mountMasks(form), limitMask = masks.get(fields.limit);
     const errorBox = form.querySelector('.budget-form-error'), save = form.querySelector('[data-budget-save]');
+    let periodRevision = 0;
+    async function showPeriod() {
+        const current = ++periodRevision, month = fields.period.value;
+        const label = form.querySelector('[data-budget-cycle-dates]');
+        label.textContent = validMonth(month) ? cycleDates(knownCycle(month)) : 'Selecione o ciclo';
+        if (!validMonth(month) || knownCycle(month)) return;
+        try { await getCycleConfiguration(month); if (alive && current === periodRevision) label.textContent = cycleDates(knownCycle(month)); }
+        catch { if (alive && current === periodRevision) label.textContent = 'O período será confirmado ao salvar. Não foi possível carregar as datas.'; }
+    }
+    fields.period.addEventListener('change', () => { void showPeriod(); }, { signal: events.signal });
+    void showPeriod();
     function values() { return { period: fields.period.value, category_id: fields.category_id.value, limit: limitMask.getCents() ?? fields.limit.value.trim() }; }
     const initial = JSON.stringify(values());
     const dirty = () => JSON.stringify(values()) !== initial;
@@ -56,7 +69,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
             if (!alive) return;
             fields.category_id.innerHTML = '<option value="">Selecione uma categoria</option>' + categories.map(item => `<option value="${item.id}" data-option-icon="${safeIcon(item.icon)}" data-option-color="${safeColor(item.color)}">${esc(item.name)}</option>`).join('');
             if (categories.some(item => String(item.id) === chosen)) fields.category_id.value = chosen;
-            form.querySelector('[data-budget-category-note]').textContent = categories.length ? 'Uma categoria pode ter um limite por mês.' : 'Crie uma categoria de despesa ativa para definir um orçamento.';
+            form.querySelector('[data-budget-category-note]').textContent = categories.length ? 'Uma categoria pode ter um limite por ciclo.' : 'Crie uma categoria de despesa ativa para definir um orçamento.';
         } catch (error) {
             if (!alive) return;
             if (error.status === 401) { ctx.expireSession(); return; }
@@ -96,13 +109,13 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     }
     const schema = {
         limit_cents: { selector: `#${prefix}-limit`, errorsContainer: `#${prefix}-limit-error`, rules: [
-            rules.required('Informe o limite mensal.'), { validator: () => limitMask.getCents() !== null, errorMessage: 'Informe de R$ 0,01 a R$ 999.999.999,99.' },
+            rules.required('Informe o limite por ciclo.'), { validator: () => limitMask.getCents() !== null, errorMessage: 'Informe de R$ 0,01 a R$ 999.999.999,99.' },
         ] },
     };
     if (!editing) {
         schema.category_id = { selector: `#${prefix}-category`, errorsContainer: `#${prefix}-category-error`, rules: [rules.required('Selecione uma categoria de despesa.')] };
         schema.period = { selector: `#${prefix}-period`, errorsContainer: `#${prefix}-period-error`, rules: [
-            rules.required('Selecione o mês do orçamento.'), { validator: validMonth, errorMessage: 'Selecione um mês entre janeiro de 1900 e dezembro de 2100.' },
+            rules.required('Selecione o ciclo do orçamento.'), { validator: validMonth, errorMessage: 'Selecione um ciclo entre janeiro de 1900 e dezembro de 2100.' },
         ] };
     }
     validation = createValidation(form, schema, {

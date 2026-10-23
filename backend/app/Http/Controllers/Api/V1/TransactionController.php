@@ -8,7 +8,6 @@ use App\Http\Requests\Transaction\StoreTransactionRequest;
 use App\Http\Requests\Transaction\UpdateTransactionRequest;
 use App\Http\Resources\TransactionResource;
 use App\Services\TransactionWriter;
-use Carbon\CarbonImmutable;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -19,17 +18,17 @@ class TransactionController extends Controller
     public function index(ListTransactionRequest $request): AnonymousResourceCollection
     {
         $filters = $request->validated();
-        // O mês padrão acompanha o calendário local do aplicativo no Brasil.
-        $today = CarbonImmutable::now('America/Sao_Paulo');
-        $start = CarbonImmutable::create($filters['year'] ?? $today->year,
-            $filters['month'] ?? $today->month, 1)->startOfDay();
+        $calendar = app(\App\Services\FinancialCycles::class);
+        $label = $calendar->selected($filters);
+        $cycle = $calendar->forLabel($label);
+        $start = $calendar->start($cycle); $end = $calendar->endExclusive($cycle);
         $query = $request->user()->transactions()->with('category')
             ->where('transaction_date', '>=', $start->format('Y-m-d'))
-            ->where('transaction_date', '<', $start->addMonth()->format('Y-m-d'));
+            ->where('transaction_date', '<', $end->format('Y-m-d'));
 
         if ($filters['unbudgeted'] ?? false) {
             $budgetCategories = $request->user()->monthlyBudgets()
-                ->where('year', $start->year)->where('month', $start->month)->select('category_id');
+                ->where('financial_cycle_id', $cycle->id)->select('category_id');
             $query->where('type', 'expense')->whereNotIn('category_id', $budgetCategories);
         }
 
@@ -45,6 +44,7 @@ class TransactionController extends Controller
         $extra = ($filters['unbudgeted'] ?? false)
             ? ['meta' => ['total_amount_cents' => (int) (clone $query)->sum('amount_cents')]]
             : [];
+        $extra['meta']['period'] = $calendar->present($cycle);
 
         return TransactionResource::collection(
             $query->orderByDesc('transaction_date')->orderByDesc('id')

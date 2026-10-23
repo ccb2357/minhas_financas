@@ -12,6 +12,9 @@ class TransactionWriter
 {
     public function save(User $user, array $data, ?string $id = null): Transaction
     {
+        // Resolve cycle before locking financial data; dates themselves remain unchanged.
+        $calendar = app(FinancialCycles::class);
+        $calendar->forDate();
         return DB::transaction(function () use ($user, $data, $id): Transaction {
             $transaction = $id === null ? null
                 : $user->transactions()->lockForUpdate()->findOrFail($id);
@@ -34,7 +37,10 @@ class TransactionWriter
                 $transaction = $user->transactions()->create($data);
             }
 
-            return $transaction->refresh()->load('category');
+            $transaction->refresh()->load('category');
+            $cycle = app(FinancialCycles::class)->forDate($transaction->transaction_date->format('Y-m-d'));
+            $transaction->setAttribute('cycle_key', sprintf('%04d-%02d', $cycle->year, $cycle->month));
+            return $transaction;
         }, 3);
     }
 }

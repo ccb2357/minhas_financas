@@ -14,7 +14,7 @@ export function mountBudgets(root, ctx, route) {
     let unbudgetedModal;
     const events = new AbortController();
     root.classList.add('budgets-container');
-    root.innerHTML = `${pageHeader('Orçamentos', 'Planeje seus gastos do mês')}<div data-budget-month></div><p class="budget-feedback" role="status" hidden></p><section class="budget-results" aria-label="Orçamentos do mês" aria-busy="false"><div data-budget-summary></div><button type="button" class="budget-unbudgeted" data-budget-unbudgeted hidden aria-haspopup="dialog"></button><div class="budget-list"></div><div class="budget-list-state" role="status"></div><button type="button" class="mf-button mf-button-secondary budget-more" data-budget-more hidden>Carregar mais</button></section><button type="button" class="budget-create-button" data-budget-create>${icon('plus')}<span>Novo orçamento</span></button>`;
+    root.innerHTML = `${pageHeader('Orçamentos', 'Planeje seus gastos por ciclo')}<div data-budget-month></div><p class="budget-feedback" role="status" hidden></p><section class="budget-results" aria-label="Orçamentos do ciclo" aria-busy="false"><div data-budget-summary></div><button type="button" class="budget-unbudgeted" data-budget-unbudgeted hidden aria-haspopup="dialog"></button><div class="budget-list"></div><div class="budget-list-state" role="status"></div><button type="button" class="mf-button mf-button-secondary budget-more" data-budget-more hidden>Carregar mais</button></section><button type="button" class="budget-create-button" data-budget-create>${icon('plus')}<span>Novo orçamento</span></button>`;
     const monthBox = root.querySelector('[data-budget-month]'), results = root.querySelector('.budget-results');
     const summaryBox = root.querySelector('[data-budget-summary]'), unbudgeted = root.querySelector('.budget-unbudgeted');
     const list = root.querySelector('.budget-list');
@@ -26,8 +26,8 @@ export function mountBudgets(root, ctx, route) {
     }
     function renderSummary(summary) {
         const label = percentLabel(summary.used_percent), progress = progressPercent(summary.used_percent);
-        summaryBox.innerHTML = `<section class="budget-summary" aria-label="Orçamento total utilizado"><div class="budget-summary-copy"><p>Orçamento total utilizado</p><strong class="${label.length > 8 ? 'budget-percent-compact' : ''}" data-budget-percent>${label}</strong><span class="budget-summary-values" data-budget-summary-values>${summary.budget_count ? `${money(summary.spent_cents)} de ${money(summary.limit_cents)}` : 'Nenhum orçamento definido neste mês'}</span></div><div class="budget-summary-ring budget-ring-${budgetRingTone(summary.used_percent)} ${label.length > 6 ? 'budget-ring-compact' : ''}" role="img" aria-label="${summary.budget_count ? `${label} do orçamento utilizado` : 'Sem orçamento definido'}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="budget-ring-track" cx="60" cy="60" r="48"/><circle class="budget-ring-value" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="${progress} 100" opacity="${progress > 0 ? 1 : 0}"/></svg><strong>${summary.budget_count ? shortPercentLabel(summary.used_percent) : '—'}</strong></div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>`;
-        unbudgeted.textContent = summary.unbudgeted_expense_cents > 0 ? `${money(summary.unbudgeted_expense_cents)} em despesas sem orçamento neste mês.` : '';
+        summaryBox.innerHTML = `<section class="budget-summary" aria-label="Orçamento total utilizado"><div class="budget-summary-copy"><p>Orçamento total utilizado</p><strong class="${label.length > 8 ? 'budget-percent-compact' : ''}" data-budget-percent>${label}</strong><span class="budget-summary-values" data-budget-summary-values>${summary.budget_count ? `${money(summary.spent_cents)} de ${money(summary.limit_cents)}` : 'Nenhum orçamento definido neste ciclo'}</span></div><div class="budget-summary-ring budget-ring-${budgetRingTone(summary.used_percent)} ${label.length > 6 ? 'budget-ring-compact' : ''}" role="img" aria-label="${summary.budget_count ? `${label} do orçamento utilizado` : 'Sem orçamento definido'}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="budget-ring-track" cx="60" cy="60" r="48"/><circle class="budget-ring-value" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="${progress} 100" opacity="${progress > 0 ? 1 : 0}"/></svg><strong>${summary.budget_count ? shortPercentLabel(summary.used_percent) : '—'}</strong></div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>`;
+        unbudgeted.textContent = summary.unbudgeted_expense_cents > 0 ? `${money(summary.unbudgeted_expense_cents)} em despesas sem orçamento neste ciclo.` : '';
         unbudgeted.hidden = !unbudgeted.textContent;
     }
     function renderRows() {
@@ -38,6 +38,7 @@ export function mountBudgets(root, ctx, route) {
     }
     async function load(append = false) {
         if (!alive || append && loading) return;
+        if (!ctx.requireCycle(stateBox)) return;
         const current = ++revision; loading = true; more.hidden = true; more.disabled = true;
         results.setAttribute('aria-busy', 'true'); monthBox.innerHTML = monthPicker(ctx.state.budgetMonth);
         const router = root.closest('.view')?.f7View?.router;
@@ -53,7 +54,7 @@ export function mountBudgets(root, ctx, route) {
             rows = append ? [...new Map([...rows, ...response.data].map(row => [row.id, row])).values()] : response.data;
             page = response.meta.current_page; lastPage = response.meta.last_page;
             renderSummary(response.meta.summary); renderRows();
-            stateBox.innerHTML = rows.length ? '' : `<span class="budget-empty-icon">${icon('money_dollar_circle')}</span><h2>Seu planejamento começa aqui</h2><p>Defina um limite por categoria de despesa e acompanhe os gastos deste mês.</p><button type="button" class="mf-button mf-button-secondary" data-budget-create>Criar orçamento</button>`;
+            stateBox.innerHTML = rows.length ? '' : `<span class="budget-empty-icon">${icon('money_dollar_circle')}</span><h2>Seu planejamento começa aqui</h2><p>Defina um limite por categoria de despesa e acompanhe os gastos deste ciclo.</p><button type="button" class="mf-button mf-button-secondary" data-budget-create>Criar orçamento</button>`;
             more.hidden = page >= lastPage;
         } catch (error) {
             if (!alive || current !== revision) return;

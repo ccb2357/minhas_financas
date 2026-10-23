@@ -1,0 +1,20 @@
+.cycle-popup { background: var(--mf-background); }
+.cycle-intro, .cycle-setup-note { color: var(--mf-muted); font-size: 14px; line-height: 1.6; margin: 0 0 18px; }
+.cycle-setup-note { padding: 14px; border: 1px solid var(--mf-border); border-radius: 14px; background: var(--mf-surface); }
+.cycle-current, .cycle-preview, .cycle-field { padding: 18px; margin-bottom: 16px; }
+.cycle-current > span, .cycle-preview > span { display: block; color: var(--mf-muted); font-size: 12px; margin-bottom: 8px; }
+.cycle-current strong, .cycle-preview strong { display: block; color: var(--mf-title); font-size: 17px; line-height: 1.5; }
+.cycle-current small, .cycle-field p, .cycle-preview p { display: block; color: var(--mf-muted); font-size: 12px; line-height: 1.6; margin: 10px 0 0; }
+.cycle-field label { display: block; color: var(--mf-title); font-size: 15px; font-weight: 650; margin-bottom: 12px; }
+.cycle-field .mf-smart-control { width: 100%; }
+.cycle-preview { background: color-mix(in srgb, var(--mf-primary) 5%, var(--mf-surface)); }
+.cycle-required { text-align: center; padding: 28px 18px; margin: 16px 0; }
+.cycle-required h2 { color: var(--mf-title); font-size: 21px; margin: 0 0 12px; }
+.cycle-required p { color: var(--mf-muted); line-height: 1.6; font-size: 14px; }
+.cycle-required button { margin-top: 20px; font-size: 15px; min-height: 46px; padding: 12px; }
+.month-picker-label > span { display: flex; flex-direction: column; align-items: center; gap: 3px; min-width: 0; }
+.month-picker-label small { display: block; font-size: 10px; line-height: 1.4; color: var(--mf-muted); font-weight: 400; white-space: normal; }
+.month-picker:has([data-cycle-dates]) { min-height: 64px; }
+.budget-cycle-dates { color: var(--mf-muted); font-size: 12px; line-height: 1.5; margin: 8px 0; }
+@media (min-width: 760px) { .month-picker-label small { font-size: 12px; } }
+.dark #app .cycle-popup { background: var(--mf-background); }

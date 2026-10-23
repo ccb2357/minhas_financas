@@ -51,6 +51,7 @@ export function mountHistory(root, ctx, route) {
 
     async function load(append = false) {
         if (!alive || (append && loading)) return;
+        if (!ctx.requireCycle(stateBox)) return;
         const router = root.closest('.view')?.f7View?.router;
         if (router?.currentRoute.path === '/historico/') {
             const query = new URLSearchParams({ month: ctx.state.historyMonth });

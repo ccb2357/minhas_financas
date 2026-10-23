@@ -1,7 +1,8 @@
+import { cycleDates } from '../cycles/state.js';
 import { safeColor } from '../categories/catalog.js';
 import { monthLabel, shiftMonth } from '../shared/calendar.js';
 
-export const REPORT_RANGES = [['month', 'Mês'], ['three_months', '3 meses'], ['year', 'Ano']];
+export const REPORT_RANGES = [['month', 'Ciclo'], ['three_months', '3 ciclos'], ['year', 'Ano de ciclos']];
 export const validRange = value => REPORT_RANGES.some(([range]) => range === value);
 
 export function reportData(data) {
@@ -29,10 +30,7 @@ export function periodLabel(month, range) {
     return monthLabel(month);
 }
 
-export function comparisonLabel(period) {
-    const start = period.start_date.slice(0, 7), end = period.end_date.slice(0, 7);
-    return start === end ? monthLabel(end) : `${monthLabel(start)} a ${monthLabel(end)}`;
-}
+export function comparisonLabel(period) { return cycleDates(period); }
 
 
 // Os centavos e as variações vêm da API; aqui formatamos sua apresentação.

@@ -39,8 +39,8 @@ test('datas exibidas distinguem totais do período e comparação dos gráficos'
     assert.match(periodLabel('2026-10', 'month'), /Outubro.*2026/);
     assert.match(periodLabel('2026-01', 'three_months'), /Novembro.*2025.*Janeiro.*2026/);
     assert.match(periodLabel('2026-10', 'year'), /Janeiro até Outubro.*2026/);
-    assert.match(comparisonLabel({ start_date: '2026-05-01', end_date: '2026-10-31' }), /Maio.*2026.*Outubro.*2026/);
-    assert.equal(periodLabel('2026-01', 'year'), comparisonLabel({ start_date: '2026-01-01', end_date: '2026-01-31' }));
+    assert.match(comparisonLabel({ start_date: '2026-05-01', end_date: '2026-10-31' }), /01.*mai.*2026.*31.*out.*2026/);
+    assert.match(comparisonLabel({ start_date: '2026-01-10', end_date: '2026-02-09' }), /10.*jan.*2026.*09.*fev.*2026/);
 });
 
 test('variação usa o percentual da API e preserva a diferença em centavos', () => {

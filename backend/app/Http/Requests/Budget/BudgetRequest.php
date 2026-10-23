@@ -10,7 +10,7 @@ abstract class BudgetRequest extends FormRequest
     protected function controlledFields(): array
     {
         return array_fill_keys([
-            'id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'type',
+            'financial_cycle_id', 'id', 'user_id', 'created_at', 'updated_at', 'deleted_at', 'type',
             'spent_cents', 'remaining_cents', 'used_percent', 'status',
         ], ['prohibited']);
     }

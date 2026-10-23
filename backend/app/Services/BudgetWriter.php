@@ -13,6 +13,8 @@ class BudgetWriter
 {
     public function save(User $user, array $data, ?string $id = null): MonthlyBudget
     {
+        // Resolve before category locks: cycle configuration uses the singleton lock first.
+        if ($id === null) app(FinancialCycles::class)->forLabel(app(FinancialCycles::class)->label($data['year'], $data['month']));
         try {
             return DB::transaction(function () use ($user, $data, $id): MonthlyBudget {
                 if ($id !== null) {
@@ -32,7 +34,7 @@ class BudgetWriter
                     ->where('category_id', $category->id)->where('year', $data['year'])->where('month', $data['month'])
                     ->lockForUpdate()->first();
                 if ($existing && !$existing->trashed()) {
-                    throw ValidationException::withMessages(['category_id' => 'Esta categoria já possui orçamento neste mês. Edite o limite existente.']);
+                    throw ValidationException::withMessages(['category_id' => 'Esta categoria já possui orçamento neste ciclo. Edite o limite existente.']);
                 }
                 if ($existing) {
                     $existing->limit_cents = $data['limit_cents'];
@@ -42,7 +44,7 @@ class BudgetWriter
                 return $user->monthlyBudgets()->create($data);
             }, 3);
         } catch (UniqueConstraintViolationException $exception) {
-            throw ValidationException::withMessages(['category_id' => 'Esta categoria já possui orçamento neste mês. Atualize a lista.']);
+            throw ValidationException::withMessages(['category_id' => 'Esta categoria já possui orçamento neste ciclo. Atualize a lista.']);
         }
     }
 }

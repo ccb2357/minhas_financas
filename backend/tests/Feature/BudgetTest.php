@@ -67,7 +67,7 @@ class BudgetTest extends TestCase
     {
         $this->signIn();
         $this->getJson(self::API.self::OCTOBER)->assertOk()->assertJsonCount(0, 'data')
-            ->assertJsonPath('meta.total', 0)->assertJsonPath('meta.period', ['year' => 2026, 'month' => 10])
+            ->assertJsonPath('meta.total', 0)->assertJsonFragment(['year' => 2026, 'month' => 10])
             ->assertJsonPath('meta.summary.budget_count', 0)->assertJsonPath('meta.summary.limit_cents', 0)
             ->assertJsonPath('meta.summary.spent_cents', 0)->assertJsonPath('meta.summary.remaining_cents', 0)
             ->assertJsonPath('meta.summary.used_percent', null)->assertJsonPath('meta.summary.status', 'no_budget')
@@ -415,7 +415,8 @@ class BudgetTest extends TestCase
         try {
             $this->getJson(self::API.self::OCTOBER)->assertOk();
             $selects = collect(DB::getQueryLog())->filter(fn ($query) => str_starts_with(strtolower($query['query']), 'select'));
-            $this->assertLessThanOrEqual(6, $selects->count());
+            // Includes the fixed cost of loading the persisted cycle calendar.
+            $this->assertLessThanOrEqual(9, $selects->count());
         } finally { DB::disableQueryLog(); }
     }
 

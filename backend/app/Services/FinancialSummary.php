@@ -11,14 +11,18 @@ class FinancialSummary
 {
     public function monthly(User $user, CarbonImmutable $start, CarbonImmutable $end): array
     {
+        $calendar = app(FinancialCycles::class);
+        $periods = $calendar->between($start, $end->subMonth());
         $months = [];
-        for ($date = $start; $date->lt($end); $date = $date->addMonth()) {
-            $months[$date->format('Y-m')] = [
-                'year' => $date->year, 'month' => $date->month,
+        foreach ($periods as $cycle) {
+            $months[sprintf('%04d-%02d', $cycle->year, $cycle->month)] = [
+                ...$calendar->present($cycle),
                 'income_cents' => 0, 'expense_cents' => 0, 'result_cents' => 0,
                 'income_count' => 0, 'expense_count' => 0,
             ];
         }
+        $start = $calendar->start($periods->first());
+        $end = $calendar->endExclusive($periods->last());
         // No máximo duas linhas agregadas por dia; não carrega lançamentos
         // individuais e mantém os centavos em aritmética inteira.
         $daily = $user->transactions()
@@ -27,7 +31,8 @@ class FinancialSummary
             ->selectRaw('transaction_date, type, SUM(amount_cents) AS total_cents, COUNT(*) AS transaction_count')
             ->groupBy('transaction_date', 'type')->toBase()->get();
         foreach ($daily as $day) {
-            $key = substr($day->transaction_date, 0, 7);
+            $period = $periods->first(fn ($p) => $p->start_date <= $day->transaction_date && $p->end_date >= $day->transaction_date);
+            $key = sprintf('%04d-%02d', $period->year, $period->month);
             $months[$key][$day->type.'_cents'] += (int) $day->total_cents;
             $months[$key][$day->type.'_count'] += (int) $day->transaction_count;
         }

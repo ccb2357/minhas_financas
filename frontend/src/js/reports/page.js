@@ -63,12 +63,14 @@ export function mountReports(root, ctx, route) {
     }
     function render(data, current) {
         const summary = reportData(data);
+        periodNote.textContent = comparisonLabel(data.period);
         const barPeriod = esc(comparisonLabel(data.income_expense_period || data.period));
-        content.innerHTML = `${summaryCards(summary, data)}${data.previous_period ? `<p class="report-comparison-period" data-report-previous>Comparado com ${esc(comparisonLabel(data.previous_period))}</p>` : ''}${data.totals.income_count + data.totals.expense_count === 0 ? '<p class="report-empty-note" role="status">Nenhum lançamento no período selecionado.</p>' : ''}<div class="reports-grid"><section class="finance-card category-card spending-rank-card"><div class="card-heading"><h2>Despesas por categoria</h2></div>${renderSpendingRanking(data.by_category, summary.expense, { limit: null, emptyMessage: 'Nenhuma despesa neste período.' })}</section><section class="finance-card monthly-comparison-card"><div class="card-heading"><h2>Entradas × Despesas</h2></div><p class="monthly-comparison-subtitle">${barPeriod}</p><div class="report-comparison-scroll" tabindex="0" role="region" aria-label="Comparação mensal de entradas e despesas"><div class="report-comparison-chart ${summary.expenseHistory.length > 6 ? 'report-comparison-year' : ''}" data-chart="report-income-expenses" role="img" aria-label="Entradas em verde e despesas em vermelho: ${barPeriod}"></div></div></section></div>${insightCards(data)}${comparisonSummary(data)}`;
+        content.innerHTML = `${summaryCards(summary, data)}${data.previous_period ? `<p class="report-comparison-period" data-report-previous>Comparado com ${esc(comparisonLabel(data.previous_period))}</p>` : ''}${data.totals.income_count + data.totals.expense_count === 0 ? '<p class="report-empty-note" role="status">Nenhum lançamento no período selecionado.</p>' : ''}<div class="reports-grid"><section class="finance-card category-card spending-rank-card"><div class="card-heading"><h2>Despesas por categoria</h2></div>${renderSpendingRanking(data.by_category, summary.expense, { limit: null, emptyMessage: 'Nenhuma despesa neste período.' })}</section><section class="finance-card monthly-comparison-card"><div class="card-heading"><h2>Entradas × Despesas</h2></div><p class="monthly-comparison-subtitle">${barPeriod}</p><div class="report-comparison-scroll" tabindex="0" role="region" aria-label="Comparação de entradas e despesas por ciclo"><div class="report-comparison-chart ${summary.expenseHistory.length > 6 ? 'report-comparison-year' : ''}" data-chart="report-income-expenses" role="img" aria-label="Entradas em verde e despesas em vermelho: ${barPeriod}"></div></div></section></div>${insightCards(data)}${comparisonSummary(data)}`;
         void charts(summary, current);
     }
     async function load() {
         if (!alive) return;
+        if (!ctx.requireCycle(content)) return;
         const current = ++revision;
         destroyCharts(); controls();
         const month = ctx.state.reportsMonth, range = ctx.state.reportsRange;

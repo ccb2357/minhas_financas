@@ -1,3 +1,6 @@
+import { getCycleConfiguration } from './cycles/api.js';
+import { openCycleForm } from './cycles/form.js';
+import { clearCycles, rememberCycleResponse } from './cycles/state.js';
 import { notifySuccess, clearNotifications } from './shared/notifications.js';
 import { closeActiveIconPicker } from './categories/icon-picker.js';
 import { closeActiveDatePicker } from './shared/date-picker.js';
@@ -15,9 +18,66 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
     const newButton = document.querySelector('#new-transaction');
     const cleanups = new Set();
     const state = { budgetMonth: todayBrazil().slice(0, 7), dashboardMonth: todayBrazil().slice(0, 7), dashboardFeedback: '', reportsMonth: todayBrazil().slice(0, 7), reportsRange: 'month', historyMonth: todayBrazil().slice(0, 7), historyFeedback: '', user: null };
-    let view, editor;
+    let view, editor, cycleLoading = false, cycleTimer, bootRevision = 0;
+    function applyCycles(configuration) {
+        const old = state.cycleConfiguration;
+        if (old?.version !== configuration.version) clearCycles();
+        rememberCycleResponse({ data: configuration });
+        state.cycleConfiguration = configuration;
+        state.cycleError = false;
+        if (configuration.configured) {
+            for (const field of ['budgetMonth', 'dashboardMonth', 'historyMonth', 'reportsMonth']) {
+                if (!old?.configured || state[field] === old.current?.key) state[field] = configuration.current.key;
+            }
+        }
+    }
+    async function refreshCycles() {
+        if (!state.user || editor || cycleLoading || document.hidden) return;
+        cycleLoading = true;
+        const user = state.user;
+        try {
+            const response = await getCycleConfiguration();
+            if (state.user !== user) return;
+            const previous = state.cycleConfiguration;
+            const changed = previous?.version !== response.data.version || previous?.current?.key !== response.data.current?.key;
+            applyCycles(response.data);
+            if (changed) context.events.dispatchEvent(new CustomEvent('cycles:changed'));
+        } catch (error) { if (error.status === 401 && state.user === user) onSessionExpired(); }
+        finally { cycleLoading = false; }
+    }
+    document.addEventListener('visibilitychange', () => { if (!document.hidden) void refreshCycles(); });
     const context = {
         app, state, logout, cleanups, theme, installer, updates, expireSession: onSessionExpired, events: new EventTarget(),
+        requireCycle(root) {
+            if (state.cycleConfiguration?.configured) return true;
+            root.innerHTML = `<section class="finance-card cycle-required" role="status"><h2>${state.cycleError ? 'Não foi possível carregar o ciclo' : 'Defina seu ciclo financeiro'}</h2><p>${state.cycleError ? 'Confira sua conexão e tente novamente.' : 'Escolha a data de corte para acompanhar entradas, saídas e orçamentos no mesmo período.'}</p><button type="button" class="mf-button mf-button-primary" data-cycle-open>${state.cycleError ? 'Tentar novamente' : 'Definir ciclo'}</button></section>`;
+            return false;
+        },
+        async openCycleSettings() {
+            if (!state.user || editor || cycleLoading) return;
+            cycleLoading = true;
+            const user = state.user;
+            try {
+                const response = await getCycleConfiguration();
+                if (state.user !== user) return;
+                const previous = state.cycleConfiguration;
+                applyCycles(response.data);
+                if (previous?.version !== response.data.version || previous?.current?.key !== response.data.current?.key) context.events.dispatchEvent(new CustomEvent('cycles:changed'));
+                editor = openCycleForm(context, {
+                    configuration: response.data,
+                    onClosed() { editor = null; },
+                    onSaved(configuration) {
+                        applyCycles(configuration);
+                        context.events.dispatchEvent(new CustomEvent('cycles:changed'));
+                        notifySuccess(app, configuration.pending_cut_day ? 'Novo corte agendado para o próximo ciclo.' : 'Ciclo financeiro salvo.');
+                    },
+                });
+            } catch (error) {
+                if (state.user !== user) return;
+                if (error.status === 401) { onSessionExpired(); return; }
+                app.dialog.alert('Confira sua conexão e tente novamente.', 'Não foi possível carregar o ciclo');
+            } finally { cycleLoading = false; }
+        },
         navigate: path => view?.router.navigate(path),
         beforeLeave(resolve, reject) { if (closeActiveIconPicker(app) || closeActiveSmartSelect(app) || closeActiveDatePicker(app)) { reject(); return; } if (editor) editor.beforeLeave(resolve, reject); else resolve(); },
         openSettings(mode = 'profile') {
@@ -35,6 +95,7 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
         },
         openBudget(options = {}) {
             if (!state.user || editor) return;
+            if (!state.cycleConfiguration?.configured) { void context.openCycleSettings(); return; }
             editor = openBudgetForm(context, {
                 ...options,
                 onClosed() { editor = null; },
@@ -47,17 +108,22 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
         },
         openTransaction(options = {}) {
             if (!state.user || editor) return;
+            if (!options.preview && !state.cycleConfiguration?.configured) { void context.openCycleSettings(); return; }
             editor = openTransactionForm(context, {
                 ...options,
                 onClosed() { editor = null; },
                 onSaved(row, kind) {
-                    if (kind !== 'deleted') state.historyMonth = row.transaction_date.slice(0, 7);
+                    if (options.preview) {
+                        options.onSaved?.(row, kind);
+                        return;
+                    }
+                    if (kind !== 'deleted') state.historyMonth = row.cycle_key || row.transaction_date.slice(0, 7);
                     state.historyFeedback = '';
                     state.dashboardFeedback = '';
                     const message = { created: 'Lançamento salvo.', updated: 'Lançamento atualizado.', deleted: 'Lançamento excluído.' }[kind];
                     const onDashboard = (view.router.currentRoute.route?.path || view.router.currentRoute.path) === '/inicio/';
                     if (onDashboard) {
-                        if (kind !== 'deleted') state.dashboardMonth = row.transaction_date.slice(0, 7);
+                        if (kind !== 'deleted') state.dashboardMonth = row.cycle_key || row.transaction_date.slice(0, 7);
                         state.dashboardFeedback = state.historyFeedback;
                     }
                     context.events.dispatchEvent(new CustomEvent('transactions:changed', { detail: { row, kind } }));
@@ -70,18 +136,19 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
 
     function updateNavigation(route) {
         const section = route.path?.split('/').filter(Boolean)[0] || 'inicio';
-        const navigationSection = section === 'categorias' ? 'mais' : section;
+        const navigationSection = ['categorias', 'conciliacao'].includes(section) ? 'mais' : section;
         for (const link of container.querySelectorAll('[data-section]')) {
             const active = link.dataset.section === navigationSection;
             link.classList.toggle('nav-active', active);
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         }
-        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', orcamentos: 'Orçamento mensal' };
+        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', conciliacao: 'Conciliação bancária', orcamentos: 'Orçamento mensal' };
         document.title = `${titles[section] || 'Início'} · Minhas Finanças`;
     }
 
     container.addEventListener('click', event => {
+        if (event.target.closest('[data-cycle-open]')) { void context.openCycleSettings(); return; }
         const link = event.target.closest('[data-section]');
         if (!link || !view) return;
         event.preventDefault();
@@ -93,13 +160,25 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
     newButton.addEventListener('click', () => context.openTransaction());
 
     return {
-        show(user) {
+        async show(user) {
             state.user = user;
             authView.hidden = true;
             authView.classList.remove('view-main');
             container.hidden = false;
             financeView.classList.add('view-main');
+            const boot = ++bootRevision;
             if (!view) {
+                financeView.innerHTML = '<div class="page"><div class="page-content"><main class="finance-container"><section class="finance-card cycle-required" role="status">Carregando seu ciclo financeiro...</section></main></div></div>';
+                try {
+                    const response = await getCycleConfiguration();
+                    if (boot !== bootRevision || state.user !== user) return;
+                    applyCycles(response.data);
+                } catch (error) {
+                    if (boot !== bootRevision || state.user !== user) return;
+                    if (error.status === 401) { onSessionExpired(); return; }
+                    state.cycleError = true;
+                }
+                financeView.replaceChildren();
                 view = app.views.create(financeView, {
                     main: true,
                     url: '/inicio/',
@@ -116,8 +195,10 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
                 });
             }
             updateNavigation(view.router.currentRoute);
+            clearInterval(cycleTimer); cycleTimer = setInterval(() => { void refreshCycles(); }, 60000);
         },
         hide() {
+            bootRevision++; clearInterval(cycleTimer);
             const wasActive = Boolean(state.user);
             clearNotifications(app);
             container.hidden = true;
@@ -129,6 +210,8 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
             financeView.classList.remove('view-main');
             authView.hidden = false;
             authView.classList.add('view-main');
+            delete state.reconciliationDemo;
+            delete state.cycleConfiguration; clearCycles();
             state.user = null;
             state.budgetMonth = todayBrazil().slice(0, 7);
             state.dashboardMonth = todayBrazil().slice(0, 7);

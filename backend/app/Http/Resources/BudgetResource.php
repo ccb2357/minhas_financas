@@ -11,7 +11,7 @@ class BudgetResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id, 'category_id' => $this->category_id,
+            'financial_cycle_id' => $this->financial_cycle_id, 'id' => $this->id, 'category_id' => $this->category_id,
             'year' => $this->year, 'month' => $this->month,
             'limit_cents' => $this->limit_cents,
             ...BudgetMetrics::calculate($this->limit_cents, $this->spent_cents),

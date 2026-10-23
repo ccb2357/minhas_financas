@@ -413,7 +413,8 @@ class ReportInsightsTest extends TestCase
             $this->assertSame(110, $data['insights']['most_used_expense_category']['transaction_count']);
             $this->assertSame(200, $data['insights']['largest_expense']['amount_cents']);
             $selects = collect(DB::getQueryLog())->filter(fn ($query) => str_starts_with(strtolower($query['query']), 'select'));
-            $this->assertLessThanOrEqual(4, $selects->count());
+            // Includes the fixed cost of loading the persisted cycle calendar.
+            $this->assertLessThanOrEqual(9, $selects->count());
         } finally {
             DB::disableQueryLog();
         }

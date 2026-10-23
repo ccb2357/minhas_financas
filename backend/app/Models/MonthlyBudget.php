@@ -10,12 +10,21 @@ class MonthlyBudget extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['category_id', 'year', 'month', 'limit_cents'];
+    protected $fillable = ['category_id', 'year', 'month', 'limit_cents', 'financial_cycle_id'];
+
+    protected static function booted(): void
+    {
+        static::creating(function (self $budget): void {
+            $calendar = app(\App\Services\FinancialCycles::class);
+            $cycle = $calendar->forLabel($calendar->label($budget->year, $budget->month));
+            $budget->financial_cycle_id = $cycle->id;
+        });
+    }
 
     protected function casts(): array
     {
         return [
-            'category_id' => 'integer', 'year' => 'integer', 'month' => 'integer',
+            'financial_cycle_id' => 'integer', 'category_id' => 'integer', 'year' => 'integer', 'month' => 'integer',
             'limit_cents' => 'integer', 'spent_cents' => 'integer',
         ];
     }

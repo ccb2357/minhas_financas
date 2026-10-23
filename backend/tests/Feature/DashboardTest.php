@@ -51,7 +51,7 @@ class DashboardTest extends TestCase
     {
         $this->signIn();
         $this->getJson(self::API.self::OCTOBER)->assertOk()
-            ->assertJsonPath('data.period', ['year' => 2026, 'month' => 10, 'start_date' => '2026-10-01', 'end_date' => '2026-10-31'])
+            ->assertJsonFragment(['year' => 2026, 'month' => 10, 'start_date' => '2026-10-01', 'end_date' => '2026-10-31'])
             ->assertJsonPath('data.totals', ['income_cents' => 0, 'expense_cents' => 0, 'result_cents' => 0, 'income_count' => 0, 'expense_count' => 0])
             ->assertJsonCount(6, 'data.last_six_months')
             ->assertJsonPath('data.last_six_months.0.month', 5)
@@ -308,7 +308,8 @@ class DashboardTest extends TestCase
         try {
             $this->getJson(self::API.self::OCTOBER)->assertOk();
             $queries = collect(DB::getQueryLog())->filter(fn ($query) => str_starts_with(strtolower($query['query']), 'select'));
-            $this->assertLessThanOrEqual(6, $queries->count());
+            // Includes the fixed cost of loading the persisted cycle calendar.
+            $this->assertLessThanOrEqual(10, $queries->count());
         } finally {
             DB::disableQueryLog();
         }

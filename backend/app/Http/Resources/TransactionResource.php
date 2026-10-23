@@ -10,7 +10,7 @@ class TransactionResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
+            'cycle_key' => $this->whenHas('cycle_key'), 'id' => $this->id,
             'category_id' => $this->category_id,
             'type' => $this->type->value,
             'amount_cents' => $this->amount_cents,

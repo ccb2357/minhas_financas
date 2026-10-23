@@ -1,3 +1,4 @@
+import { mountReconciliation } from './reconciliation/page.js';
 import { mountBudgets } from './budgets/page.js';
 import { mountDashboard } from './dashboard/page.js';
 import { mountMore } from './demo/pages.js';
@@ -11,6 +12,7 @@ export function createRoutes(context) {
         ['inicio', mountDashboard], ['historico', mountHistory],
         ['relatorios', mountReports], ['mais', mountMore],
         ['categorias', mountCategories], ['orcamentos', mountBudgets],
+        ['conciliacao', mountReconciliation],
     ].map(([name, mount]) => ({
         path: `/${name}/`,
         ...(name === 'inicio' ? { alias: '/' } : {}),
@@ -36,10 +38,13 @@ export function createRoutes(context) {
                 function destroy() {
                     if (destroyed) return;
                     destroyed = true;
+                    context.events.removeEventListener('cycles:changed', refreshCycles);
                     controller.destroy();
                     context.cleanups.delete(destroy);
                     mounted.delete(page.el);
                 }
+                function refreshCycles() { if (page.el.classList.contains('page-current')) controller.refresh(); }
+                context.events.addEventListener('cycles:changed', refreshCycles);
                 mounted.set(page.el, { controller, destroy });
                 context.cleanups.add(destroy);
             },

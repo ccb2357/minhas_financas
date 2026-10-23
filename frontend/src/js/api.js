@@ -1,3 +1,4 @@
+import { rememberCycleResponse } from './cycles/state.js';
 let pendingWrites = 0;
 export const hasPendingWrites = () => pendingWrites > 0;
 const API_BASE = '/api/v1';
@@ -11,6 +12,7 @@ export class ApiError extends Error {
 async function readResponse(response) {
     const data = response.status === 204 ? null : await response.json();
     if (!response.ok) throw new ApiError(response.status, data || {});
+    rememberCycleResponse(data);
     return data;
 }
 export async function prepareCsrf() {

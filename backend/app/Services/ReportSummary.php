@@ -32,19 +32,23 @@ class ReportSummary
         $previousMonths = array_filter($allMonths, fn ($key) => $key >= $previousStart->format('Y-m') && $key < $previousEnd->format('Y-m'), ARRAY_FILTER_USE_KEY);
         $totals = $this->summary->totals($monthly);
         $previousTotals = $this->summary->totals($previousMonths);
-        $categories = $this->summary->categories($user, $start, $end);
         // Série exclusiva do gráfico de barras; os demais indicadores preservam seu período.
         $barStart = $range === 'year' ? $selected->startOfYear() : $start;
         $barEnd = $range === 'year' ? $barStart->addYear() : $end;
         $barMonths = array_filter($allMonths, fn ($key) => $key >= $barStart->format('Y-m') && $key < $barEnd->format('Y-m'), ARRAY_FILTER_USE_KEY);
-        $today = CarbonImmutable::today('America/Sao_Paulo');
-        $status = $today->lt($start) ? 'future' : ($today->gte($end) ? 'past' : 'in_progress');
+        $calendar = app(FinancialCycles::class);
+        $selectedCycle = $calendar->forLabel($selected);
+        $actualStart = $calendar->start($calendar->forLabel($start));
+        $actualEnd = $calendar->endExclusive($selectedCycle);
+        $categories = $this->summary->categories($user, $actualStart, $actualEnd);
+        $today = $calendar->today();
+        $status = $today->lt($actualStart) ? 'future' : ($today->gte($actualEnd) ? 'past' : 'in_progress');
 
         return [
             'period' => [
-                'range' => $range, 'year' => $selected->year, 'month' => $selected->month,
-                'start_date' => $start->format('Y-m-d'),
-                'end_date' => $selected->endOfMonth()->format('Y-m-d'),
+                'range' => $range, 'year' => $selected->year, 'month' => $selected->month, 'cycle_id' => (int) $selectedCycle->id,
+                'start_date' => $actualStart->toDateString(),
+                'end_date' => $actualEnd->subDay()->toDateString(),
                 'month_count' => count($monthly),
             ],
             // O status informa o calendário; não corta lançamentos com data futura.
@@ -56,24 +60,24 @@ class ReportSummary
             'by_category' => $categories,
             'monthly_series' => array_values($monthly),
             'comparison_period' => [
-                'start_date' => $comparisonStart->format('Y-m-d'),
-                'end_date' => $selected->endOfMonth()->format('Y-m-d'),
+                'start_date' => $calendar->start($calendar->forLabel($comparisonStart))->toDateString(),
+                'end_date' => $actualEnd->subDay()->toDateString(),
                 'month_count' => count($comparison),
             ],
             'comparison_series' => array_values($comparison),
             'income_expense_series' => array_values($barMonths),
             'income_expense_period' => [
-                'start_date' => $barStart->format('Y-m-d'),
-                'end_date' => $barEnd->subDay()->format('Y-m-d'),
+                'start_date' => $calendar->start($calendar->forLabel($barStart))->toDateString(),
+                'end_date' => $calendar->endExclusive($calendar->forLabel($barEnd->subMonth()))->subDay()->toDateString(),
                 'month_count' => count($barMonths),
             ],
             'previous_period' => [
-                'start_date' => $previousStart->format('Y-m-d'),
-                'end_date' => $previousEnd->subDay()->format('Y-m-d'),
+                'start_date' => $calendar->start($calendar->forLabel($previousStart))->toDateString(),
+                'end_date' => $calendar->endExclusive($calendar->forLabel($previousEnd->subMonth()))->subDay()->toDateString(),
                 'month_count' => count($previousMonths), 'totals' => $previousTotals,
             ],
             'changes' => $this->insights->changes($totals, $previousTotals),
-            'insights' => $this->insights->build($user, $start, $end, $categories),
+            'insights' => $this->insights->build($user, $actualStart, $actualEnd, $categories),
         ];
     }
 }

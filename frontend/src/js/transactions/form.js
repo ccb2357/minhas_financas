@@ -10,10 +10,12 @@ import { categoryOptions, saveTransaction, deleteTransaction, transactionError }
 
 let sequence = 0;
 
-export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed } = {}) {
+export function openTransactionForm(ctx, { transaction = null, draft = null, preview = null, onSaved, onClosed } = {}) {
     const editing = Boolean(transaction);
+    // Drafts prefill a NEW form; they never turn it into an edit/delete operation.
+    const initialValues = transaction || draft;
     const prefix = `transaction-form-${++sequence}`;
-    let type = transaction?.type || 'income';
+    let type = initialValues?.type || 'income';
     let alive = true, busy = false, loading = true, failed = false, confirming = false;
     let categories = [], validation, confirmation, afterClose;
     let closing = false;
@@ -21,7 +23,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
     const previousFocus = document.activeElement;
     const popup = ctx.app.popup.create({
         closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
-        content: `<div class="popup transaction-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="transaction-popup-scroll"><div class="transaction-form-container"><header class="transaction-form-header"><button type="button" class="icon-button" data-tx-close aria-label="Voltar">${icon('chevron_left')}</button><h2 id="${prefix}-title">${editing ? 'Editar lançamento' : 'Novo lançamento'}</h2><span></span></header><form id="${prefix}" novalidate><fieldset><div class="transaction-type-picker" role="group" aria-label="Tipo de lançamento">${[['income', 'Entrada', 'arrow_up'], ['expense', 'Saída', 'arrow_down']].map(([value, label, glyph]) => `<button type="button" data-tx-type="${value}" aria-pressed="${type === value}"><span class="transaction-type-icon ${value}">${icon(glyph)}</span>${label}</button>`).join('')}</div><input type="hidden" name="type" id="${prefix}-type" value="${type}"><div id="${prefix}-type-error" class="field-error" hidden></div><section class="finance-card transaction-amount" data-field><label for="${prefix}-amount">Valor</label><div><span aria-hidden="true">R$</span><input id="${prefix}-amount" name="amount" data-mask="moedaBRL" type="text" inputmode="decimal" autocomplete="off" maxlength="22" placeholder="0,00" value="${transaction ? amountText(transaction.amount_cents) : ''}" aria-label="Valor em reais"></div><div id="${prefix}-amount-error" class="field-error" hidden></div></section><section class="finance-card transaction-fields"><div class="transaction-field" data-field><label for="${prefix}-description">Descrição</label><div class="transaction-input">${icon('doc_text')}<input type="text" id="${prefix}-description" name="description" maxlength="255" placeholder="Ex.: Salário, supermercado, aluguel..." value="${esc(transaction?.description || '')}"></div><div id="${prefix}-description-error" class="field-error" hidden></div></div><div class="transaction-field" data-field><label for="${prefix}-category">Categoria</label><div class="transaction-input transaction-category-input"><span class="tx-category-icon" data-tx-category-icon>${icon('tag')}</span><select name="category_id" id="${prefix}-category" aria-describedby="${prefix}-category-note" disabled><option value="">Carregando categorias...</option></select></div><div id="${prefix}-category-error" class="field-error" hidden></div><p id="${prefix}-category-note" class="transaction-field-hint" data-tx-category-note role="status"></p><div class="transaction-category-actions"><button type="button" data-tx-categories-retry>Atualizar categorias</button><button type="button" data-tx-manage>Criar categoria</button></div></div><div class="transaction-field" data-field><label for="${prefix}-date">Data</label><div class="transaction-input">${icon('calendar')}<input type="date" name="transaction_date" id="${prefix}-date" min="1900-01-01" max="2100-12-31" value="${esc(transaction?.transaction_date || todayBrazil())}"></div><div id="${prefix}-date-error" class="field-error" hidden></div></div><div class="transaction-field" data-field><label for="${prefix}-notes">Observação <span>(opcional)</span></label><div class="transaction-input transaction-notes">${icon('doc_text')}<textarea id="${prefix}-notes" name="notes" maxlength="2000" placeholder="Adicione uma observação...">${esc(transaction?.notes || '')}</textarea></div><small class="transaction-note-count" data-tx-note-count></small><div id="${prefix}-notes-error" class="field-error" hidden></div></div></section></fieldset><p class="auth-error transaction-error" role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary transaction-save" data-tx-save>${icon('checkmark_alt')}<span>Salvar lançamento</span></button>${editing ? `<button type="button" class="transaction-delete" data-tx-delete>${icon('trash')} Excluir lançamento</button>` : ''}<button type="button" class="transaction-cancel" data-tx-close>Cancelar</button></form></div></div></div>`,
+        content: `<div class="popup transaction-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="transaction-popup-scroll"><div class="transaction-form-container"><header class="transaction-form-header"><button type="button" class="icon-button" data-tx-close aria-label="Voltar">${icon('chevron_left')}</button><h2 id="${prefix}-title">${editing ? 'Editar lançamento' : 'Novo lançamento'}</h2><span></span></header><form id="${prefix}" novalidate><fieldset><div class="transaction-type-picker" role="group" aria-label="Tipo de lançamento">${[['income', 'Entrada', 'arrow_up'], ['expense', 'Saída', 'arrow_down']].map(([value, label, glyph]) => `<button type="button" data-tx-type="${value}" aria-pressed="${type === value}"><span class="transaction-type-icon ${value}">${icon(glyph)}</span>${label}</button>`).join('')}</div><input type="hidden" name="type" id="${prefix}-type" value="${type}"><div id="${prefix}-type-error" class="field-error" hidden></div><section class="finance-card transaction-amount" data-field><label for="${prefix}-amount">Valor</label><div><span aria-hidden="true">R$</span><input id="${prefix}-amount" name="amount" data-mask="moedaBRL" type="text" inputmode="decimal" autocomplete="off" maxlength="22" placeholder="0,00" value="${initialValues ? amountText(initialValues.amount_cents) : ''}" aria-label="Valor em reais"></div><div id="${prefix}-amount-error" class="field-error" hidden></div></section><section class="finance-card transaction-fields"><div class="transaction-field" data-field><label for="${prefix}-description">Descrição</label><div class="transaction-input">${icon('doc_text')}<input type="text" id="${prefix}-description" name="description" maxlength="255" placeholder="Ex.: Salário, supermercado, aluguel..." value="${esc(initialValues?.description || '')}"></div><div id="${prefix}-description-error" class="field-error" hidden></div></div><div class="transaction-field" data-field><label for="${prefix}-category">Categoria</label><div class="transaction-input transaction-category-input"><span class="tx-category-icon" data-tx-category-icon>${icon('tag')}</span><select name="category_id" id="${prefix}-category" aria-describedby="${prefix}-category-note" disabled><option value="">Carregando categorias...</option></select></div><div id="${prefix}-category-error" class="field-error" hidden></div><p id="${prefix}-category-note" class="transaction-field-hint" data-tx-category-note role="status"></p><div class="transaction-category-actions"><button type="button" data-tx-categories-retry>Atualizar categorias</button><button type="button" data-tx-manage>Criar categoria</button></div></div><div class="transaction-field" data-field><label for="${prefix}-date">Data</label><div class="transaction-input">${icon('calendar')}<input type="date" name="transaction_date" id="${prefix}-date" min="1900-01-01" max="2100-12-31" value="${esc(initialValues?.transaction_date || todayBrazil())}"></div><div id="${prefix}-date-error" class="field-error" hidden></div></div><div class="transaction-field" data-field><label for="${prefix}-notes">Observação <span>(opcional)</span></label><div class="transaction-input transaction-notes">${icon('doc_text')}<textarea id="${prefix}-notes" name="notes" maxlength="2000" placeholder="Adicione uma observação...">${esc(initialValues?.notes || '')}</textarea></div><small class="transaction-note-count" data-tx-note-count></small><div id="${prefix}-notes-error" class="field-error" hidden></div></div></section></fieldset><p class="auth-error transaction-error" role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary transaction-save" data-tx-save>${icon('checkmark_alt')}<span>Salvar lançamento</span></button>${editing ? `<button type="button" class="transaction-delete" data-tx-delete>${icon('trash')} Excluir lançamento</button>` : ''}<button type="button" class="transaction-cancel" data-tx-close>Cancelar</button></form></div></div></div>`,
         on: {
             closed(instance) {
                 if (!alive) return;
@@ -39,6 +41,13 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         },
     });
     const form = popup.el.querySelector('form');
+    if (preview) {
+        const notice = document.createElement('p');
+        notice.className = 'reconciliation-preview-note';
+        notice.textContent = 'Demonstração: este lançamento não será gravado nas suas finanças.';
+        form.prepend(notice);
+        form.querySelector('[data-tx-manage]').hidden = true;
+    }
     const smartSelects = mountSmartSelects(form, ctx.app);
     const dateFields = mountDateFields(form, ctx.app);
     const fields = form.elements;
@@ -92,7 +101,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         loading = true; failed = false;
         renderCategories(preferred);
         try {
-            const rows = await categoryOptions('active', () => !alive);
+            const rows = preview ? preview.categories : await categoryOptions('active', () => !alive);
             if (!alive) return;
             categories = rows;
             if (editing && !categories.some(item => item.id === transaction.category_id)) categories.push(transaction.category);
@@ -117,7 +126,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         if (busy || confirming || closing) { cancel(); return; }
         if (!dirty()) { finishClose(done); return; }
         confirming = true;
-        confirmation = ctx.app.dialog.create({ title: 'Descartar alterações?', text: 'As alterações ainda não foram salvas.', buttons: [
+        confirmation = ctx.app.dialog.create({ animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches, title: 'Descartar alterações?', text: 'As alterações ainda não foram salvas.', buttons: [
             { text: 'Continuar editando', onClick() { confirming = false; cancel(); } },
             { text: 'Descartar', bold: true, onClick() { confirming = false; finishClose(done); } },
         ] }).open();
@@ -162,7 +171,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
             const data = { type, amount_cents: amountMask.getCents(), category_id: Number(select.value),
                 description: fields.description.value.trim(), transaction_date: fields.transaction_date.value, notes: fields.notes.value.trim() || null };
             if (!select.value || !Number.isSafeInteger(data.amount_cents)) return;
-            void mutate(() => saveTransaction(transaction?.id, data), editing ? 'updated' : 'created');
+            void mutate(() => preview ? preview.save(data) : saveTransaction(transaction?.id, data), editing ? 'updated' : 'created');
         },
     });
 
@@ -179,7 +188,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         if (target.hasAttribute('data-tx-manage')) confirmLeave(() => ctx.navigate('/categorias/'));
         if (target.hasAttribute('data-tx-delete')) {
             confirming = true;
-            confirmation = ctx.app.dialog.create({ title: 'Excluir lançamento?', text: `“${esc(transaction.description)}” será removido do Histórico e dos cálculos.`, buttons: [
+            confirmation = ctx.app.dialog.create({ animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches, title: 'Excluir lançamento?', text: `“${esc(transaction.description)}” será removido do Histórico e dos cálculos.`, buttons: [
                 { text: 'Cancelar', onClick() { confirming = false; } },
                 { text: 'Excluir', bold: true, color: 'red', onClick() { confirming = false; void mutate(() => deleteTransaction(transaction.id), 'deleted'); } },
             ] }).open();
@@ -198,7 +207,7 @@ export function openTransactionForm(ctx, { transaction = null, onSaved, onClosed
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }, { signal: listeners.signal });
     form.querySelector('[data-tx-note-count]').textContent = `${fields.notes.value.length}/2000`;
-    popup.open(); void loadCategories();
+    popup.open(!window.matchMedia('(prefers-reduced-motion: reduce)').matches); void loadCategories();
     return {
         close(force = false) { if (force) { afterClose = undefined; popup.close(false); } else confirmLeave(() => {}); },
         beforeLeave(resolve, reject) { confirmLeave(resolve, reject); },
