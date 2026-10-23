@@ -381,4 +381,43 @@ class TransactionTest extends TestCase
             $this->deleteJson(self::API.'/'.$id)->assertNotFound();
         }
     }
+
+    public function test_unbudgeted_expenses_match_summary_and_paginate_with_user_month_and_soft_delete_isolation(): void
+    {
+        [$user, $covered] = $this->signedIn();
+        $free = $this->category($user);
+        $removed = $this->category($user, ['is_active' => false]);
+        $budget = fn ($category, $month = 10) => $user->monthlyBudgets()->create([
+            'category_id' => $category->id, 'year' => 2026, 'month' => $month, 'limit_cents' => 100000,
+        ]);
+        $budget($covered);
+        $budget($free, 9);
+        $budget($removed)->delete();
+        $this->transaction($user, $covered);
+        $this->transaction($user, $free);
+        $this->transaction($user, $removed, ['amount_cents' => 9900]);
+        for ($i = 0; $i < 27; $i++) $this->transaction($user, $free, ['amount_cents' => 100]);
+        $this->transaction($user, $free, ['transaction_date' => '2026-09-25']);
+        $this->transaction($user, $free)->delete();
+        $this->transaction($user, $this->category($user, ['type' => 'income']));
+        $other = User::factory()->create();
+        $this->transaction($other, $this->category($other));
+
+        $this->getJson(self::API.self::MONTH.'&unbudgeted=1&type=expense')->assertOk()
+            ->assertJsonPath('meta.total', 29)->assertJsonCount(25, 'data')
+            ->assertJsonPath('meta.total_amount_cents', 36090);
+        $this->getJson(self::API.self::MONTH.'&unbudgeted=1&type=expense&page=2')->assertOk()
+            ->assertJsonCount(4, 'data')->assertJsonPath('meta.total_amount_cents', 36090);
+        $this->getJson('/api/v1/budgets'.self::MONTH)->assertOk()
+            ->assertJsonPath('meta.summary.unbudgeted_expense_cents', 36090);
+        $this->getJson(self::API.self::MONTH.'&unbudgeted=1&search=nao-existe')->assertOk()
+            ->assertJsonCount(0, 'data')->assertJsonPath('meta.total_amount_cents', 0);
+    }
+
+    public function test_unbudgeted_filter_requires_a_valid_boolean(): void
+    {
+        $this->signedIn();
+        $this->getJson(self::API.self::MONTH.'&unbudgeted=invalid')->assertUnprocessable()
+            ->assertJsonValidationErrors('unbudgeted');
+    }
 }

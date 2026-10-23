@@ -1,3 +1,5 @@
+import { pageHeader } from '../shared/page-header.js';
+import { renderSpendingRanking } from '../dashboard/spending-ranking.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { formatMoney as money } from '../shared/money.js';
 import { safeIcon, safeColor } from '../categories/catalog.js';
@@ -13,7 +15,7 @@ export function mountReports(root, ctx, route) {
     if (validRange(route.query?.range)) ctx.state.reportsRange = route.query.range;
     const events = new AbortController();
     root.classList.add('reports-real');
-    root.innerHTML = `<header class="finance-header"><a href="/mais/" class="link icon-button" aria-label="Abrir configurações">${icon('gear_alt')}</a><h1 tabindex="-1">Relatórios</h1><button class="icon-button" type="button" data-report-help aria-label="Sobre os períodos dos relatórios">${icon('info_circle')}</button></header><div data-report-month></div><div class="report-period" role="group" aria-label="Período do relatório">${REPORT_RANGES.map(([value, label]) => `<button type="button" data-report-range="${value}" aria-pressed="false">${label}</button>`).join('')}</div><p class="period-note" data-report-period role="status"></p><div data-report-content aria-busy="false"></div>`;
+    root.innerHTML = `${pageHeader('Relatórios', 'Entenda suas finanças')}<div data-report-month></div><div class="report-period" role="group" aria-label="Período do relatório">${REPORT_RANGES.map(([value, label]) => `<button type="button" data-report-range="${value}" aria-pressed="false">${label}</button>`).join('')}</div><p class="period-note" data-report-period role="status"></p><div data-report-content aria-busy="false"></div>`;
     const monthBox = root.querySelector('[data-report-month]');
     const periodNote = root.querySelector('[data-report-period]');
     const content = root.querySelector('[data-report-content]');
@@ -47,9 +49,6 @@ export function mountReports(root, ctx, route) {
         const badge = (category, fallback, tone) => `<span class="report-insight-icon ${tone}" style="--category-color:${safeColor(category?.color)}">${icon(category ? safeIcon(category.icon) : fallback)}</span>`;
         return `<div class="report-insights-grid"><section class="finance-card report-insight-card" data-report-insight="largest">${badge(largest?.category, 'tag', 'report-icon-warm')}<div><h2>Maior gasto</h2>${largest ? `<p class="report-insight-name">${esc(largest.description)}</p><p class="report-insight-meta">${esc(largest.category.name)} · ${esc(dateText(largest.transaction_date))}${largest.category.is_active ? '' : ' · Categoria inativa'}</p><strong class="expense">${money(largest.amount_cents)}</strong>` : '<p class="report-insight-empty">Nenhuma despesa no período.</p>'}</div></section><section class="finance-card report-insight-card" data-report-insight="frequent">${badge(frequent?.category, 'tag', 'report-icon-purple')}<div><h2>Categoria mais usada</h2>${frequent ? `<p class="report-insight-name">${esc(frequent.category.name)}${frequent.category.is_active ? '' : ' (inativa)'}</p><p class="report-insight-meta">${esc(expenseFrequencyLabel(frequent.transaction_count, data.totals.expense_count))}</p><small>Por quantidade de despesas, não pelo valor gasto.</small>` : '<p class="report-insight-empty">Nenhuma despesa no período.</p>'}</div></section></div>`;
     }
-    function categoryChart(summary) {
-        return `<div class="category-chart-layout"><div class="donut-container"><div class="donut-chart" data-chart="categories" role="img" aria-label="Despesas por categoria: ${esc(money(summary.expense))}"></div><div class="donut-label"><strong>${money(summary.expense)}</strong><span>no período</span></div></div><ul class="category-legend">${summary.byCategory.length ? summary.byCategory.map(category => `<li><span class="category-dot" style="background:${category.color}"></span><span class="report-category-name" title="${esc(category.name)}">${esc(category.name)}</span><strong>${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(category.amount / summary.expense * 100)}%</strong></li>`).join('') : '<li>Sem despesas neste período</li>'}</ul></div>`;
-    }
     async function charts(summary, current) {
         const version = ++chartRevision;
         try {
@@ -64,8 +63,8 @@ export function mountReports(root, ctx, route) {
     }
     function render(data, current) {
         const summary = reportData(data);
-        const comparison = esc(comparisonLabel(data.comparison_period));
-        content.innerHTML = `${summaryCards(summary, data)}${data.previous_period ? `<p class="report-comparison-period" data-report-previous>Comparado com ${esc(comparisonLabel(data.previous_period))}</p>` : ''}${data.totals.income_count + data.totals.expense_count === 0 ? '<p class="report-empty-note" role="status">Nenhum lançamento no período selecionado.</p>' : ''}<div class="reports-grid"><section class="finance-card category-card"><div class="card-heading"><h2>Despesas por categoria</h2></div>${categoryChart(summary)}</section><section class="finance-card"><div class="card-heading"><h2>Entradas × Saídas</h2></div><p class="report-chart-period">${comparison}</p><div class="report-chart" data-chart="comparison" role="img" aria-label="Entradas e saídas: ${comparison}"></div></section></div>${insightCards(data)}<section class="finance-card evolution-card"><div class="card-heading"><h2>Evolução mensal</h2></div><p class="report-chart-period">${comparison}</p><div class="report-chart" data-chart="evolution" role="img" aria-label="Evolução das entradas, saídas e resultado: ${comparison}"></div></section>${comparisonSummary(data)}`;
+        const barPeriod = esc(comparisonLabel(data.income_expense_period || data.period));
+        content.innerHTML = `${summaryCards(summary, data)}${data.previous_period ? `<p class="report-comparison-period" data-report-previous>Comparado com ${esc(comparisonLabel(data.previous_period))}</p>` : ''}${data.totals.income_count + data.totals.expense_count === 0 ? '<p class="report-empty-note" role="status">Nenhum lançamento no período selecionado.</p>' : ''}<div class="reports-grid"><section class="finance-card category-card spending-rank-card"><div class="card-heading"><h2>Despesas por categoria</h2></div>${renderSpendingRanking(data.by_category, summary.expense, { limit: null, emptyMessage: 'Nenhuma despesa neste período.' })}</section><section class="finance-card monthly-comparison-card"><div class="card-heading"><h2>Entradas × Despesas</h2></div><p class="monthly-comparison-subtitle">${barPeriod}</p><div class="report-comparison-scroll" tabindex="0" role="region" aria-label="Comparação mensal de entradas e despesas"><div class="report-comparison-chart ${summary.expenseHistory.length > 6 ? 'report-comparison-year' : ''}" data-chart="report-income-expenses" role="img" aria-label="Entradas em verde e despesas em vermelho: ${barPeriod}"></div></div></section></div>${insightCards(data)}${comparisonSummary(data)}`;
         void charts(summary, current);
     }
     async function load() {
@@ -96,7 +95,6 @@ export function mountReports(root, ctx, route) {
     root.addEventListener('click', event => {
         const button = event.target.closest('button');
         if (!button) return;
-        if (button.hasAttribute('data-report-help')) ctx.app.dialog.alert('Os totais e categorias seguem o período selecionado. “3 meses” inclui o mês escolhido e os dois anteriores; “Ano” vai de janeiro até o mês escolhido. No modo “Mês”, os gráficos comparam os últimos seis meses, conforme as datas indicadas. O resultado é a diferença entre entradas e saídas, sem acumular saldos de meses anteriores. A variação dos totais compara o mês com o anterior; três meses com os três anteriores; e Ano com janeiro até o mesmo mês do ano anterior. A categoria mais usada considera a quantidade de despesas. O maior gasto é uma despesa individual.', 'Seus relatórios');
         if (button.hasAttribute('data-report-retry')) void load();
         if (validRange(button.dataset.reportRange) && button.dataset.reportRange !== ctx.state.reportsRange) {
             ctx.state.reportsRange = button.dataset.reportRange; void load();

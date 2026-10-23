@@ -2,6 +2,19 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { listTransactions } from '../src/js/transactions/api.js';
 
+test('modal de despesas sem orçamento envia filtro, mês e página à API', async () => {
+    const original = globalThis.fetch;
+    let requested;
+    globalThis.fetch = async url => { requested = new URL(url, 'https://example.test'); return new Response(JSON.stringify({ data: [], meta: {} })); };
+    try {
+        await listTransactions({ month: '2026-07', type: 'expense', unbudgeted: true, page: 2 });
+        assert.equal(requested.searchParams.get('unbudgeted'), '1');
+        assert.equal(requested.searchParams.get('month'), '7');
+        assert.equal(requested.searchParams.get('type'), 'expense');
+        assert.equal(requested.searchParams.get('page'), '2');
+    } finally { globalThis.fetch = original; }
+});
+
 test('histórico envia os 12 meses sem zero à esquerda e preserva os filtros', async () => {
     const originalFetch = globalThis.fetch;
     const requests = [];

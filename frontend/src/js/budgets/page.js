@@ -1,3 +1,5 @@
+import { openUnbudgetedExpenses } from './unbudgeted-expenses.js';
+import { pageHeader } from '../shared/page-header.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { formatMoney as money } from '../shared/money.js';
 import { validMonth } from '../shared/calendar.js';
@@ -9,12 +11,13 @@ import { progressPercent, percentLabel, shortPercentLabel, budgetRingTone, budge
 export function mountBudgets(root, ctx, route) {
     let alive = true, revision = 0, loading = false, page = 0, lastPage = 1, rows = [];
     if (validMonth(route.query?.month)) ctx.state.budgetMonth = route.query.month;
+    let unbudgetedModal;
     const events = new AbortController();
     root.classList.add('budgets-container');
-    root.innerHTML = `<header class="finance-header"><a href="/mais/" class="link icon-button" aria-label="Voltar para Mais">${icon('gear_alt')}</a><h1 tabindex="-1">Orçamento mensal</h1><button class="icon-button" type="button" data-budget-help aria-label="Sobre os orçamentos">${icon('info_circle')}</button></header><div data-budget-month></div><p class="budget-feedback" role="status" hidden></p><section class="budget-results" aria-label="Orçamentos do mês" aria-busy="false"><div data-budget-summary></div><p class="budget-unbudgeted" role="status" hidden></p><p class="budget-count" role="status"></p><div class="budget-list"></div><div class="budget-list-state" role="status"></div><button type="button" class="mf-button mf-button-secondary budget-more" data-budget-more hidden>Carregar mais</button></section><button type="button" class="budget-create-button" data-budget-create>${icon('plus')}<span>Novo orçamento</span></button>`;
+    root.innerHTML = `${pageHeader('Orçamentos', 'Planeje seus gastos do mês')}<div data-budget-month></div><p class="budget-feedback" role="status" hidden></p><section class="budget-results" aria-label="Orçamentos do mês" aria-busy="false"><div data-budget-summary></div><button type="button" class="budget-unbudgeted" data-budget-unbudgeted hidden aria-haspopup="dialog"></button><div class="budget-list"></div><div class="budget-list-state" role="status"></div><button type="button" class="mf-button mf-button-secondary budget-more" data-budget-more hidden>Carregar mais</button></section><button type="button" class="budget-create-button" data-budget-create>${icon('plus')}<span>Novo orçamento</span></button>`;
     const monthBox = root.querySelector('[data-budget-month]'), results = root.querySelector('.budget-results');
     const summaryBox = root.querySelector('[data-budget-summary]'), unbudgeted = root.querySelector('.budget-unbudgeted');
-    const count = root.querySelector('.budget-count'), list = root.querySelector('.budget-list');
+    const list = root.querySelector('.budget-list');
     const stateBox = root.querySelector('.budget-list-state'), more = root.querySelector('[data-budget-more]');
     const feedback = root.querySelector('.budget-feedback');
     monthBox.innerHTML = monthPicker(ctx.state.budgetMonth);
@@ -23,10 +26,9 @@ export function mountBudgets(root, ctx, route) {
     }
     function renderSummary(summary) {
         const label = percentLabel(summary.used_percent), progress = progressPercent(summary.used_percent);
-        summaryBox.innerHTML = `<section class="budget-summary" aria-label="Orçamento total utilizado"><div class="budget-summary-copy"><p>Orçamento total utilizado <button class="result-info" type="button" data-budget-help aria-label="Entender o orçamento total">${icon('info_circle')}</button></p><strong class="${label.length > 8 ? 'budget-percent-compact' : ''}" data-budget-percent>${label}</strong><span class="budget-summary-values" data-budget-summary-values>${summary.budget_count ? `${money(summary.spent_cents)} de ${money(summary.limit_cents)}` : 'Nenhum orçamento definido neste mês'}</span></div><div class="budget-summary-ring budget-ring-${budgetRingTone(summary.used_percent)} ${label.length > 6 ? 'budget-ring-compact' : ''}" role="img" aria-label="${summary.budget_count ? `${label} do orçamento utilizado` : 'Sem orçamento definido'}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="budget-ring-track" cx="60" cy="60" r="48"/><circle class="budget-ring-value" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="${progress} 100" opacity="${progress > 0 ? 1 : 0}"/></svg><strong>${summary.budget_count ? shortPercentLabel(summary.used_percent) : '—'}</strong></div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>`;
+        summaryBox.innerHTML = `<section class="budget-summary" aria-label="Orçamento total utilizado"><div class="budget-summary-copy"><p>Orçamento total utilizado</p><strong class="${label.length > 8 ? 'budget-percent-compact' : ''}" data-budget-percent>${label}</strong><span class="budget-summary-values" data-budget-summary-values>${summary.budget_count ? `${money(summary.spent_cents)} de ${money(summary.limit_cents)}` : 'Nenhum orçamento definido neste mês'}</span></div><div class="budget-summary-ring budget-ring-${budgetRingTone(summary.used_percent)} ${label.length > 6 ? 'budget-ring-compact' : ''}" role="img" aria-label="${summary.budget_count ? `${label} do orçamento utilizado` : 'Sem orçamento definido'}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="budget-ring-track" cx="60" cy="60" r="48"/><circle class="budget-ring-value" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="${progress} 100" opacity="${progress > 0 ? 1 : 0}"/></svg><strong>${summary.budget_count ? shortPercentLabel(summary.used_percent) : '—'}</strong></div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>`;
         unbudgeted.textContent = summary.unbudgeted_expense_cents > 0 ? `${money(summary.unbudgeted_expense_cents)} em despesas sem orçamento neste mês.` : '';
         unbudgeted.hidden = !unbudgeted.textContent;
-        count.textContent = `${summary.budget_count} ${summary.budget_count === 1 ? 'orçamento no mês' : 'orçamentos no mês'}`;
     }
     function renderRows() {
         list.innerHTML = rows.map(row => {
@@ -43,7 +45,7 @@ export function mountBudgets(root, ctx, route) {
             const url = `/orcamentos/?${new URLSearchParams({ month: ctx.state.budgetMonth })}`;
             if (router.currentRoute.url !== url) router.updateCurrentUrl(url);
         }
-        if (!append) { rows = []; list.replaceChildren(); summaryBox.replaceChildren(); count.textContent = ''; unbudgeted.hidden = true; }
+        if (!append) { rows = []; list.replaceChildren(); summaryBox.replaceChildren(); unbudgeted.hidden = true; }
         stateBox.innerHTML = '<span class="mf-spinner" aria-hidden="true"></span><span>Carregando orçamentos...</span>';
         try {
             const response = await listBudgets(ctx.state.budgetMonth, append ? page + 1 : 1);
@@ -67,10 +69,12 @@ export function mountBudgets(root, ctx, route) {
     root.addEventListener('click', async event => {
         const button = event.target.closest('button');
         if (!button) return;
+        if (button.hasAttribute('data-budget-unbudgeted') && !unbudgetedModal) {
+            unbudgetedModal = openUnbudgetedExpenses(ctx, ctx.state.budgetMonth, () => { unbudgetedModal = null; });
+        }
         if (button.hasAttribute('data-budget-create')) ctx.openBudget({ month: ctx.state.budgetMonth });
         if (button.hasAttribute('data-budget-more')) void load(true);
         if (button.hasAttribute('data-budget-retry')) void load(button.dataset.budgetRetry === 'more');
-        if (button.hasAttribute('data-budget-help')) ctx.app.dialog.alert('Cada categoria de despesa pode ter um limite por mês. Os gastos vêm dos lançamentos daquele mês, inclusive os registrados antes do orçamento. O resumo considera as categorias com orçamento; despesas sem limite aparecem separadamente. A partir de 80% há um alerta, e o percentual pode ultrapassar 100%. Remover um orçamento preserva seus lançamentos.', 'Seu orçamento mensal');
         if (button.dataset.budgetId) {
             const current = revision; button.disabled = true;
             try {
@@ -94,6 +98,7 @@ export function mountBudgets(root, ctx, route) {
     }, { signal: events.signal });
     return {
         refresh() { void load(); },
-        destroy() { alive = false; revision++; events.abort(); unbindMonth(); },
+        leave() { unbudgetedModal?.close(false); },
+        destroy() { unbudgetedModal?.close(false); alive = false; revision++; events.abort(); unbindMonth(); },
     };
 }

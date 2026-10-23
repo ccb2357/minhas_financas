@@ -1,3 +1,4 @@
+import { pageHeader } from '../shared/page-header.js';
 import { mountSmartSelects } from '../shared/smart-select.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { moneyText } from '../shared/money.js';
@@ -14,7 +15,7 @@ export function mountHistory(root, ctx, route) {
     if (validMonth(route.query?.month)) ctx.state.historyMonth = route.query.month;
     const events = new AbortController();
     root.classList.add('history-real');
-    root.innerHTML = `<header class="finance-header"><a class="link icon-button" href="/mais/" aria-label="Abrir configurações">${icon('gear_alt')}</a><h1 tabindex="-1">Histórico</h1><button class="icon-button" data-history-help type="button" aria-label="Sobre o Histórico">${icon('info_circle')}</button></header><div data-history-month></div><label class="history-search">${icon('search')}<input type="search" maxlength="255" placeholder="Buscar lançamentos" aria-label="Buscar lançamentos por descrição"></label><div class="history-filters" role="group" aria-label="Filtrar lançamentos">${[['', 'Todos', ''], ['income', 'Entradas', 'arrow_up'], ['expense', 'Saídas', 'arrow_down']].map(([value, label, glyph]) => `<button type="button" class="filter-chip" data-history-type="${value}" aria-pressed="${value === type}">${glyph ? icon(glyph) : ''}${label}</button>`).join('')}<label class="category-filter">${icon('tag')}<span data-history-category-label aria-hidden="true">Categorias</span><select data-history-category aria-label="Filtrar por categoria"><option value="">Categorias</option></select></label></div><div class="history-category-status" role="status" hidden></div><p class="history-count" role="status" data-history-count></p><p class="history-feedback" role="status" hidden></p><div data-history-list aria-busy="false"></div><div class="history-list-state" role="status"></div><button class="mf-button mf-button-secondary" type="button" data-history-more hidden>Carregar mais</button>`;
+    root.innerHTML = `${pageHeader('Histórico', 'Seus lançamentos em um só lugar')}<div data-history-month></div><label class="history-search">${icon('search')}<input type="search" maxlength="255" placeholder="Buscar lançamentos" aria-label="Buscar lançamentos por descrição"></label><div class="history-filters" role="group" aria-label="Filtrar lançamentos">${[['', 'Todos', ''], ['income', 'Entradas', 'arrow_up'], ['expense', 'Saídas', 'arrow_down']].map(([value, label, glyph]) => `<button type="button" class="filter-chip" data-history-type="${value}" aria-pressed="${value === type}">${glyph ? icon(glyph) : ''}${label}</button>`).join('')}<label class="category-filter">${icon('tag')}<span data-history-category-label aria-hidden="true">Categorias</span><select data-history-category aria-label="Filtrar por categoria"><option value="">Categorias</option></select></label></div><div class="history-category-status" role="status" hidden></div><p class="history-count" role="status" data-history-count></p><p class="history-feedback" role="status" hidden></p><div data-history-list aria-busy="false"></div><div class="history-list-state" role="status"></div><button class="mf-button mf-button-secondary" type="button" data-history-more hidden>Carregar mais</button>`;
     const smartSelects = mountSmartSelects(root, ctx.app);
     const list = root.querySelector('[data-history-list]');
     const stateBox = root.querySelector('.history-list-state');
@@ -115,7 +116,6 @@ export function mountHistory(root, ctx, route) {
         if (button.hasAttribute('data-history-retry')) void load(button.dataset.historyRetry === 'more');
         if (button.hasAttribute('data-history-options-retry')) void loadOptions();
         if (button.hasAttribute('data-history-create')) ctx.openTransaction();
-        if (button.hasAttribute('data-history-help')) ctx.app.dialog.alert('Este Histórico apresenta os lançamentos salvos na sua conta. Toque em um lançamento para editar ou excluir.', 'Seus lançamentos');
         if (button.dataset.realTransaction) {
             const current = revision;
             button.disabled = true;

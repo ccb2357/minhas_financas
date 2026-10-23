@@ -70,7 +70,7 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
 
     function updateNavigation(route) {
         const section = route.path?.split('/').filter(Boolean)[0] || 'inicio';
-        const navigationSection = ['categorias', 'orcamentos'].includes(section) ? 'mais' : section;
+        const navigationSection = section === 'categorias' ? 'mais' : section;
         for (const link of container.querySelectorAll('[data-section]')) {
             const active = link.dataset.section === navigationSection;
             link.classList.toggle('nav-active', active);
@@ -85,7 +85,10 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
         const link = event.target.closest('[data-section]');
         if (!link || !view) return;
         event.preventDefault();
-        view.router.navigate(link.getAttribute('href'));
+        const destination = link.getAttribute('href');
+        // A URL pode ter filtros; tocar na mesma tela não deve reiniciar a rota.
+        if (view.router.currentRoute.path === destination) return;
+        view.router.navigate(destination);
     });
     newButton.addEventListener('click', () => context.openTransaction());
 

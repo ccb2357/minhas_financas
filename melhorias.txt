@@ -2,12 +2,7 @@ tela de investimento onde eu adciiono dinherio topdo mes e mostar as entrads e r
 
 tela de objetivos omnde fica definido o objetivo e quanto de dinheiro ja tem guardado para ele
 
-a notificação de ações deve usar as notificações padrão do framework 7 aquela que voce clica e ela desaparece
-usar skeleton ghost layouts nas partes que carregam depois que a pagina ja esta carregada afimd e evitar que pisque
-
-os icones ali na criação de categortia deve ter um botão que abre uma tela onde a pessoa selelciona o icones
-
-arrumar aquele modal de voltar porque o escrito: Contineu editando fica todo bugado
+tem que melhorar a tela de despesas fora do orçamento da tela de orçamentos tem que ser um modal bonitinho e nao aquela tela tosca
 
 
 comando para começar no celular: 
@@ -21,5 +16,3 @@ docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci
 quando fizer um git pull tem que rodar o comando abaixo para gerar o build
 docker run --rm -v /var/www/minhas_financas/frontend:/app -w /app node:22-alpine sh -c "npm ci && npm run build"
 
-
-TEM QUE VER PORQUE QUANDIO ESTA NA TELA DE HISTORICO E SELECIONA OUTRO MES NAO VEM OS DADOS MESMO TENDO DADOS.

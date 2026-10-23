@@ -29,6 +29,7 @@ class ListTransactionRequest extends FormRequest
             'category_id' => ['sometimes', 'bail', 'required', 'integer', 'min:1',
                 Rule::exists('categories', 'id')->where('user_id', $this->user()->id)],
             'search' => ['sometimes', 'nullable', 'string', 'max:255'],
+            'unbudgeted' => ['sometimes', 'boolean'],
             'page' => ['sometimes', 'required', 'integer', 'min:1'],
             'per_page' => ['sometimes', 'required', 'integer', 'between:1,100'],
         ];

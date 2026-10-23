@@ -1,9 +1,10 @@
 import { apiRequest, prepareCsrf } from '../api.js';
 import { listCategories } from '../categories/api.js';
 
-export function listTransactions({ month, type = '', category = '', search = '', page = 1 }) {
+export function listTransactions({ month, type = '', category = '', search = '', page = 1, unbudgeted = false }) {
     const [year, number] = month.split('-').map(Number);
     const query = new URLSearchParams({ year, month: number, page: String(page), per_page: '25' });
+    if (unbudgeted) query.set('unbudgeted', '1');
     if (type) query.set('type', type);
     if (category) query.set('category_id', category);
     if (search.trim()) query.set('search', search.trim());

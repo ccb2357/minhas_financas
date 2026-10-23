@@ -1,3 +1,4 @@
+import { pageHeader } from '../shared/page-header.js';
 import { notifySuccess } from '../shared/notifications.js';
 import { mountSmartSelects } from '../shared/smart-select.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
@@ -17,7 +18,7 @@ export function mountCategories(root, ctx) {
     let editor;
     const events = new AbortController();
     root.classList.add('categories-container');
-    root.innerHTML = `<header class="finance-header categories-header"><a href="/mais/" class="link icon-button" aria-label="Voltar para Mais">${icon('chevron_left')}</a><h1 tabindex="-1">Categorias</h1><button type="button" class="icon-button" data-category-help aria-label="Sobre as categorias">${icon('info_circle')}</button></header><div class="category-tabs" role="group" aria-label="Filtrar categorias por tipo"><button type="button" data-category-type="" aria-pressed="true">Todas</button><button type="button" data-category-type="income" aria-pressed="false">Receitas</button><button type="button" data-category-type="expense" aria-pressed="false">Despesas</button></div><div class="category-list-tools"><span data-category-total role="status"></span><label><span class="sr-only">Estado das categorias</span><select data-category-status aria-label="Estado das categorias"><option value="active">Ativas</option><option value="inactive">Inativas</option><option value="all">Todas as situações</option></select>${icon('chevron_down')}</label></div><section class="category-results" aria-label="Suas categorias" aria-busy="false"><div class="category-grid"></div><div class="category-list-state" role="status"></div><button type="button" class="mf-button mf-button-secondary category-load-more" data-category-more hidden>Carregar mais</button></section><button type="button" class="category-create-button" data-category-create>${icon('plus')}<span>Nova categoria</span></button>`;
+    root.innerHTML = `${pageHeader('Categorias', 'Organize suas receitas e despesas')}<div class="category-tabs" role="group" aria-label="Filtrar categorias por tipo"><button type="button" data-category-type="" aria-pressed="true">Todas</button><button type="button" data-category-type="income" aria-pressed="false">Receitas</button><button type="button" data-category-type="expense" aria-pressed="false">Despesas</button></div><div class="category-list-tools"><span data-category-total role="status"></span><label><span class="sr-only">Estado das categorias</span><select data-category-status aria-label="Estado das categorias"><option value="active">Ativas</option><option value="inactive">Inativas</option><option value="all">Todas as situações</option></select>${icon('chevron_down')}</label></div><section class="category-results" aria-label="Suas categorias" aria-busy="false"><div class="category-grid"></div><div class="category-list-state" role="status"></div><button type="button" class="mf-button mf-button-secondary category-load-more" data-category-more hidden>Carregar mais</button></section><button type="button" class="category-create-button" data-category-create>${icon('plus')}<span>Nova categoria</span></button>`;
     const smartSelects = mountSmartSelects(root, ctx.app);
     const grid = root.querySelector('.category-grid');
     const stateBox = root.querySelector('.category-list-state');
@@ -80,9 +81,6 @@ export function mountCategories(root, ctx) {
     root.addEventListener('click', event => {
         const target = event.target.closest('button');
         if (!target) return;
-        if (target.hasAttribute('data-category-help')) {
-            ctx.app.dialog.alert('As categorias são suas e ficam salvas na sua conta. Desative as que não usa mais; você pode reativá-las depois.', 'Suas categorias');
-        }
         if (target.hasAttribute('data-category-type')) {
             if (type === target.dataset.categoryType) return;
             type = target.dataset.categoryType;

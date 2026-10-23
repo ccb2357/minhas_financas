@@ -11,6 +11,10 @@ export function reportData(data) {
         byCategory: data.by_category.map(item => ({
             key: item.category.id, name: item.category.name, color: safeColor(item.category.color), amount: item.amount_cents,
         })),
+        expenseHistory: (data.income_expense_series ?? data.monthly_series ?? data.comparison_series).map(item => ({
+            month: `${item.year}-${String(item.month).padStart(2, '0')}`,
+            income: item.income_cents, expense: item.expense_cents, result: item.result_cents,
+        })),
         // A API distingue a comparação visual dos totais do período escolhido.
         history: data.comparison_series.map(item => ({
             month: `${item.year}-${String(item.month).padStart(2, '0')}`,

@@ -371,4 +371,43 @@ class ReportTest extends TestCase
         $this->assertSame($dashboard['by_category'], $report['by_category']);
         $this->assertSame($dashboard['last_six_months'], $report['comparison_series']);
     }
+
+    public function test_bar_chart_has_one_three_or_twelve_months_without_changing_other_totals(): void
+    {
+        $user = $this->signIn();
+        $income = $this->category($user, 'income');
+        $expense = $this->category($user);
+        $this->entry($user, $income, 10000, '2026-01-10');
+        $this->entry($user, $expense, 2000, '2026-10-10');
+        $this->entry($user, $income, 70000, '2026-12-10');
+        $other = User::factory()->create();
+        $this->entry($other, $this->category($other, 'income'), 990000, '2026-12-10');
+        foreach (['month' => 1, 'three_months' => 3, 'year' => 12] as $range => $count) {
+            $response = $this->getJson(self::API.self::OCTOBER.'&range='.$range)->assertOk()
+                ->assertJsonCount($count, 'data.income_expense_series')
+                ->assertJsonPath('data.income_expense_period.month_count', $count);
+            $rows = $response->json('data.income_expense_series');
+            $this->assertSame($range === 'year' ? 12 : 10, $rows[$count - 1]['month']);
+            if ($range === 'year') {
+                $response->assertJsonPath('data.income_expense_period.start_date', '2026-01-01')
+                    ->assertJsonPath('data.income_expense_period.end_date', '2026-12-31')
+                    ->assertJsonPath('data.income_expense_series.11.income_cents', 70000)
+                    ->assertJsonPath('data.income_expense_series.1.income_cents', 0)
+                    ->assertJsonPath('data.totals.income_cents', 10000)
+                    ->assertJsonPath('data.period.end_date', '2026-10-31')
+                    ->assertJsonCount(10, 'data.monthly_series');
+            }
+        }
+    }
+
+    public function test_three_month_bar_chart_crosses_the_year_with_empty_months(): void
+    {
+        $this->signIn();
+        $this->getJson(self::API.'?year=2026&month=1&range=three_months')->assertOk()
+            ->assertJsonCount(3, 'data.income_expense_series')
+            ->assertJsonPath('data.income_expense_series.0.year', 2025)
+            ->assertJsonPath('data.income_expense_series.0.month', 11)
+            ->assertJsonPath('data.income_expense_series.2.month', 1)
+            ->assertJsonPath('data.income_expense_series.2.expense_cents', 0);
+    }
 }

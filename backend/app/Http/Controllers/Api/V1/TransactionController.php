@@ -27,6 +27,12 @@ class TransactionController extends Controller
             ->where('transaction_date', '>=', $start->format('Y-m-d'))
             ->where('transaction_date', '<', $start->addMonth()->format('Y-m-d'));
 
+        if ($filters['unbudgeted'] ?? false) {
+            $budgetCategories = $request->user()->monthlyBudgets()
+                ->where('year', $start->year)->where('month', $start->month)->select('category_id');
+            $query->where('type', 'expense')->whereNotIn('category_id', $budgetCategories);
+        }
+
         foreach (['type', 'category_id'] as $field) {
             if (isset($filters[$field])) $query->where($field, $filters[$field]);
         }
@@ -36,11 +42,15 @@ class TransactionController extends Controller
             $query->whereRaw("description LIKE ? ESCAPE '!'", ['%'.$search.'%']);
         }
 
+        $extra = ($filters['unbudgeted'] ?? false)
+            ? ['meta' => ['total_amount_cents' => (int) (clone $query)->sum('amount_cents')]]
+            : [];
+
         return TransactionResource::collection(
             $query->orderByDesc('transaction_date')->orderByDesc('id')
                 ->paginate($filters['per_page'] ?? 25)
-                ->appends($request->only(['year', 'month', 'type', 'category_id', 'search', 'per_page']))
-        );
+                ->appends($request->only(['year', 'month', 'type', 'category_id', 'search', 'per_page', 'unbudgeted']))
+        )->additional($extra);
     }
 
     public function store(StoreTransactionRequest $request, TransactionWriter $writer): JsonResponse

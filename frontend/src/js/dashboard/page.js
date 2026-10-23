@@ -1,3 +1,4 @@
+import { pageHeader } from '../shared/page-header.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { formatMoney as money } from '../shared/money.js';
 import { validMonth, monthLabel, dateText } from '../shared/calendar.js';
@@ -6,6 +7,7 @@ import { safeIcon, safeColor } from '../categories/catalog.js';
 import { getTransaction, transactionError } from '../transactions/api.js';
 import { getDashboard } from './api.js';
 import { dashboardData, resultChange } from './data.js';
+import { renderSpendingRanking } from './spending-ranking.js';
 
 export function mountDashboard(root, ctx, route) {
     let alive = true, revision = 0, chartRevision = 0;
@@ -13,7 +15,7 @@ export function mountDashboard(root, ctx, route) {
     if (validMonth(route.query?.month)) ctx.state.dashboardMonth = route.query.month;
     const events = new AbortController();
     root.classList.add('dashboard-real');
-    root.innerHTML = `<header class="finance-header"><a href="/mais/" class="link icon-button" aria-label="Abrir configurações">${icon('gear_alt')}</a><h1 tabindex="-1">Minhas Finanças</h1><button class="icon-button" data-dashboard-info type="button" aria-label="Sobre o resultado do mês">${icon('info_circle')}</button></header><div data-dashboard-month></div><p class="dashboard-feedback" role="status" hidden></p><div data-dashboard-content aria-busy="false"></div>`;
+    root.innerHTML = `${pageHeader('Dashboard', 'Resumo de Finanças')}<div data-dashboard-month></div><p class="dashboard-feedback" role="status" hidden></p><div data-dashboard-content aria-busy="false"></div>`;
     const monthBox = root.querySelector('[data-dashboard-month]');
     const content = root.querySelector('[data-dashboard-content]');
     const feedback = root.querySelector('.dashboard-feedback');
@@ -25,9 +27,6 @@ export function mountDashboard(root, ctx, route) {
         const query = new URLSearchParams({ month: ctx.state.dashboardMonth });
         if (type) query.set('tipo', type);
         return `/historico/?${query}`;
-    }
-    function categoryChart(summary) {
-        return `<div class="category-chart-layout"><div class="donut-container"><div class="donut-chart" data-chart="categories" role="img" aria-label="Despesas por categoria: ${esc(money(summary.expense))}"></div><div class="donut-label"><strong>${money(summary.expense)}</strong><span>no período</span></div></div><ul class="category-legend">${summary.byCategory.length ? summary.byCategory.map(category => `<li><span class="category-dot" style="background:${category.color}"></span><span class="dashboard-category-name" title="${esc(category.name)}">${esc(category.name)}</span><strong>${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(category.amount / summary.expense * 100)}%</strong></li>`).join('') : '<li>Sem despesas</li>'}</ul></div>`;
     }
     function summaryCards(summary) {
         return `<div class="summary-grid">${[['income', 'Entradas', 'arrow_up', summary.income, summary.incomeCount], ['expense', 'Saídas', 'arrow_down', summary.expense, summary.expenseCount]].map(([type, label, glyph, total, count]) => `<a class="finance-card summary-card ${money(total).length > 11 ? 'summary-card-wide' : ''}" href="${esc(historyUrl(type))}"><span class="summary-icon ${type}">${icon(glyph)}</span><span><span class="summary-label">${label}</span><strong class="${type}" data-total="${type}">${money(total)}</strong><small>${count} ${count === 1 ? 'lançamento' : 'lançamentos'}</small></span>${icon('chevron_right')}</a>`).join('')}</div>`;
@@ -53,7 +52,7 @@ export function mountDashboard(root, ctx, route) {
         const previous = data.previous_month;
         const change = resultChange(summary.result, previous.result_cents);
         const comparison = change === null ? '<span class="result-comparison-empty">Sem comparação</span>' : `<span class="result-change ${change < 0 ? 'negative' : ''}">${icon(change >= 0 ? 'chevron_up' : 'chevron_down')}${change > 0 ? '+' : ''}${change}%</span><small>em relação<br>a ${monthLabel(`${previous.year}-${String(previous.month).padStart(2, '0')}`).split(' de ')[0]}</small>`;
-        content.innerHTML = `<section class="result-card ${money(summary.result).length > 11 ? 'result-card-long' : ''}" aria-label="Resultado disponível do mês"><div class="result-copy"><p>Resultado disponível do mês <button class="result-info" type="button" aria-label="Entender o resultado do mês" data-dashboard-info>${icon('info_circle')}</button></p><strong data-total="result">${money(summary.result)}</strong><div class="result-breakdown"><span>Entradas: ${money(summary.income)}</span><span>Saídas: ${money(summary.expense)}</span></div></div><div class="result-comparison">${comparison}</div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>${summaryCards(summary)}<div class="charts-grid"><section class="finance-card category-card"><div class="card-heading"><h2>Gastos por categoria</h2><a class="link icon-button" href="/relatorios/?month=${ctx.state.dashboardMonth}&amp;range=month" aria-label="Ver relatórios deste mês">${icon('chevron_right')}</a></div>${categoryChart(summary)}</section><section class="finance-card bar-card"><div class="card-heading"><h2>Últimos 6 meses</h2><a class="link icon-button" href="/relatorios/?month=${ctx.state.dashboardMonth}&amp;range=month" aria-label="Ver relatórios deste mês">${icon('chevron_right')}</a></div><div class="mini-bar-chart" data-chart="six-months" role="img" aria-label="Resultado disponível nos últimos seis meses"></div><p class="chart-caption">Resultado de cada mês</p></section></div><section class="finance-card latest-card"><div class="card-heading"><h2>Últimos lançamentos</h2><a class="link all-transactions" href="${esc(historyUrl())}">Ver todos ${icon('chevron_right')}</a></div>${latestRows(data.latest_transactions)}</section>`;
+        content.innerHTML = `<section class="result-card ${money(summary.result).length > 11 ? 'result-card-long' : ''}" aria-label="Resultado disponível do mês"><div class="result-copy"><p>Resultado disponível do mês</p><strong data-total="result">${money(summary.result)}</strong><div class="result-breakdown"><span>Entradas: ${money(summary.income)}</span><span>Saídas: ${money(summary.expense)}</span></div></div><div class="result-comparison">${comparison}</div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>${summaryCards(summary)}<div class="charts-grid"><section class="finance-card category-card spending-rank-card"><div class="card-heading"><h2>Onde você mais gastou</h2><a class="link spending-rank-link" href="/relatorios/?month=${ctx.state.dashboardMonth}&amp;range=month" aria-label="Ver todas as categorias nos relatórios deste mês">Ver todas ${icon('chevron_right')}</a></div>${renderSpendingRanking(data.by_category, summary.expense)}</section><section class="finance-card bar-card monthly-comparison-card"><div class="card-heading"><h2>Entradas × Despesas</h2><a class="link icon-button" href="/relatorios/?month=${ctx.state.dashboardMonth}&amp;range=month" aria-label="Ver relatórios deste mês">${icon('chevron_right')}</a></div><p class="monthly-comparison-subtitle">Comparação dos últimos 6 meses</p><div class="mini-bar-chart" data-chart="six-months" role="img" aria-label="Entradas em verde e despesas em vermelho, por mês, nos últimos seis meses"></div></section></div><section class="finance-card latest-card"><div class="card-heading"><h2>Últimos lançamentos</h2></div>${latestRows(data.latest_transactions)}</section><a class="link finance-card dashboard-history-card" href="${esc(historyUrl())}" aria-label="Abrir histórico completo de lançamentos"><span class="dashboard-history-icon" aria-hidden="true">${icon('square_stack_3d_up_fill')}</span><span class="dashboard-history-copy"><strong>Histórico completo</strong><span>Consulte todos os seus lançamentos</span></span>${icon('chevron_right')}</a>`;
         void renderCharts(summary, current);
     }
     async function load() {
@@ -89,7 +88,6 @@ export function mountDashboard(root, ctx, route) {
         if (!button) return;
         if (button.hasAttribute('data-dashboard-retry')) void load();
         if (button.hasAttribute('data-dashboard-create')) ctx.openTransaction();
-        if (button.hasAttribute('data-dashboard-info')) ctx.app.dialog.alert('É a diferença entre as entradas e as saídas do mês selecionado. Não inclui valores acumulados de meses anteriores nem representa um saldo bancário. A comparação percentual aparece quando o mês anterior tem resultado positivo.', 'Resultado do mês');
         if (button.dataset.dashboardTransaction) {
             const current = revision;
             button.disabled = true;
