@@ -51,7 +51,7 @@ export function mountCategories(root, ctx) {
             lastPage = response.meta.last_page;
             total.textContent = `${response.meta.total} ${response.meta.total === 1 ? 'categoria' : 'categorias'}`;
             renderRows();
-            stateBox.innerHTML = rows.length ? '' : `<span class="category-empty-icon">${icon('square_grid_2x2')}</span><h2>${status === 'inactive' ? 'Nenhuma categoria inativa' : 'Suas categorias, do seu jeito'}</h2><p>${type || status !== 'active' ? 'Nenhuma categoria encontrada com estes filtros.' : 'Crie sua primeira categoria para organizar receitas e despesas.'}</p>${status === 'inactive' ? '' : '<button type="button" class="mf-button mf-button-secondary" data-category-create>Criar categoria</button>'}`;
+            stateBox.innerHTML = rows.length ? '' : `<span class="category-empty-icon">${icon('square_grid_2x2')}</span><h2>${status === 'inactive' ? 'Nenhuma categoria inativa' : 'Suas categorias, do seu jeito'}</h2><p>${type || status !== 'active' ? 'Nenhuma categoria encontrada com estes filtros.' : 'Crie sua primeira categoria para organizar receitas e despesas.'}</p>`;
             more.hidden = currentPage >= lastPage;
         } catch (error) {
             if (destroyed || thisRevision !== revision) return;

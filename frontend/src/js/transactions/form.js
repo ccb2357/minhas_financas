@@ -10,7 +10,7 @@ import { categoryOptions, saveTransaction, deleteTransaction, transactionError }
 
 let sequence = 0;
 
-export function openTransactionForm(ctx, { transaction = null, draft = null, preview = null, onSaved, onClosed } = {}) {
+export function openTransactionForm(ctx, { transaction = null, draft = null, preview = null, onSubmit = null, onSaved, onClosed } = {}) {
     const editing = Boolean(transaction);
     // Drafts prefill a NEW form; they never turn it into an edit/delete operation.
     const initialValues = transaction || draft;
@@ -171,7 +171,7 @@ export function openTransactionForm(ctx, { transaction = null, draft = null, pre
             const data = { type, amount_cents: amountMask.getCents(), category_id: Number(select.value),
                 description: fields.description.value.trim(), transaction_date: fields.transaction_date.value, notes: fields.notes.value.trim() || null };
             if (!select.value || !Number.isSafeInteger(data.amount_cents)) return;
-            void mutate(() => preview ? preview.save(data) : saveTransaction(transaction?.id, data), editing ? 'updated' : 'created');
+            void mutate(() => onSubmit ? onSubmit(data) : preview ? preview.save(data) : saveTransaction(transaction?.id, data), editing ? 'updated' : 'created');
         },
     });
 

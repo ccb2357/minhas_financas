@@ -54,7 +54,7 @@ export function mountBudgets(root, ctx, route) {
             rows = append ? [...new Map([...rows, ...response.data].map(row => [row.id, row])).values()] : response.data;
             page = response.meta.current_page; lastPage = response.meta.last_page;
             renderSummary(response.meta.summary); renderRows();
-            stateBox.innerHTML = rows.length ? '' : `<span class="budget-empty-icon">${icon('money_dollar_circle')}</span><h2>Seu planejamento começa aqui</h2><p>Defina um limite por categoria de despesa e acompanhe os gastos deste ciclo.</p><button type="button" class="mf-button mf-button-secondary" data-budget-create>Criar orçamento</button>`;
+            stateBox.innerHTML = rows.length ? '' : `<span class="budget-empty-icon">${icon('money_dollar_circle')}</span><h2>Seu planejamento começa aqui</h2><p>Defina um limite por categoria de despesa e acompanhe os gastos deste ciclo.</p>`;
             more.hidden = page >= lastPage;
         } catch (error) {
             if (!alive || current !== revision) return;

@@ -46,6 +46,11 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::patch('/budgets/{budget}', [BudgetController::class, 'update'])->whereNumber('budget');
     Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->whereNumber('budget');
 
+    Route::get('/reconciliation', [\App\Http\Controllers\Api\V1\ReconciliationController::class, 'index']);
+    Route::post('/reconciliation/sync', [\App\Http\Controllers\Api\V1\ReconciliationController::class, 'sync'])->middleware('throttle:5,1');
+    Route::post('/reconciliation/{operation}/ignore', [\App\Http\Controllers\Api\V1\ReconciliationController::class, 'ignore'])->whereNumber('operation');
+    Route::post('/reconciliation/{operation}/add', [\App\Http\Controllers\Api\V1\ReconciliationController::class, 'add'])->whereNumber('operation');
+
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])

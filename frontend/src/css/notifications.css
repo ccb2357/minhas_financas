@@ -1,60 +1,45 @@
 /* Framework7 notification, using the same palette and surfaces as the app. */
 #app .notification.mf-notification {
-    --f7-notification-max-width: 420px;
-    --f7-notification-margin: 14px;
-    --f7-notification-title-text-transform: none;
-    --f7-notification-title-letter-spacing: normal;
-    --f7-notification-title-color: var(--mf-title);
-    --f7-notification-text-color: var(--mf-text);
-    --f7-notification-icon-size: 40px;
-    padding: 14px 16px;
-    gap: 12px;
-    border: 1px solid var(--mf-border);
-    border-radius: 20px;
-    background: white;
-    box-shadow: 0 12px 36px rgb(12 28 85 / 16%);
-    backdrop-filter: none;
+    --f7-notification-max-width:420px;
+    --f7-notification-margin:14px;
+    --f7-notification-title-text-transform:none;
+    --f7-notification-title-letter-spacing:normal;
+    --f7-notification-title-color:var(--mf-title);
+    --f7-notification-text-color:var(--mf-text);
+    --f7-notification-icon-size:40px;
+    padding:14px 16px; gap:12px;
+    border:1px solid var(--mf-border); border-radius:20px;
+    background:white; box-shadow:0 12px 36px rgb(12 28 85 / 16%); backdrop-filter:none;
 }
-.mf-notification .notification-icon {
-    display: grid;
-    place-items: center;
-    width: 40px;
-    height: 40px;
-    border-radius: 13px;
-    color: var(--mf-primary);
-    background: #edf3ff;
+.mf-notification .notification-icon { display:grid; place-items:center; width:40px; height:40px; border-radius:13px; color:var(--mf-primary); background:#edf3ff; }
+.mf-notification .notification-icon .f7-icons { display:flex; align-items:center; justify-content:center; margin:0; padding:0; font-size:25px; line-height:1; }
+.mf-notification .notification-content { min-width:0; }
+#app .mf-notification .notification-title { font-family:var(--mf-font); font-size:14px; line-height:1.4; font-weight:750; color:var(--mf-title); letter-spacing:normal; text-transform:none; }
+#app .mf-notification .notification-text { margin-top:3px; font-family:var(--mf-font); color:var(--mf-text); font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
+@media(prefers-reduced-motion:reduce) { #app .mf-notification { transition-duration:0ms !important; } }
+
+/* Persistent update action, above the bottom navigation and below modal editors. */
+#app .mf-update-notice {
+    position:fixed; z-index:6000; left:14px; right:14px;
+    bottom:calc(88px + env(safe-area-inset-bottom, 0px));
+    width:calc(100% - 28px); max-width:420px; margin:0 auto;
+    border:1px solid var(--mf-border); border-radius:20px;
+    background:var(--mf-surface); box-shadow:0 12px 36px rgb(12 28 85 / 16%);
 }
-.mf-notification .notification-icon .f7-icons {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0;
-    padding: 0;
-    font-size: 25px;
-    line-height: 1;
+#app .mf-update-notice[hidden] { display:none; }
+.mf-update-action {
+    display:flex; align-items:center; gap:12px; width:100%; padding:16px;
+    border:0; border-radius:inherit; background:transparent; color:var(--mf-title);
+    text-align:left; font-family:var(--mf-font); cursor:pointer;
 }
-.mf-notification .notification-content {
-    min-width: 0;
+.mf-update-action:focus-visible { outline:3px solid var(--mf-primary); outline-offset:3px; }
+.mf-update-action:disabled { cursor:wait; }
+.mf-update-icon {
+    display:grid; place-items:center; flex:none; width:40px; height:40px;
+    border-radius:13px; background:var(--mf-background); color:var(--mf-primary);
 }
-#app .mf-notification .notification-title {
-    font-family: var(--mf-font);
-    font-size: 14px;
-    line-height: 1.4;
-    font-weight: 750;
-    color: var(--mf-title);
-    letter-spacing: normal;
-    text-transform: none;
-}
-#app .mf-notification .notification-text {
-    margin-top: 3px;
-    font-family: var(--mf-font);
-    color: var(--mf-text);
-    font-size: 13px;
-    line-height: 1.5;
-    overflow-wrap: anywhere;
-}
-@media (prefers-reduced-motion: reduce) {
-    #app .mf-notification {
-        transition-duration: 0ms !important;
-    }
-}
+.mf-update-icon .f7-icons { font-size:24px; }
+.mf-update-copy { display:flex; flex:1; min-width:0; flex-direction:column; gap:4px; }
+.mf-update-copy strong { font-size:14px; line-height:1.4; font-weight:750; }
+.mf-update-copy > span { font-size:13px; line-height:1.5; color:var(--mf-primary); }
+.mf-update-action > .f7-icons { flex:none; font-size:15px; color:var(--mf-primary); }

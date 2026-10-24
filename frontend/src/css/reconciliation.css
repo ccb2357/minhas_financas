@@ -1,7 +1,4 @@
-.reconciliation-filters { display: flex; flex-wrap: wrap; gap: 8px; margin: 4px 0 14px; }
-.reconciliation-filters .filter-chip { flex: 1 1 auto; width: auto; min-height: 44px; padding: 9px 13px; font: inherit; font-size: 13px; cursor: pointer; }
 .reconciliation-preview-note { margin: 12px 2px 18px; padding: 10px 12px; border: 1px solid var(--mf-border); border-radius: 12px; background: color-mix(in srgb, var(--mf-primary) 5%, var(--mf-surface)); color: var(--mf-muted); font-size: 12px; line-height: 1.5; }
-.reconciliation-heading h2 { margin: 0 2px 14px; color: var(--mf-title); font-size: 17px; font-weight: 700; letter-spacing: -.25px; }
 .reconciliation-list { display: grid; gap: 12px; list-style: none; padding: 0; margin: 0; }
 .reconciliation-card { padding: 16px; margin: 0; min-width: 0; }
 .reconciliation-details { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 12px; }
@@ -25,12 +22,20 @@
     .reconciliation-amount { max-width: 116px; font-size: 14px; }
     .reconciliation-copy h3 { font-size: 14px; }
     .reconciliation-copy p { font-size: 11px; }
-    .reconciliation-filters { gap: 6px; }
-    .reconciliation-filters .filter-chip { padding-inline: 10px; font-size: 12px; }
 }
 @media (min-width: 760px) {
-    .reconciliation-filters .filter-chip { flex: 0 1 auto; min-width: 100px; }
     .reconciliation-card { padding: 20px; }
     .reconciliation-copy h3 { font-size: 17px; }
     .reconciliation-amount { font-size: 18px; }
 }
+
+.reconciliation-copy .reconciliation-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; }
+.reconciliation-bank-logo { display: block; width: auto; max-width: 68px; height: 22px; object-fit: contain; flex-shrink: 0; }
+.reconciliation-meta time { white-space: nowrap; }
+
+.reconciliation-feedback { margin: 0 0 14px; padding: 12px 14px; color: var(--mf-text); background: var(--mf-surface); border: 1px solid var(--mf-border); border-radius: 14px; font-size: 13px; line-height: 1.6; }
+.reconciliation-state { color: var(--mf-muted); font-size: 13px; line-height: 1.6; }
+.reconciliation-refresh { display: flex; align-items: center; justify-content: center; gap: 7px; margin: 18px auto 0; padding: 10px 14px; min-height: 44px; background: transparent; border: 0; color: var(--mf-link); font: inherit; font-size: 13px; cursor: pointer; }
+.reconciliation-refresh .f7-icons { font-size: 17px; }
+.reconciliation-page button:disabled { opacity: .55; cursor: default; }
+.reconciliation-more { font-size: 14px; min-height: 44px; }

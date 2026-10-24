@@ -37,6 +37,7 @@ export async function categoryOptions(status = 'active', cancelled = () => false
 }
 
 export function transactionError(error) {
+    if (error.status === 409) return 'Esta operação já foi processada. Feche o formulário e atualize a conciliação.';
     if (error.status === 419) return 'A sessão de segurança expirou. Tente novamente.';
     if (error.status === 422) return 'Confira os campos indicados para continuar.';
     if (error.status === 404) return 'Este lançamento não está mais disponível. Atualize o Histórico.';

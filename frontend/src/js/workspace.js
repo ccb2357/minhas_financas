@@ -111,7 +111,7 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
             if (!options.preview && !state.cycleConfiguration?.configured) { void context.openCycleSettings(); return; }
             editor = openTransactionForm(context, {
                 ...options,
-                onClosed() { editor = null; },
+                onClosed() { editor = null; options.onClosed?.(); },
                 onSaved(row, kind) {
                     if (options.preview) {
                         options.onSaved?.(row, kind);
@@ -126,8 +126,9 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
                         if (kind !== 'deleted') state.dashboardMonth = row.cycle_key || row.transaction_date.slice(0, 7);
                         state.dashboardFeedback = state.historyFeedback;
                     }
+                    options.onSaved?.(row, kind);
                     context.events.dispatchEvent(new CustomEvent('transactions:changed', { detail: { row, kind } }));
-                    if (!onDashboard && view.router.currentRoute.path !== '/historico/') view.router.navigate(`/historico/?month=${state.historyMonth}`);
+                    if (!options.stayOnPage && !onDashboard && view.router.currentRoute.path !== '/historico/') view.router.navigate(`/historico/?month=${state.historyMonth}`);
                     notifySuccess(app, message);
                 },
             });

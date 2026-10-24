@@ -72,7 +72,7 @@ export function mountHistory(root, ctx, route) {
             page = response.meta.current_page; lastPage = response.meta.last_page;
             root.querySelector('[data-history-count]').textContent = `${response.meta.total} ${response.meta.total === 1 ? 'lançamento encontrado' : 'lançamentos encontrados'}`;
             renderRows();
-            stateBox.innerHTML = rows.length ? '' : `<span class="history-empty-icon">${icon('clock')}</span><h2>Nenhum lançamento encontrado</h2><p>${search || type || category ? 'Ajuste os filtros ou registre um novo lançamento.' : 'Registre uma entrada ou saída para começar.'}</p><button type="button" class="mf-button mf-button-secondary" data-history-create>Novo lançamento</button>`;
+            stateBox.innerHTML = rows.length ? '' : `<span class="history-empty-icon">${icon('clock')}</span><h2>Nenhum lançamento encontrado</h2><p>${search || type || category ? 'Ajuste os filtros ou registre um novo lançamento.' : 'Registre uma entrada ou saída para começar.'}</p>`;
             more.hidden = page >= lastPage;
         } catch (error) {
             if (!alive || current !== revision) return;
@@ -116,7 +116,6 @@ export function mountHistory(root, ctx, route) {
         if (button.hasAttribute('data-history-more')) void load(true);
         if (button.hasAttribute('data-history-retry')) void load(button.dataset.historyRetry === 'more');
         if (button.hasAttribute('data-history-options-retry')) void loadOptions();
-        if (button.hasAttribute('data-history-create')) ctx.openTransaction();
         if (button.dataset.realTransaction) {
             const current = revision;
             button.disabled = true;

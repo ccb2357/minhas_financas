@@ -33,7 +33,7 @@ abstract class TransactionRequest extends FormRequest
             'transaction_date' => [$presence, 'bail', 'required', 'date_format:Y-m-d',
                 'after_or_equal:1900-01-01', 'before_or_equal:2100-12-31'],
             'notes' => ['sometimes', 'nullable', 'string', 'max:2000'],
-            'id' => ['prohibited'], 'user_id' => ['prohibited'],
+            'external_transaction_id' => ['prohibited'], 'id' => ['prohibited'], 'user_id' => ['prohibited'],
             'created_at' => ['prohibited'], 'updated_at' => ['prohibited'],
             'deleted_at' => ['prohibited'],
         ];

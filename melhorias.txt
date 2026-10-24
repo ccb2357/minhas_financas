@@ -1,6 +1,6 @@
-tela de investimento onde eu adciiono dinherio topdo mes e mostar as entrads e retiradas de dinheiro de la
-
 tela de objetivos omnde fica definido o objetivo e quanto de dinheiro ja tem guardado para ele
+
+tela de investimentos onde fica o valor investido em ações
 
 tem que melhorar a tela de despesas fora do orçamento da tela de orçamentos tem que ser um modal bonitinho e nao aquela tela tosca
 

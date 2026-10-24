@@ -30,24 +30,32 @@ function status(worker) {
 export function createUpdater(app) {
     const build = document.querySelector('meta[name="mf-build"]')?.content;
     let registration, reloadPending = false, applying = false, checking = false;
-    let timeout, notice, announced = false, lastCheck = 0;
+    let timeout, notice, lastCheck = 0;
     const enabled = Boolean(import.meta.env.PROD && window.isSecureContext && 'serviceWorker' in navigator && build);
     const available = () => Boolean(registration?.waiting || reloadPending);
     function signal() {
         window.dispatchEvent(new Event(UPDATE_EVENT));
-        if (available() && !announced && !hasOpenWork() && document.visibilityState === 'visible') {
-            announced = true;
-            notice = app.notification.create({
-                icon:icon('arrow_clockwise'), title:'Minhas Finanças', cssClass:'mf-notification',
-                text:'Uma nova versão está disponível em Mais → Atualizar aplicativo.',
-                closeTimeout:5000, closeButton:false, swipeToClose:true,
-                on:{ open(instance) { instance.el.setAttribute('role','status'); instance.el.setAttribute('aria-live','polite'); },
-                    closed(instance) { if (notice === instance) notice = null; const el=instance.el; queueMicrotask(() => { instance.destroy(); el.remove(); }); } },
-            });
-            notice.open();
+        if (available() && !notice) {
+            // Independent of transient success notifications: this action stays available.
+            notice = document.createElement('aside');
+            notice.className = 'mf-update-notice';
+            notice.setAttribute('aria-label', 'Atualização do aplicativo');
+            notice.innerHTML = `<button type="button" class="mf-update-action"><span class="mf-update-icon">${icon('arrow_clockwise')}</span><span class="mf-update-copy"><strong>Nova versão disponível</strong><span data-update-message role="status" aria-live="polite">Clique aqui para atualizar o aplicativo.</span></span>${icon('chevron_right')}</button>`;
+            notice.querySelector('button').addEventListener('click', () => void request());
+            document.querySelector('#app').append(notice);
         }
-        if (hasOpenWork() && notice && !notice.destroyed) notice.close();
+        if (notice) {
+            if (notice.hidden !== !available()) notice.hidden = !available();
+            const button = notice.querySelector('button');
+            if (button.disabled !== applying) button.disabled = applying;
+            const busy = String(applying);
+            if (button.getAttribute('aria-busy') !== busy) button.setAttribute('aria-busy', busy);
+            const label = notice.querySelector('[data-update-message]');
+            const text = applying ? 'Atualizando aplicativo…' : 'Clique aqui para atualizar o aplicativo.';
+            if (label.textContent !== text) label.textContent = text;
+        }
     }
+
     const fail = () => app.dialog.alert('Não foi possível concluir a atualização agora. Continue usando o aplicativo e tente novamente mais tarde.', 'Atualização do aplicativo');
 
     async function inspectController() {
@@ -93,7 +101,7 @@ export function createUpdater(app) {
             registration.addEventListener('updatefound', () => {
                 const worker = registration.installing;
                 worker?.addEventListener('statechange', () => {
-                    if (worker.state === 'installed') { announced = false; signal(); }
+                    if (worker.state === 'installed') signal();
                 });
             });
             await inspectController();
@@ -113,22 +121,22 @@ export function createUpdater(app) {
     if (document.readyState === 'complete') void start();
     else window.addEventListener('load', () => void start(), { once:true });
 
+    async function request() {
+        if (!enabled || applying || !available()) return;
+        if (hasOpenWork()) {
+            app.dialog.alert('Conclua ou feche o formulário antes de atualizar. Suas alterações serão preservadas enquanto você continua editando.', 'Conclua a edição');
+            return;
+        }
+        if (!navigator.onLine) { app.dialog.alert('Conecte-se à internet para atualizar o aplicativo.', 'Sem conexão'); return; }
+        if (registration.waiting) {
+            applying = true; signal();
+            timeout = setTimeout(() => { applying = false; signal(); fail(); }, 15000);
+            registration.waiting.postMessage({ app:APP, type:'ACTIVATE_UPDATE' });
+        } else if (reloadPending && !hasOpenWork()) window.location.reload();
+    }
     return {
         get available() { return available(); },
         get applying() { return applying; },
-        async request() {
-            if (!enabled || applying || !available()) return;
-            if (hasOpenWork()) {
-                app.dialog.alert('Conclua ou feche o formulário antes de atualizar. Suas alterações serão preservadas enquanto você continua editando.', 'Conclua a edição');
-                return;
-            }
-            if (!navigator.onLine) { app.dialog.alert('Conecte-se à internet para atualizar o aplicativo.', 'Sem conexão'); return; }
-            if (notice && !notice.destroyed) notice.close();
-            if (registration.waiting) {
-                applying = true; signal();
-                timeout = setTimeout(() => { applying = false; signal(); fail(); }, 15000);
-                registration.waiting.postMessage({ app:APP, type:'ACTIVATE_UPDATE' });
-            } else if (reloadPending && !hasOpenWork()) window.location.reload();
-        },
+        request,
     };
 }

@@ -32,7 +32,7 @@ export function mountDashboard(root, ctx, route) {
         return `<div class="summary-grid">${[['income', 'Entradas', 'arrow_up', summary.income, summary.incomeCount], ['expense', 'Saídas', 'arrow_down', summary.expense, summary.expenseCount]].map(([type, label, glyph, total, count]) => `<a class="finance-card summary-card ${money(total).length > 11 ? 'summary-card-wide' : ''}" href="${esc(historyUrl(type))}"><span class="summary-icon ${type}">${icon(glyph)}</span><span><span class="summary-label">${label}</span><strong class="${type}" data-total="${type}">${money(total)}</strong><small>${count} ${count === 1 ? 'lançamento' : 'lançamentos'}</small></span>${icon('chevron_right')}</a>`).join('')}</div>`;
     }
     function latestRows(rows) {
-        if (!rows.length) return `<div class="finance-empty"><span>Sem lançamentos neste período</span><p>Registre uma entrada ou saída para começar.</p><button type="button" class="mf-button mf-button-secondary" data-dashboard-create>Novo lançamento</button></div>`;
+        if (!rows.length) return `<div class="finance-empty"><span>Sem lançamentos neste período</span><p>Registre uma entrada ou saída para começar.</p></div>`;
         return `<ul class="transaction-list">${rows.map(row => `<li><button type="button" class="transaction-row" data-dashboard-transaction="${row.id}" aria-label="Editar ${esc(row.description)}"><span class="category-badge" style="--category-color:${safeColor(row.category.color)}">${icon(safeIcon(row.category.icon))}</span><span class="transaction-copy"><strong>${esc(row.description)}</strong><span>${esc(row.category.name)}${row.category.is_active ? '' : ' (inativa)'} <span aria-hidden="true">·</span> ${dateText(row.transaction_date)}</span></span><span class="transaction-value ${row.type}">${row.type === 'income' ? '+' : '−'} ${money(row.amount_cents)}</span>${icon('chevron_right')}</button></li>`).join('')}</ul>`;
     }
     async function renderCharts(summary, current) {
@@ -88,7 +88,6 @@ export function mountDashboard(root, ctx, route) {
         const button = event.target.closest('button');
         if (!button) return;
         if (button.hasAttribute('data-dashboard-retry')) void load();
-        if (button.hasAttribute('data-dashboard-create')) ctx.openTransaction();
         if (button.dataset.dashboardTransaction) {
             const current = revision;
             button.disabled = true;

@@ -1,0 +1,7 @@
+{
+  "accounts": [
+    { "name": "Nubank", "account_id": "UUID_DA_CONTA_NUBANK" },
+    { "name": "Digio", "account_id": "UUID_DA_CONTA_DIGIO" },
+    { "name": "Santander", "account_id": "UUID_DA_CONTA_SANTANDER" }
+  ]
+}
