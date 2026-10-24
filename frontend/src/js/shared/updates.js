@@ -29,10 +29,11 @@ function status(worker) {
 
 export function createUpdater(app) {
     const build = document.querySelector('meta[name="mf-build"]')?.content;
-    let registration, reloadPending = false, applying = false, checking = false;
+    let registration, waitingUpdate = false, reloadPending = false, applying = false, checking = false;
     let timeout, notice, lastCheck = 0;
+    const watchedWorkers = new WeakSet();
     const enabled = Boolean(import.meta.env.PROD && window.isSecureContext && 'serviceWorker' in navigator && build);
-    const available = () => Boolean(registration?.waiting || reloadPending);
+    const available = () => waitingUpdate || reloadPending;
     function signal() {
         window.dispatchEvent(new Event(UPDATE_EVENT));
         if (available() && !notice) {
@@ -45,7 +46,8 @@ export function createUpdater(app) {
             document.querySelector('#app').append(notice);
         }
         if (notice) {
-            if (notice.hidden !== !available()) notice.hidden = !available();
+            const hidden = !available() && !applying;
+            if (notice.hidden !== hidden) notice.hidden = hidden;
             const button = notice.querySelector('button');
             if (button.disabled !== applying) button.disabled = applying;
             const busy = String(applying);
@@ -59,16 +61,32 @@ export function createUpdater(app) {
     const fail = () => app.dialog.alert('Não foi possível concluir a atualização agora. Continue usando o aplicativo e tente novamente mais tarde.', 'Atualização do aplicativo');
 
     async function inspectController() {
-        const info = await status(navigator.serviceWorker.controller);
-        reloadPending = Boolean(info?.version && info.version !== build);
+        let controller, waiting, info, candidate;
+        // An activation can finish while the status replies are in flight.
+        // Keep the caller waiting for a consistent snapshot, including the reload handler.
+        do {
+            controller = navigator.serviceWorker.controller;
+            waiting = registration?.waiting;
+            watchWorker(waiting);
+            [info, candidate] = await Promise.all([status(controller), status(waiting)]);
+        } while (controller !== navigator.serviceWorker.controller || waiting !== registration?.waiting);
+        waitingUpdate = Boolean(candidate?.version && candidate.version !== build);
+        // Network HTML may already contain the waiting build. An older controller
+        // alone must not advertise that same release again or trigger a useless reload.
+        reloadPending = Boolean(!waiting && !registration?.installing && info?.version && info.version !== build);
         signal();
         return info;
+    }
+    function watchWorker(worker) {
+        if (!worker || watchedWorkers.has(worker)) return;
+        watchedWorkers.add(worker);
+        worker.addEventListener('statechange', () => void inspectController());
     }
     async function check(force = false) {
         if (!registration || checking || (!force && Date.now() - lastCheck < 60000) || !navigator.onLine) return;
         checking = true; lastCheck = Date.now();
         try { await registration.update(); } catch { /* A connection failure does not interrupt the app. */ }
-        finally { checking = false; signal(); }
+        finally { checking = false; await inspectController(); }
     }
     async function start() {
         if (!enabled) {
@@ -90,6 +108,7 @@ export function createUpdater(app) {
         navigator.serviceWorker.addEventListener('controllerchange', async () => {
             const info = await inspectController();
             if (!applying) return; // Other tabs never reload automatically.
+            if (!info) return;
             clearTimeout(timeout); applying = false;
             if (info && !hasOpenWork()) {
                 if (info.version !== build) window.location.reload();
@@ -99,11 +118,10 @@ export function createUpdater(app) {
         try {
             registration = await navigator.serviceWorker.register('/sw.js', { scope:'/', updateViaCache:'none' });
             registration.addEventListener('updatefound', () => {
-                const worker = registration.installing;
-                worker?.addEventListener('statechange', () => {
-                    if (worker.state === 'installed') signal();
-                });
+                watchWorker(registration.installing);
+                void inspectController();
             });
+            watchWorker(registration.installing);
             await inspectController();
             signal();
             window.addEventListener('online', () => void check(true));
@@ -123,6 +141,8 @@ export function createUpdater(app) {
 
     async function request() {
         if (!enabled || applying || !available()) return;
+        await inspectController();
+        if (applying || !available()) return;
         if (hasOpenWork()) {
             app.dialog.alert('Conclua ou feche o formulário antes de atualizar. Suas alterações serão preservadas enquanto você continua editando.', 'Conclua a edição');
             return;
