@@ -3,22 +3,27 @@ import { escapeHtml as esc, icon } from '../shared/html.js';
 import { formatMoney } from '../shared/money.js';
 import { notifySuccess } from '../shared/notifications.js';
 import { listOperations, synchronize, ignoreOperation, addOperation, reconciliationError } from './api.js';
+import { createReconciliationLoading } from './loading.js';
 const bankLogos = import.meta.glob('../../svg/*.svg', { eager: true, query: '?url', import: 'default' });
 
 export function mountReconciliation(root, ctx) {
     const events = new AbortController();
-    let alive = true, revision = 0, syncing = false, loading = false, mutating = false, editing = false, confirmation;
+    let alive = true, active = true, phase = 'preparing', revision = 0, syncing = false, loading = false, mutating = false, editing = false, confirmation;
     let rows = [], page = 0, lastPage = 1, complete = false, warning = '';
     root.classList.add('reconciliation-page');
     root.innerHTML = `${pageHeader('Conciliação bancária', 'Atualização de transações.')}<p class="reconciliation-feedback" role="status" hidden></p><ul class="reconciliation-list" aria-label="Transações pendentes" tabindex="-1"></ul><div class="reconciliation-state" role="status"></div><button type="button" class="mf-button mf-button-secondary reconciliation-more" data-reconciliation-more hidden>Carregar mais</button><button type="button" class="reconciliation-refresh" data-reconciliation-sync>${icon('arrow_clockwise')}<span>Atualizar transações</span></button>`;
     const list = root.querySelector('.reconciliation-list'), state = root.querySelector('.reconciliation-state');
     const feedback = root.querySelector('.reconciliation-feedback'), more = root.querySelector('[data-reconciliation-more]');
+    const preloader = createReconciliationLoading(list);
     const busy = () => syncing || loading || mutating;
     function controls() {
         for (const button of root.querySelectorAll('button')) button.disabled = busy() || editing || button.dataset.unsupported === 'true';
         root.setAttribute('aria-busy', String(busy()));
         more.hidden = page >= lastPage;
         root.querySelector('[data-reconciliation-sync] span').textContent = syncing ? 'Consultando bancos...' : 'Atualizar transações';
+        preloader.set(active && busy(), syncing ? 'Atualizando suas transações' : mutating ? 'Salvando sua decisão' : 'Carregando transações',
+            syncing ? ({ preparing: 'Preparando a consulta aos seus bancos.', banks: 'Buscando suas despesas nos bancos conectados.', finishing: 'Organizando as transações para sua conferência.' }[phase])
+                : mutating ? 'Atualizando sua lista de conciliação.' : 'Organizando as transações para sua conferência.');
     }
     function message(text) { feedback.textContent = text; feedback.hidden = !text; }
     function bankLogo(row) {
@@ -62,17 +67,21 @@ export function mountReconciliation(root, ctx) {
         } finally { if (alive && current === revision) { loading = false; controls(); } }
     }
     async function refresh() {
+        active = true;
+        if (alive) controls();
         if (!alive || busy() || editing || confirmation) return;
-        syncing = true; complete = false; warning = ''; message(''); controls();
+        syncing = true; phase = 'preparing'; complete = false; warning = ''; message(''); controls();
         try {
             // Local reads do not call Pluggy. Existing pending operations remain available if a bank fails.
             if (!await load()) return;
             if (!alive) return;
+            phase = 'banks'; controls();
             const response = await synchronize();
             if (!alive) return;
             complete = response.data.complete;
             warning = response.data.errors.map(item => `${item.bank}: ${item.message}`).join(' ');
             message(warning ? `Consulta incompleta. ${warning} As operações já recebidas continuam abaixo.` : '');
+            phase = 'finishing'; controls();
             await load();
         } catch (error) {
             if (!alive) return;
@@ -121,6 +130,6 @@ export function mountReconciliation(root, ctx) {
         }
     }, { signal: events.signal });
     render();
-    function leave() { confirmation?.close(false); confirmation = null; }
+    function leave() { active = false; preloader.destroy(); confirmation?.close(false); confirmation = null; }
     return { refresh, leave, destroy() { alive = false; revision++; leave(); events.abort(); } };
 }
