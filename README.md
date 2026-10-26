@@ -1,34 +1,34 @@
-# Minhas Finanças — Backend e ambiente local
+# Minhas Finanças — Desenvolvimento e publicação
 
-PWA financeiro pessoal para lançamentos manuais de receitas e despesas, exclusivamente em real brasileiro (BRL).
+PWA financeiro pessoal para controle de receitas e despesas em real brasileiro (BRL), com ciclos financeiros, orçamentos, sincronização bancária e objetivos.
 
 ## Estado do projeto
 
-Sprint 0 implementada, aguardando aceite. Nenhuma próxima sprint deve começar sem aprovação.
+O aplicativo está publicado na VPS e pode ser utilizado como PWA. As novas funcionalidades seguem o planejamento por sprints e aprovação prévia.
 
-Validado:
+Funcionalidades implementadas:
 
-- Laravel, conexão MySQL e migration de usuários.
-- Health check direto pelo Nginx e pelo proxy do Vite.
-- Framework7 Core, Apache ECharts, build e viewport mobile.
-- Login, consulta de sessão e logout com Sanctum por cookies.
-- Rejeição de credenciais incorretas e requisição sem proteção CSRF.
-- Quatro testes de autenticação, com 23 verificações.
-- Composer executado no PHP do container.
-- Correção do desempenho local com `vendor` em volume Docker.
-- Conferência dos demais sites após a recriação do PHP-FPM.
+- Autenticação por cookies com Laravel Sanctum, perfil e troca de senha.
+- Cadastro de categorias de entradas e saídas, com ícones e cores.
+- Lançamentos de receitas e despesas, histórico, filtros e edição.
+- Dashboard com resumo do ciclo, últimos lançamentos e gráficos.
+- Relatórios por período e categoria.
+- Orçamentos por ciclo e consulta dos gastos sem orçamento.
+- Ciclo financeiro com data de corte definida pela interface. Alterações passam a valer no próximo ciclo; dias inexistentes são ajustados para o último dia do mês.
+- Sincronização bancária com Pluggy para as contas configuradas de Nubank, Digio e Santander. A lista mostra despesas para conferência, inclusão individual ou descarte.
+- Consulta da Pluggy com `dateFrom` dinâmico, correspondente à data atual no Brasil menos três meses. O parâmetro limita novas consultas; não apaga operações antigas já armazenadas.
+- Objetivos com valor desejado, ícone, prazo opcional, registros de valores guardados e retiradas, histórico e progresso. Não alteram o balanço dos ciclos e continuam entre eles.
+- Objetivos podem ser arquivados e reabertos; a conclusão exige confirmação. Não existe exclusão de objetivos.
+- Temas claro e escuro, navegação mobile e aviso persistente para atualizar a PWA.
+- Comando `app:sync` para limpar caches e executar migrations pendentes.
 
-Pendências registradas:
+Marcos de evolução confirmados: Sprint 6 — ciclos financeiros; Sprint 7 — sincronização bancária; Sprint 10 — objetivos. A inclusão de lançamentos bancários em lote foi discutida, mas ainda não foi implementada.
 
-- Teste do limite de tentativas de login adiado pelo responsável.
-- Procedimento de instalação em outro computador documentado, ainda não validado integralmente em uma segunda máquina.
-- Otimização do tamanho do frontend.
-
-A interface atual é técnica. As telas definitivas seguirão as referências visuais aprovadas.
+Ponto de melhoria registrado: otimização do tamanho dos arquivos do frontend.
 
 ## Stack
 
-- PHP 8.2.29 no container e Laravel 12.70.0 com Sanctum.
+- PHP 8.2.x no container (8.2.35 na VPS) e Laravel 12.70.0 com Sanctum.
 - MySQL 8.0.45.
 - Framework7 Core 9.2.0 e Framework7 Icons 5.0.5, com JavaScript.
 - Apache ECharts 6.1.0 e Vite 8.3.4.
@@ -186,7 +186,7 @@ docker exec -w /var/www/minhas_financas/backend php-fpm php artisan key:generate
 docker exec -w /var/www/minhas_financas/backend php-fpm php artisan config:clear
 ```
 
-O Composer deve informar PHP 8.2.29, e os requisitos devem passar. Se algum comando falhar, parar e investigar.
+O Composer deve informar o PHP 8.2.x do container, e os requisitos devem passar. Se algum comando falhar, parar e investigar.
 
 Não usar `composer update` para reproduzir a instalação: `install` utiliza o arquivo de lock. Não executar o Composer diretamente com o PHP do Windows para atualizar o `vendor` usado pelo container.
 
@@ -304,6 +304,8 @@ Não copiar senhas do primeiro computador para o README nem desativar o `.gitign
 
 ## Comandos de uso diário
 
+### Dependências PHP
+
 Na raiz do projeto:
 
 ```bat
@@ -312,19 +314,44 @@ tools\composer.cmd install
 tools\composer.cmd check-platform-reqs
 ```
 
-Na pasta da infraestrutura, iniciar Vite:
+### Atualizar as dependências do frontend
+
+Executar em `/var/www/infra` quando for necessário reinstalar as dependências ou após receber alterações em `package.json` / `package-lock.json`:
+
+```bash
+cd /var/www/infra
+docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci
+```
+
+No Windows, executar o mesmo comando Docker a partir de `C:\var\www\infra`.
+
+Esse comando instala as versões registradas no lockfile. **Não gera o build nem inicia o Vite.**
+
+### Iniciar o Vite
+
+Na pasta da infraestrutura:
 
 ```bat
 docker compose --profile dev run --rm --no-deps --service-ports minhas-financas-node npm run dev
 ```
 
-Gerar build:
+### Gerar o build local
+
+Na pasta da infraestrutura:
 
 ```bat
 docker compose --profile dev run --rm --no-deps minhas-financas-node npm run build
 ```
 
-Após alterar `.env`, limpar a configuração em cache:
+### Atualizar o backend após um pull
+
+Para limpar os caches e executar as migrations pendentes no ambiente local:
+
+```bat
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan app:sync
+```
+
+Após alterar apenas `.env`, limpar a configuração em cache:
 
 ```bat
 docker exec -w /var/www/minhas_financas/backend php-fpm php artisan config:clear
@@ -333,6 +360,18 @@ docker exec -w /var/www/minhas_financas/backend php-fpm php artisan config:clear
 ## Testar no Android por USB — procedimento validado
 
 Este procedimento abre o Vite no Chrome do Android pelo cabo USB, usando um túnel do ADB. O endereço utilizado no celular é **http://localhost:5173**. O acesso não depende da comunicação entre os aparelhos pelo Wi-Fi.
+
+### Comando rápido para começar no celular
+
+Com o Vite em execução, o Android conectado por USB e a depuração autorizada, executar no terminal do Windows:
+
+```bat
+C:\tools\platform-tools\adb.exe reverse tcp:5173 tcp:5173
+```
+
+Depois, abrir **http://localhost:5173** no Chrome do celular. O caminho completo permite executar o comando sem entrar na pasta `platform-tools`.
+
+Se aparecer `no devices/emulators found`, conferir a conexão e executar `C:\tools\platform-tools\adb.exe devices -l`; o aparelho precisa aparecer no estado `device`. Refazer o encaminhamento se o cabo ou o serviço ADB forem reiniciados.
 
 ### Preparação inicial — uma vez por computador e celular
 
@@ -383,8 +422,6 @@ A resposta esperada contém **HTTP 200 OK**. Isso confirma que o frontend está 
 
 ### 3. Conferir a autorização do Android
 
-faça o donwload do sdk tools: https://developer.android.com/tools/releases/platform-tools?hl=pt-br e extraia para C:\tools\platform-tools
-
 No segundo terminal, ainda em **Cmder/CMD**:
 
 ```bat
@@ -419,7 +456,7 @@ Se continuar como `unauthorized` ou `offline`, conferir a depuração USB e a so
 Com o aparelho no estado `device`:
 
 ```bat
-adb reverse tcp:5173 tcp:5173
+C:\tools\platform-tools\adb.exe reverse tcp:5173 tcp:5173
 adb reverse --list
 ```
 
@@ -451,7 +488,7 @@ A abertura da aplicação por esse endereço foi validada no aparelho. A valida�
 - Perfil, troca de senha e retorno ao login.
 - Legibilidade em retrato e paisagem, sem campos ou ações encobertos pelo teclado.
 
-Este acesso é para desenvolvimento e revisão no aparelho. Instalação e atualização do PWA em produção serão validadas em etapa própria.
+Este acesso é para desenvolvimento e revisão no aparelho. Para utilizar a versão publicada, acessar https://minhasfinancas.zapbee.com.br. O build e a atualização dessa versão estão descritos na seção de publicação na VPS.
 
 ### Uso nas próximas sessões
 
@@ -464,7 +501,7 @@ Com a preparação inicial concluída, a rotina é:
 ```bat
 cd /d C:\tools\platform-tools
 adb devices -l
-adb reverse tcp:5173 tcp:5173
+C:\tools\platform-tools\adb.exe reverse tcp:5173 tcp:5173
 adb reverse --list
 ```
 
@@ -522,6 +559,49 @@ Não versionar `.env`, senhas, cookies, tokens, backups ou chaves privadas. O Gi
 
 `APP_DEBUG=true` e `SESSION_SECURE_COOKIE=false` são configurações locais. Na produção HTTPS, usar `APP_DEBUG=false` e `SESSION_SECURE_COOKIE=true`.
 
-A publicação na VPS ainda não foi executada nem validada. Será preparada em etapa própria, incluindo HTTPS, backup, atualização e rollback. Node não precisa rodar na VPS quando o frontend é compilado antes da publicação.
+A aplicação está publicada com HTTPS em https://minhasfinancas.zapbee.com.br. O responsável já utiliza uma ferramenta própria para backup do banco.
 
-Não executar alterações na VPS sem autorização.
+## Atualizar a aplicação na VPS após um git pull
+
+### 1. Receber as alterações
+
+Na VPS:
+
+```bash
+cd /var/www/minhas_financas
+git pull
+```
+
+### 2. Atualizar o backend quando houver alterações nele
+
+Se houver alterações nas dependências PHP, instalar as versões do lockfile:
+
+```bash
+docker exec -w /var/www/minhas_financas/backend php-fpm composer install --no-dev --prefer-dist --optimize-autoloader --no-interaction
+```
+
+Para limpar os caches e executar migrations pendentes em produção:
+
+```bash
+docker exec -w /var/www/minhas_financas/backend php-fpm php artisan app:sync --force
+```
+
+### 3. Gerar o build do frontend
+
+Depois do `git pull`, executar o comando abaixo para publicar as alterações do frontend:
+
+```bash
+docker run --rm -v /var/www/minhas_financas/frontend:/app -w /app node:22-alpine sh -c "npm ci && npm run build"
+```
+
+Esse comando instala as dependências e gera os arquivos de produção em `frontend/dist`, servidos pelo Nginx. Usa caminhos absolutos e pode ser executado a partir de qualquer pasta da VPS.
+
+O comando `docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci`, executado em `/var/www/infra`, serve apenas para instalar as dependências do serviço de desenvolvimento. **Ele não substitui o comando de build acima.**
+
+O container Node do build é temporário e removido ao terminar. Não é necessário manter o Vite rodando para servir a versão de produção.
+
+### 4. Conferir a versão publicada
+
+Abrir https://minhasfinancas.zapbee.com.br e conferir as alterações. Na PWA instalada, usar o aviso **“Nova versão disponível”** para aplicar a atualização quando ele aparecer.
+
+O build atualiza os arquivos do frontend; o banco é atualizado pelas migrations, quando necessárias.
