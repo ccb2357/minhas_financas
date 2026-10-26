@@ -10,13 +10,14 @@ export function closeActiveIconPicker(app) {
     entry.close(); return true;
 }
 
-export function openIconPicker(app, { value, onSelect, onClosed } = {}) {
+export function openIconPicker(app, { value, onSelect, onClosed, animate } = {}) {
     const id = `category-icon-picker-${++sequence}`;
     let draft = safeIcon(value), query = '', searchbar, closed = false;
     const events = new AbortController();
     const viewport = window.visualViewport;
     const initialHeight = viewport?.height || window.innerHeight;
     const modal = app.sheet.create({
+        ...(typeof animate === 'boolean' ? { animate } : {}),
         backdrop: true, backdropUnique: true, closeByBackdropClick: true,
         closeByOutsideClick: false, swipeToClose: false,
         content: `<section class="sheet-modal category-icon-sheet" role="dialog" aria-modal="true" aria-labelledby="${id}-title"><div class="icon-picker-grip" aria-hidden="true"></div><div class="icon-picker-head"><header class="icon-picker-heading"><div><h2 id="${id}-title">Escolher ícone</h2></div><button type="button" class="icon-button" data-icon-close aria-label="Fechar escolha de ícone">${icon('xmark')}</button></header><form class="searchbar icon-picker-search" role="search"><div class="searchbar-inner"><div class="searchbar-input-wrap"><input type="search" placeholder="Buscar por nome ou palavra-chave" aria-label="Buscar ícone por nome ou palavra-chave" autocomplete="off" maxlength="100"><i class="searchbar-icon"></i><span class="input-clear-button"></span></div></div></form></div><div class="icon-picker-scroll"><div class="icon-picker-grid" role="group" aria-label="Ícones disponíveis"></div><div class="icon-picker-empty" role="status" hidden>${icon('search')}<h3>Nenhum ícone encontrado</h3><p>Tente outro nome ou palavra-chave.</p><button type="button" data-icon-clear>Limpar busca</button></div><span class="sr-only" data-icon-count role="status" aria-live="polite"></span></div><footer class="icon-picker-footer"><div class="icon-picker-selection"><span data-icon-preview aria-hidden="true"></span><span>Selecionado: <strong data-icon-label></strong></span></div><button type="button" class="mf-button mf-button-primary" data-icon-apply>Usar este ícone</button></footer></section>`,

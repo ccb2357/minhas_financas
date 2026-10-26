@@ -7,6 +7,7 @@ import '../css/dashboard.css';
 import '../css/dashboard-real.css';
 import '../css/reports.css';
 import '../css/budgets.css';
+import '../css/goals.css';
 import '../css/settings.css';
 import '../css/categories.css';
 import '../css/transactions.css';

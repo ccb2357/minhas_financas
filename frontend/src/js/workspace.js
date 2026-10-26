@@ -1,3 +1,4 @@
+import { openGoalEditor } from './goals/editor.js';
 import { getCycleConfiguration } from './cycles/api.js';
 import { openCycleForm } from './cycles/form.js';
 import { clearCycles, rememberCycleResponse } from './cycles/state.js';
@@ -80,6 +81,14 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
         },
         navigate: path => view?.router.navigate(path),
         beforeLeave(resolve, reject) { if (closeActiveIconPicker(app) || closeActiveSmartSelect(app) || closeActiveDatePicker(app)) { reject(); return; } if (editor) editor.beforeLeave(resolve, reject); else resolve(); },
+        openGoalEditor(options = {}) {
+            if (!state.user || editor) return;
+            editor = openGoalEditor(context, {
+                ...options,
+                onClosed() { editor = null; options.onClosed?.(); },
+                onSaved(row) { options.onSaved?.(row); notifySuccess(app, options.mode === 'movement' ? 'Movimentação salva.' : 'Objetivo salvo.'); },
+            });
+        },
         openSettings(mode = 'profile') {
             if (!state.user || editor) return;
             editor = openSettingsForm(context, {
@@ -137,14 +146,14 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
 
     function updateNavigation(route) {
         const section = route.path?.split('/').filter(Boolean)[0] || 'inicio';
-        const navigationSection = ['categorias', 'conciliacao'].includes(section) ? 'mais' : section;
+        const navigationSection = ['categorias', 'conciliacao', 'objetivos'].includes(section) ? 'mais' : section;
         for (const link of container.querySelectorAll('[data-section]')) {
             const active = link.dataset.section === navigationSection;
             link.classList.toggle('nav-active', active);
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         }
-        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', conciliacao: 'Conciliação bancária', orcamentos: 'Orçamento mensal' };
+        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', conciliacao: 'Conciliação bancária', objetivos: 'Objetivos', orcamentos: 'Orçamento mensal' };
         document.title = `${titles[section] || 'Início'} · Minhas Finanças`;
     }
 

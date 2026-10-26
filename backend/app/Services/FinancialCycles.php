@@ -121,6 +121,9 @@ class FinancialCycles
     public function configure(int $day, int $expectedVersion): array
     {
         DB::transaction(function () use ($day, $expectedVersion): void {
+            // A manual reset can remove the singleton while keeping migrations.
+            // Restore only its empty state; the cut day still comes from the UI.
+            DB::table('financial_cycle_settings')->insertOrIgnore(['id' => 1]);
             $settings = DB::table('financial_cycle_settings')->where('id', 1)->lockForUpdate()->first();
             if ((int) $settings->version !== $expectedVersion) {
                 throw ValidationException::withMessages(['cut_day' => 'A configuração mudou em outra sessão. Feche e abra este modal para atualizar.']);

@@ -32,6 +32,26 @@ class FinancialCycleTest extends TestCase
         $this->getJson('/api/v1/financial-cycle')->assertUnauthorized();
         $this->putJson('/api/v1/financial-cycle', ['cut_day' => 10, 'version' => 0])->assertUnauthorized();
     }
+    public function test_setup_recovers_when_settings_row_was_removed_after_migration(): void {
+        $user = $this->login();
+        DB::table('financial_cycle_settings')->delete();
+        $migrations = DB::table('migrations')->count();
+        $this->getJson('/api/v1/financial-cycle')->assertOk()->assertJsonPath('data.configured', false)->assertJsonPath('data.version', 0);
+        $this->getJson('/api/v1/dashboard')->assertStatus(428);
+        $this->assertDatabaseCount('financial_cycle_settings', 0);
+        $data = $this->configure(17);
+        $this->assertTrue($data['configured']);
+        $this->assertSame(1, $data['version']);
+        $this->assertSame('2026-10-17', $data['current']['start_date']);
+        $this->assertDatabaseHas('financial_cycle_settings', ['id' => 1, 'initial_cut_day' => 17, 'cut_day' => 17, 'version' => 1]);
+        $this->assertDatabaseCount('financial_cycle_settings', 1);
+        $this->assertDatabaseCount('migrations', $migrations);
+        $this->assertDatabaseHas('users', ['id' => $user->id]);
+        $this->getJson('/api/v1/dashboard')->assertOk();
+        $this->configure(9, 1);
+        $this->assertDatabaseCount('financial_cycle_settings', 1);
+        $this->getJson('/api/v1/financial-cycle')->assertOk()->assertJsonPath('data.current.cut_day', 17)->assertJsonPath('data.pending_cut_day', 9);
+    }
     public function test_first_setup_uses_selected_day_and_before_cut_uses_previous_cycle(): void {
         $this->login(); Date::setTestNow(Date::parse('2026-10-05 12:00:00', 'America/Sao_Paulo'));
         $d=$this->configure(10);$this->assertSame('2026-09-10',$d['current']['start_date']);$this->assertSame('2026-10-09',$d['current']['end_date']);

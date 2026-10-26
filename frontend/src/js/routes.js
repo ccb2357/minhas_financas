@@ -1,3 +1,4 @@
+import { mountGoals } from './goals/page.js';
 import { mountReconciliation } from './reconciliation/page.js';
 import { mountBudgets } from './budgets/page.js';
 import { mountDashboard } from './dashboard/page.js';
@@ -12,7 +13,7 @@ export function createRoutes(context) {
         ['inicio', mountDashboard], ['historico', mountHistory],
         ['relatorios', mountReports], ['mais', mountMore],
         ['categorias', mountCategories], ['orcamentos', mountBudgets],
-        ['conciliacao', mountReconciliation],
+        ['conciliacao', mountReconciliation], ['objetivos', mountGoals],
     ].map(([name, mount]) => ({
         path: `/${name}/`,
         ...(name === 'inicio' ? { alias: '/' } : {}),

@@ -1,7 +1,0 @@
-{
-  "items": [
-    { "name": "Nubank", "item_id": "demo-nubank" },
-    { "name": "Digio", "item_id": "demo-digio" },
-    { "name": "Santander", "item_id": "demo-santander" }
-  ]
-}

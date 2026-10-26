@@ -14,6 +14,18 @@ Route::post('/auth/login', [AuthController::class, 'login'])
     ->middleware('throttle:5,1');
 
 Route::middleware('auth:sanctum')->group(function (): void {
+    Route::controller(\App\Http\Controllers\Api\V1\GoalController::class)->group(function (): void {
+        Route::get('/goals', 'index');
+        Route::post('/goals', 'store');
+        Route::get('/goals/{goal}', 'show')->whereNumber('goal');
+        Route::patch('/goals/{goal}', 'update')->whereNumber('goal');
+        Route::delete('/goals/{goal}', 'destroy')->whereNumber('goal');
+        Route::post('/goals/{goal}/state', 'state')->whereNumber('goal');
+        Route::get('/goals/{goal}/movements', 'movements')->whereNumber('goal');
+        Route::post('/goals/{goal}/movements', 'saveMovement')->whereNumber('goal');
+        Route::patch('/goals/{goal}/movements/{movement}', 'saveMovement')->whereNumber('goal')->whereNumber('movement');
+        Route::delete('/goals/{goal}/movements/{movement}', 'deleteMovement')->whereNumber('goal')->whereNumber('movement');
+    });
     Route::post('/auth/logout', [AuthController::class, 'logout']);
 
     Route::get('/me', function (Request $request) {

@@ -4,6 +4,7 @@ import { escapeHtml as esc, icon } from '../shared/html.js';
 import { formatMoney as money } from '../shared/money.js';
 import { dateText } from '../shared/calendar.js';
 import { safeIcon, safeColor } from '../categories/catalog.js';
+import { pageHeader } from '../shared/page-header.js';
 
 export function openUnbudgetedExpenses(ctx, month, onClosed) {
     let alive = true, busy = false, page = 0, lastPage = 1, rows = [], revision = 0;
@@ -12,7 +13,7 @@ export function openUnbudgetedExpenses(ctx, month, onClosed) {
     const popup = ctx.app.popup.create({
         animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         closeByBackdropClick: true, closeOnEscape: true, swipeToClose: false,
-        content: `<div class="popup unbudgeted-popup" role="dialog" aria-modal="true" aria-labelledby="unbudgeted-title"><div class="unbudgeted-scroll"><div class="unbudgeted-content"><header><h2 id="unbudgeted-title">Despesas sem orçamento</h2><button type="button" class="icon-button" data-unbudgeted-close aria-label="Fechar despesas sem orçamento">${icon('xmark')}</button></header><p class="unbudgeted-period">${esc(cycleDates(knownCycle(month)))}</p><div class="finance-card unbudgeted-total"><span>Total sem orçamento</span><strong data-unbudgeted-total>—</strong></div><div class="finance-card unbudgeted-transactions"><ul class="transaction-list" data-unbudgeted-list></ul></div><div class="unbudgeted-state" role="status"></div><button type="button" class="mf-button mf-button-secondary" data-unbudgeted-more hidden>Carregar mais</button></div></div></div>`,
+        content: `<div class="popup unbudgeted-popup" role="dialog" aria-modal="true" aria-labelledby="unbudgeted-title"><div class="unbudgeted-scroll"><div class="unbudgeted-content finance-container"><div class="unbudgeted-heading">${pageHeader('Sem orçamento', 'Gastos fora do planejamento')}</div><p class="unbudgeted-period">${esc(cycleDates(knownCycle(month)))}</p><div class="finance-card unbudgeted-total"><span>Total sem orçamento</span><strong data-unbudgeted-total>—</strong></div><div class="finance-card unbudgeted-transactions"><ul class="transaction-list" data-unbudgeted-list></ul></div><div class="unbudgeted-state" role="status"></div><button type="button" class="mf-button mf-button-secondary" data-unbudgeted-more hidden>Carregar mais</button></div></div><footer class="unbudgeted-footer"><button type="button" class="mf-button mf-button-primary" data-unbudgeted-close>Voltar ao orçamento</button></footer></div>`,
         on: {
             opened() { popup.el.querySelector('[data-unbudgeted-close]').focus(); },
             closed(instance) {
@@ -25,6 +26,7 @@ export function openUnbudgetedExpenses(ctx, month, onClosed) {
         },
     });
     const root = popup.el;
+    root.querySelector('.page-hero h1').id = 'unbudgeted-title';
     const state = root.querySelector('.unbudgeted-state');
     const more = root.querySelector('[data-unbudgeted-more]');
     async function load() {
@@ -50,6 +52,6 @@ export function openUnbudgetedExpenses(ctx, month, onClosed) {
         if (event.target.closest('[data-unbudgeted-close]')) popup.close();
         if (event.target.closest('[data-unbudgeted-more],[data-unbudgeted-retry]')) void load();
     }, { signal: events.signal });
-    popup.open(false); void load();
+    popup.open(); void load();
     return { close: animate => popup.close(animate) };
 }
