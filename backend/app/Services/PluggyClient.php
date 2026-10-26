@@ -1,5 +1,6 @@
 <?php
 namespace App\Services;
+use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\ConnectionException;
 use App\Exceptions\PluggyException as RuntimeException;
@@ -14,7 +15,10 @@ class PluggyClient
             || !config('pluggy.client_id') || !config('pluggy.client_secret')) {
             throw new RuntimeException('Confira PLUGGY_BASE_URL, PLUGGY_CLIENT_ID e PLUGGY_CLIENT_SECRET no backend.');
         }
-        $query = $next ?? '?'.http_build_query(['accountId' => $accountId]);
+        $query = $next ?? '?'.http_build_query([
+            'accountId' => $accountId,
+            'dateFrom' => CarbonImmutable::now('America/Sao_Paulo')->subMonthsNoOverflow(3)->toDateString(),
+        ]);
         // The cursor is opaque: preserve it exactly, while refusing cross-account/host redirects.
         if (!str_starts_with($query, '?') || strlen($query) > 16384 || preg_match('/[\r\n#]/', $query)) throw new RuntimeException('A Pluggy retornou uma paginação inválida.');
         parse_str(substr($query, 1), $parameters);

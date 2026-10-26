@@ -5,7 +5,6 @@ export const listMovements = (id, page = 1) => apiRequest(`/goals/${id}/movement
 async function write(path, method, data) { await prepareCsrf(); return apiRequest(path, { method, data }); }
 export const saveGoal = (id, data) => write(id ? `/goals/${id}` : '/goals', id ? 'PATCH' : 'POST', data);
 export const changeGoalState = (goal, action) => write(`/goals/${goal.id}/state`, 'POST', { version: goal.version, action });
-export const deleteGoal = goal => write(`/goals/${goal.id}`, 'DELETE', { version: goal.version });
 export const saveMovement = (goal, id, data) => write(`/goals/${goal.id}/movements${id ? `/${id}` : ''}`, id ? 'PATCH' : 'POST', { ...data, version: goal.version });
 export const deleteMovement = (goal, id) => write(`/goals/${goal.id}/movements/${id}`, 'DELETE', { version: goal.version });
 export function goalError(error) {

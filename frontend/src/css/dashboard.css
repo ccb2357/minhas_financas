@@ -69,11 +69,6 @@
 .transaction-list { list-style: none; padding: 0 12px; margin: 0; }
 .transaction-list li + li { border-top: 0; }
 .transaction-row { display: flex; align-items: center; width: 100%; min-height: 65px; padding: 9px 0; gap: 9px; border: 0; border-radius: 12px; background: transparent; text-align: left; cursor: pointer; }
-/* Pointer feedback follows the current surface; touch must not leave hover stuck. */
-@media (hover: hover) {
-    .transaction-row:hover { background: color-mix(in srgb, var(--mf-primary) 6%, var(--mf-surface)); }
-}
-.transaction-row:active, .transaction-row.active-state { background: color-mix(in srgb, var(--mf-primary) 10%, var(--mf-surface)); }
 .category-badge { display: grid; place-items: center; flex-shrink: 0; width: 34px; height: 34px; border-radius: 50%; background: color-mix(in srgb, var(--category-color) 13%, white); color: var(--category-color); }
 .category-badge .f7-icons { font-size: 20px; }
 .transaction-copy { display: flex; flex-direction: column; flex: 1; min-width: 0; gap: 4px; }

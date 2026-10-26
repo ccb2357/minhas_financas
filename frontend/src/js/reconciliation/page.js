@@ -11,7 +11,7 @@ export function mountReconciliation(root, ctx) {
     let alive = true, active = true, phase = 'preparing', revision = 0, syncing = false, loading = false, mutating = false, editing = false, confirmation;
     let rows = [], page = 0, lastPage = 1, complete = false, warning = '';
     root.classList.add('reconciliation-page');
-    root.innerHTML = `${pageHeader('Conciliação bancária', 'Atualização de transações.')}<p class="reconciliation-feedback" role="status" hidden></p><ul class="reconciliation-list" aria-label="Transações pendentes" tabindex="-1"></ul><div class="reconciliation-state" role="status"></div><button type="button" class="mf-button mf-button-secondary reconciliation-more" data-reconciliation-more hidden>Carregar mais</button><button type="button" class="reconciliation-refresh" data-reconciliation-sync>${icon('arrow_clockwise')}<span>Atualizar transações</span></button>`;
+    root.innerHTML = `${pageHeader('Sincronização bancária', 'Atualização de transações.')}<p class="reconciliation-feedback" role="status" hidden></p><ul class="reconciliation-list" aria-label="Transações pendentes" tabindex="-1"></ul><div class="reconciliation-state" role="status"></div><button type="button" class="mf-button mf-button-secondary reconciliation-more" data-reconciliation-more hidden>Carregar mais</button><button type="button" class="reconciliation-refresh" data-reconciliation-sync>${icon('arrow_clockwise')}<span>Atualizar transações</span></button>`;
     const list = root.querySelector('.reconciliation-list'), state = root.querySelector('.reconciliation-state');
     const feedback = root.querySelector('.reconciliation-feedback'), more = root.querySelector('[data-reconciliation-more]');
     const preloader = createReconciliationLoading(list);
@@ -23,7 +23,7 @@ export function mountReconciliation(root, ctx) {
         root.querySelector('[data-reconciliation-sync] span').textContent = syncing ? 'Consultando bancos...' : 'Atualizar transações';
         preloader.set(active && busy(), syncing ? 'Atualizando suas transações' : mutating ? 'Salvando sua decisão' : 'Carregando transações',
             syncing ? ({ preparing: 'Preparando a consulta aos seus bancos.', banks: 'Buscando suas despesas nos bancos conectados.', finishing: 'Organizando as transações para sua conferência.' }[phase])
-                : mutating ? 'Atualizando sua lista de conciliação.' : 'Organizando as transações para sua conferência.');
+                : mutating ? 'Atualizando sua lista de sincronização.' : 'Organizando as transações para sua conferência.');
     }
     function message(text) { feedback.textContent = text; feedback.hidden = !text; }
     function bankLogo(row) {
@@ -113,7 +113,7 @@ export function mountReconciliation(root, ctx) {
         if (!row) return;
         if (event.target.closest('[data-reconciliation-ignore]')) {
             confirmation = ctx.app.dialog.create({ animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
-                title: 'Ignorar transação?', text: `“${esc(row.description)}” será retirada da conciliação e não entrará nos cálculos financeiros.`,
+                title: 'Ignorar transação?', text: `“${esc(row.description)}” será retirada da sincronização e não entrará nos cálculos financeiros.`,
                 buttons: [{ text: 'Cancelar' }, { text: 'Ignorar', bold: true, onClick() { void ignore(row); } }],
                 on: { closed() { confirmation = null; } },
             }).open();

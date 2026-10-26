@@ -153,7 +153,7 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         }
-        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', conciliacao: 'Conciliação bancária', objetivos: 'Objetivos', orcamentos: 'Orçamento mensal' };
+        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', conciliacao: 'Sincronização bancária', objetivos: 'Objetivos', orcamentos: 'Orçamento mensal' };
         document.title = `${titles[section] || 'Início'} · Minhas Finanças`;
     }
 

@@ -3,7 +3,7 @@ import { escapeHtml as esc, icon } from '../shared/html.js';
 import { formatMoney as money } from '../shared/money.js';
 import { dateText, todayBrazil } from '../shared/calendar.js';
 import { progressBar } from './presentation.js';
-import { getGoal, listMovements, changeGoalState, deleteGoal, goalError } from './api.js';
+import { getGoal, listMovements, changeGoalState, goalError } from './api.js';
 import { notifySuccess } from '../shared/notifications.js';
 
 export function openGoalDetail(ctx, id, { onChanged, onClosed } = {}) {
@@ -30,12 +30,11 @@ export function openGoalDetail(ctx, id, { onChanged, onClosed } = {}) {
         const archived = goal.status === 'archived';
         const actions = archived
             ? tile('reopen', 'arrow_clockwise', 'Reabrir objetivo', 'goal-management-deposit')
-            : tile('deposit', 'plus_circle', 'Guardar valor', 'goal-management-deposit')
-                + tile('withdraw', 'minus_circle', 'Retirar')
-                + tile('edit', 'pencil', 'Editar', 'goal-management-edit')
-                + tile('archive', 'archivebox', 'Arquivar', 'goal-management-archive')
-                + (!goal.movement_count ? tile('delete', 'trash', 'Excluir', 'goal-management-delete') : '');
-        return `<section class="finance-card goal-management-card" aria-label="Gerenciar objetivo"><h2>Gerenciar objetivo</h2><div class="goal-management-actions${archived ? ' goal-management-one' : goal.movement_count ? ' goal-management-four' : ' goal-management-five'}">${actions}</div>${!archived && goal.target_reached ? '<button type="button" class="mf-button mf-button-secondary goal-complete-inline" data-goal-complete>Concluir objetivo</button>' : ''}</section>`;
+            : tile('deposit', 'plus_circle', 'Guardar valor')
+                + tile('withdraw', 'minus_circle', 'Retirar valor')
+                + tile('edit', 'pencil', 'Editar')
+                + tile('archive', 'archivebox', 'Arquivar', 'goal-management-archive');
+        return `<section class="finance-card goal-management-card" aria-label="Gerenciar objetivo"><h2>Gerenciar objetivo</h2><div class="goal-management-actions${archived ? ' goal-management-one' : ' goal-management-four'}">${actions}</div>${!archived && goal.target_reached ? '<button type="button" class="mf-button mf-button-secondary goal-complete-inline" data-goal-complete>Concluir objetivo</button>' : ''}</section>`;
     }
     function render() {
         if (!alive || !goal) return;
@@ -67,19 +66,16 @@ export function openGoalDetail(ctx, id, { onChanged, onClosed } = {}) {
         finally { if (alive) { busy = false; controls(); } }
     }
     function confirm(action) {
-        const labels = { complete: ['Concluir objetivo?', 'O objetivo será arquivado, preservando o valor guardado e o histórico. Nenhuma despesa será criada.', 'Concluir'], archive: ['Arquivar objetivo?', 'Você poderá consultar e reabrir este objetivo. O dinheiro guardado será preservado.', 'Arquivar'], reopen: ['Reabrir objetivo?', 'O objetivo voltará para a lista de ativos.', 'Reabrir'], delete: ['Excluir objetivo?', 'Este objetivo ainda não tem movimentações e será excluído.', 'Excluir'] };
+        const labels = { complete: ['Concluir objetivo?', 'O objetivo será arquivado, preservando o valor guardado e o histórico. Nenhuma despesa será criada.', 'Concluir'], archive: ['Arquivar objetivo?', 'Você poderá consultar e reabrir este objetivo. O dinheiro guardado será preservado.', 'Arquivar'], reopen: ['Reabrir objetivo?', 'O objetivo voltará para a lista de ativos.', 'Reabrir'] };
         const [title, text, label] = labels[action];
-        confirmation = ctx.app.dialog.create({ animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches, title, text, buttons: [{ text: 'Cancelar' }, { text: label, bold: true, color: action === 'delete' ? 'red' : undefined, onClick() { void mutate(action); } }], on: { closed() { confirmation = null; } } }).open();
+        confirmation = ctx.app.dialog.create({ animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches, title, text, buttons: [{ text: 'Cancelar' }, { text: label, bold: true, onClick() { void mutate(action); } }], on: { closed() { confirmation = null; } } }).open();
     }
     async function mutate(action) {
         if (!alive || busy) return;
         busy = true; controls(); feedback.hidden = true;
         try {
-            if (action === 'delete') { await deleteGoal(goal); if (alive) { onChanged?.(); popup.close(); notifySuccess(ctx.app, 'Objetivo excluído.'); } }
-            else {
-                const response = await changeGoalState(goal, action); if (!alive) return;
-                goal = response.data; render(); onChanged?.(); notifySuccess(ctx.app, { complete: 'Objetivo concluído!', archive: 'Objetivo arquivado.', reopen: 'Objetivo reaberto.' }[action]);
-            }
+            const response = await changeGoalState(goal, action); if (!alive) return;
+            goal = response.data; render(); onChanged?.(); notifySuccess(ctx.app, { complete: 'Objetivo concluído!', archive: 'Objetivo arquivado.', reopen: 'Objetivo reaberto.' }[action]);
         } catch (failure) {
             if (!alive) return;
             if (failure.status === 401) { popup.close(false); ctx.expireSession(); return; }
@@ -95,7 +91,7 @@ export function openGoalDetail(ctx, id, { onChanged, onClosed } = {}) {
         if (!goal) return;
         if (button.hasAttribute('data-goal-expand')) { expanded = true; render(); }
         if (button.hasAttribute('data-goal-movements-more')) void more();
-        for (const action of ['complete', 'archive', 'reopen', 'delete']) if (button.hasAttribute(`data-goal-${action}`)) confirm(action);
+        for (const action of ['complete', 'archive', 'reopen']) if (button.hasAttribute(`data-goal-${action}`)) confirm(action);
         const row = rows.find(item => String(item.id) === button.dataset.goalMovement);
         if (row && goal.status === 'archived') {
             confirmation = ctx.app.dialog.create({ animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,

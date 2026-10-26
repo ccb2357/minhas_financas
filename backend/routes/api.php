@@ -19,7 +19,6 @@ Route::middleware('auth:sanctum')->group(function (): void {
         Route::post('/goals', 'store');
         Route::get('/goals/{goal}', 'show')->whereNumber('goal');
         Route::patch('/goals/{goal}', 'update')->whereNumber('goal');
-        Route::delete('/goals/{goal}', 'destroy')->whereNumber('goal');
         Route::post('/goals/{goal}/state', 'state')->whereNumber('goal');
         Route::get('/goals/{goal}/movements', 'movements')->whereNumber('goal');
         Route::post('/goals/{goal}/movements', 'saveMovement')->whereNumber('goal');

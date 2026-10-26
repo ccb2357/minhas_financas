@@ -1,16 +1,16 @@
 {
-    "items": [
+    "accounts": [
         {
             "name": "Nubank",
-            "item_id": "id-aqui"
+            "account_id": "---"
         },
         {
             "name": "Digio",
-            "item_id": "id-aqui"
+            "account_id": "---"
         },
         {
             "name": "Santander",
-            "item_id": "id-aqui"
+            "account_id": "---"
         }
     ]
 }

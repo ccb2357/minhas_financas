@@ -26,7 +26,7 @@ class GoalTest extends TestCase
 
     public function test_all_goal_routes_require_authentication(): void
     {
-        foreach ([['GET','/goals'],['POST','/goals'],['GET','/goals/1'],['PATCH','/goals/1'],['DELETE','/goals/1'],['POST','/goals/1/state'],['GET','/goals/1/movements'],['POST','/goals/1/movements'],['PATCH','/goals/1/movements/1'],['DELETE','/goals/1/movements/1']] as [$method,$path]) $this->json($method,'/api/v1'.$path)->assertUnauthorized();
+        foreach ([['GET','/goals'],['POST','/goals'],['GET','/goals/1'],['PATCH','/goals/1'],['POST','/goals/1/state'],['GET','/goals/1/movements'],['POST','/goals/1/movements'],['PATCH','/goals/1/movements/1'],['DELETE','/goals/1/movements/1']] as [$method,$path]) $this->json($method,'/api/v1'.$path)->assertUnauthorized();
     }
     public function test_goal_and_movements_are_owned_and_do_not_require_a_financial_cycle(): void
     {
@@ -37,7 +37,7 @@ class GoalTest extends TestCase
         $this->assertDatabaseCount('financial_cycles',0); $this->assertDatabaseCount('transactions',0); $this->assertDatabaseCount('monthly_budgets',0);
         $this->actingAs(User::factory()->create());
         $this->getJson('/api/v1/goals')->assertOk()->assertJsonPath('meta.total',0);
-        foreach ([['GET',$this->path($goal)],['PATCH',$this->path($goal)],['DELETE',$this->path($goal)],['POST',$this->path($goal).'/state'],['GET',$this->path($goal).'/movements'],['POST',$this->path($goal).'/movements']] as [$method,$path]) {
+        foreach ([['GET',$this->path($goal)],['PATCH',$this->path($goal)],['POST',$this->path($goal).'/state'],['GET',$this->path($goal).'/movements'],['POST',$this->path($goal).'/movements']] as [$method,$path]) {
             $body = $method === 'PATCH' ? $this->metadata($goal) : ($method === 'POST' && str_ends_with($path,'/movements') ? ['version'=>$goal['version'],'type'=>'contribution','amount_cents'=>100,'movement_date'=>'2026-10-26','request_key'=>(string)Str::uuid()] : ['version'=>$goal['version'],'action'=>'archive']);
             $this->json($method,$path,$body)->assertNotFound();
         }
@@ -103,11 +103,19 @@ class GoalTest extends TestCase
         $this->postJson($this->path($goal).'/movements',['version'=>1,'type'=>'withdrawal','amount_cents'=>100,'movement_date'=>'2026-10-26','request_key'=>(string)Str::uuid()])->assertConflict();
         $this->getJson($this->path($goal))->assertJsonPath('data.saved_cents',1000)->assertJsonPath('data.status','active');
     }
-    public function test_deletion_requires_no_movements_even_when_balance_is_zero(): void
+    public function test_goals_cannot_be_deleted_and_can_be_archived_with_or_without_movements(): void
     {
-        $this->login();$empty=$this->create();$this->deleteJson($this->path($empty),['version'=>1])->assertNoContent();
-        $goal=$this->movement($this->create(),500);$goal=$this->movement($goal,500,'withdrawal');
-        $this->deleteJson($this->path($goal),['version'=>$goal['version']])->assertUnprocessable();$this->assertDatabaseCount('goals',1);$this->assertDatabaseCount('goal_movements',2);
+        $this->login(); $empty = $this->create();
+        $goal = $this->movement($this->create(), 500);
+        $goal = $this->movement($goal, 500, 'withdrawal');
+        foreach ([$empty, $goal] as $item) {
+            $this->deleteJson($this->path($item), ['version' => $item['version']])->assertStatus(405);
+            $this->postJson($this->path($item).'/state', ['version' => $item['version'], 'action' => 'archive'])
+                ->assertOk()->assertJsonPath('data.status', 'archived');
+            $this->deleteJson($this->path($item), ['version' => $item['version'] + 1])->assertStatus(405);
+        }
+        $this->assertDatabaseCount('goals', 2);
+        $this->assertDatabaseCount('goal_movements', 2);
     }
     public function test_money_metadata_dates_and_authoritative_fields_are_validated(): void
     {

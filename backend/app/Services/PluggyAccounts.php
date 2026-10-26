@@ -8,7 +8,7 @@ class PluggyAccounts
     public function forUser(User $user): array
     {
         $owner = config('pluggy.user_id') ?: User::orderBy('id')->value('id');
-        abort_unless((string) $owner === (string) $user->id, 403, 'A conciliação está disponível apenas para o titular configurado.');
+        abort_unless((string) $owner === (string) $user->id, 403, 'A sincronização está disponível apenas para o titular configurado.');
         $path = config('pluggy.accounts_file');
         abort_unless(is_string($path) && is_file($path) && is_readable($path), 422, 'Configure o arquivo privado pluggy-accounts.json no backend.');
         try { $data = json_decode(file_get_contents($path), true, 32, JSON_THROW_ON_ERROR); }

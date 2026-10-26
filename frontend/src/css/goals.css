@@ -59,14 +59,11 @@
 .goal-management-card h2 { margin:0 0 14px; font-size:13px; line-height:1.5; font-weight:500; color:var(--mf-muted); }
 .goal-management-actions { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; }
 .goal-management-actions.goal-management-two { grid-template-columns:repeat(2,minmax(0,1fr)); }
-.goal-management-actions.goal-management-five, .goal-management-actions.goal-management-four { grid-template-columns:repeat(6,minmax(0,1fr)); }
-.goal-management-five > button { grid-column:span 2; }
-.goal-management-five > [data-goal-deposit], .goal-management-five > [data-goal-withdraw], .goal-management-four > button { grid-column:span 3; }
+.goal-management-actions.goal-management-four { grid-template-columns:repeat(6,minmax(0,1fr)); }
+.goal-management-four > button { grid-column:span 3; }
 .goal-management-actions.goal-management-one { grid-template-columns:1fr; }
 .goal-management-action { display:flex; flex-direction:column; align-items:center; justify-content:center; gap:10px; min-width:0; min-height:82px; padding:12px 6px; border:1px solid var(--mf-border); border-radius:14px; background:var(--mf-surface); color:var(--mf-title); font:inherit; font-size:13px; line-height:1.4; cursor:pointer; }
 .goal-management-action .f7-icons { font-size:25px; color:var(--mf-muted); }
-.goal-management-edit .f7-icons { color:var(--mf-primary); }
-.goal-management-delete .f7-icons { color:var(--mf-expense); }
 .goal-detail .goal-management-action { height:84px; min-height:84px; gap:8px; justify-content:center; }
 .goal-management-deposit { color:var(--mf-primary); border-color:color-mix(in srgb,var(--mf-primary) 20%,var(--mf-border)); background:color-mix(in srgb,var(--mf-primary) 4%,var(--mf-surface)); }
 .goal-management-deposit .f7-icons { color:var(--mf-primary); }
@@ -102,3 +99,6 @@
 .goals-popup .goal-money > input:focus, .goals-popup .goal-money > input:focus-visible { outline:none; box-shadow:none; }
 .goals-popup button:disabled { cursor:wait; opacity:.6; }
 @media(max-width:359px) { .finance-card.goal-card { padding:15px; } .goal-card-value strong { font-size:22px; } .goal-detail-summary,.goal-form-card,.goal-movements-card { padding:15px; } .goal-card-heading > strong { font-size:15px; } .goal-money > input { font-size:23px; } }
+
+/* Match the edit icon to the other goal actions in both themes. */
+.goal-detail .goal-management-actions [data-goal-edit] > .f7-icons { color:var(--mf-muted); }

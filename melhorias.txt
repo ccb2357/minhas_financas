@@ -1,17 +1,34 @@
 tela de objetivos omnde fica definido o objetivo e quanto de dinheiro ja tem guardado para ele
 
-tela de investimentos onde fica o valor investido em ações
+add opção de copiar orçamento de um mes para o outro
 
-tem que melhorar a tela de despesas fora do orçamento da tela de orçamentos tem que ser um modal bonitinho e nao aquela tela tosca
+tem que add manualmnete os lançpamentos que ainda faltam
+colchão castor
+televisao da dina ilidia
+pagamento fatura digio
+contabo
+acordo mei atrasado
+vivo internet
 
-melhorar aquela notificação de que uma nova versão esta disponível. tipo ao inves de ser aquelka notigicaçao tosa dizendo para ir para tal lugar ser uma notificacao que nçao some e tem uma mensagem do tipo clique aqui parabatualizar o aplicativo
+colchao
+304 7/12
+304 8/12
+304 9/12
+304 10/12
+304 11/12
+304 12/12
+
+tv dona ilidia
+180 9/10
+180 10/10
 
 
-comando para começar no celular: 
+
+comando para começar no celular:
 C:\tools\platform-tools\adb.exe reverse tcp:5173 tcp:5173
 
 
-comando para atualizar as dependencias front rodar em /var/www/infra 
+comando para atualizar as dependencias front rodar em /var/www/infra
 docker compose --profile dev run --rm --no-deps minhas-financas-node npm ci
 
 

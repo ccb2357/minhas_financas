@@ -24,9 +24,9 @@ export function createReconciliationLoading(fallbackFocus) {
                 overlay.className = 'reconciliation-loading';
                 overlay.setAttribute('role', 'dialog');
                 overlay.setAttribute('aria-modal', 'true');
-                overlay.setAttribute('aria-label', 'Carregando conciliação bancária');
+                overlay.setAttribute('aria-label', 'Carregando sincronização bancária');
                 overlay.tabIndex = -1;
-                overlay.innerHTML = `<section class="reconciliation-loading-panel"><div class="reconciliation-loading-symbol" aria-hidden="true"><span></span>${icon('arrow_2_circlepath')}</div><span class="reconciliation-loading-eyebrow">CONCILIAÇÃO BANCÁRIA</span><div role="status" aria-live="polite" aria-atomic="true"><h2></h2><p></p></div><small>Aguarde um instante.</small></section>`;
+                overlay.innerHTML = `<section class="reconciliation-loading-panel"><div class="reconciliation-loading-symbol" aria-hidden="true"><span></span>${icon('arrow_2_circlepath')}</div><span class="reconciliation-loading-eyebrow">SINCRONIZAÇÃO BANCÁRIA</span><div role="status" aria-live="polite" aria-atomic="true"><h2></h2><p></p></div><small>Aguarde um instante.</small></section>`;
                 overlay.addEventListener('keydown', event => { if (event.key === 'Tab') event.preventDefault(); });
                 for (const element of app.children) {
                     inert.set(element, element.inert);

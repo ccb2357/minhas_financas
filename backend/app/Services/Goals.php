@@ -105,17 +105,6 @@ class Goals
         }, 3);
     }
 
-    public function delete(User $user, int $id, int $version): void
-    {
-        DB::transaction(function () use ($user, $id, $version): void {
-            $goal = $this->find($user, $id, true); $this->version($goal, $version);
-            if (DB::table('goal_movements')->where('goal_id', $id)->exists()) {
-                throw ValidationException::withMessages(['goal' => 'Este objetivo tem movimentações. Arquive-o para preservar o histórico.']);
-            }
-            $this->query($user)->where('id', $id)->delete();
-        }, 3);
-    }
-
     private function signed(object|array $movement): int
     {
         $movement = (array) $movement;

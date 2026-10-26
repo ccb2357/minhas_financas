@@ -57,11 +57,6 @@ class GoalController extends Controller
         $data = $request->validate($this->versionRules() + ['action' => ['required', Rule::in(['archive', 'complete', 'reopen'])]]);
         return response()->json(['data' => $this->goals->present($this->goals->state($request->user(), $goal, $data['action'], $data['version']))]);
     }
-    public function destroy(Request $request, int $goal)
-    {
-        $data = $request->validate($this->versionRules()); $this->goals->delete($request->user(), $goal, $data['version']);
-        return response()->noContent();
-    }
     public function movements(Request $request, int $goal)
     {
         $data = $request->validate($this->pageRules()); $this->goals->find($request->user(), $goal);

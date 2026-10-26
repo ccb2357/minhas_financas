@@ -28,7 +28,7 @@ class BankReconciliation
         app(FinancialCycles::class)->forDate();
         return DB::transaction(function () use ($user, $id, $data): Transaction {
             $op = $this->operation($user, $id);
-            abort_if($op->review_status === 'ignored', 409, 'Esta operação já foi ignorada. Atualize a conciliação.');
+            abort_if($op->review_status === 'ignored', 409, 'Esta operação já foi ignorada. Atualize a sincronização.');
             if ($op->review_status === 'added') {
                 $transaction = $user->transactions()->find($op->transaction_id);
                 abort_unless($transaction, 409, 'Esta operação já foi processada e seu lançamento foi removido.');

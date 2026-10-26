@@ -194,4 +194,31 @@ class ReconciliationTest extends TestCase
         $this->login();$r=$this->operation(2);$r['type']='UNKNOWN';$this->fake([$this->operation(),$r]);$this->sync()->assertOk()->assertJsonPath('data.complete',false);$this->assertDatabaseCount('bank_operations',0);
         $r=$this->operation();$r['currencyCode']='USD';$this->fake([$r]);$this->sync()->assertOk();$id=BankOperation::first()->id;$this->postJson("/api/v1/reconciliation/$id/add",$this->draft())->assertUnprocessable()->assertJsonValidationErrors('amount_cents');$this->postJson("/api/v1/reconciliation/$id/ignore")->assertNoContent();
     }
+
+    public function test_pluggy_date_from_is_a_rolling_three_month_window_and_preserves_pagination(): void
+    {
+        Http::fake(fn ($request) => str_ends_with($request->url(), '/auth')
+            ? Http::response(['apiKey' => 'test-key'])
+            : Http::response(['results' => [], 'next' => null]));
+        $client = app(\App\Services\PluggyClient::class);
+        $account = $this->accounts[0]['account_id'];
+        try {
+            foreach ([['2026-10-26 12:00:00', '2026-07-26'], ['2026-05-31 12:00:00', '2026-02-28'], ['2026-01-01 01:00:00', '2025-09-30']] as [$now, $expected]) {
+                \Carbon\CarbonImmutable::setTestNow(\Carbon\CarbonImmutable::parse($now, 'UTC'));
+                $client->page($account);
+                Http::assertSent(function ($request) use ($account, $expected) {
+                    parse_str(parse_url($request->url(), PHP_URL_QUERY) ?? '', $query);
+                    return str_contains($request->url(), '/v2/transactions?')
+                        && ($query['accountId'] ?? null) === $account
+                        && ($query['dateFrom'] ?? null) === $expected;
+                });
+            }
+            $next = '?accountId='.$account.'&dateFrom=2025-09-30&after=A%2FB%3D';
+            $client->page($account, $next);
+            Http::assertSent(fn ($request) => str_ends_with($request->url(), '/v2/transactions'.$next));
+            Http::assertSentCount(8);
+        } finally {
+            \Carbon\CarbonImmutable::setTestNow();
+        }
+    }
 }
