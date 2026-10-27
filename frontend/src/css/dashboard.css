@@ -74,7 +74,7 @@
 .transaction-copy > span { color: #7e8cac; font-size: 9px; line-height: 1.5; }
 .transaction-value { flex-shrink: 0; font-size: 12px; font-weight: 700; white-space: nowrap; }
 .transaction-row > .f7-icons { font-size: 10px; color: #8997b2; }
-.workspace .workspace-toolbar.toolbar { position: absolute; bottom: 0; top: auto; left: 0; z-index: 30; height: calc(71px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: rgb(255 255 255 / 97%); border-top: 1px solid #e3eaf6; backdrop-filter: blur(12px); }
+.workspace .workspace-toolbar.toolbar { position: absolute; bottom: 0; top: auto; left: 0; z-index: 30; height: calc(71px + env(safe-area-inset-bottom)); padding-bottom: env(safe-area-inset-bottom); background: var(--mf-surface); border-top: 1px solid #e3eaf6; backdrop-filter: blur(12px); }
 .workspace-toolbar::before { display: none; }
 .workspace-toolbar .workspace-nav { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 0; width: 100%; max-width: 1080px; height: 71px; margin: 0 auto; padding: 0; position: relative; }
 .workspace-nav .nav-link { display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%; gap: 5px; color: #8290ab; font-size: 11px; }

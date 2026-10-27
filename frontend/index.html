@@ -6,14 +6,14 @@
         <link rel="manifest" href="/manifest.webmanifest">
         <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32.png">
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/apple-touch-icon.png">
-        <meta name="theme-color" content="#f6f9ff">
+        <meta name="theme-color" content="#ffffff">
         <script>
             // Restore before the first paint, including the login screen.
             try {
                 const dark = localStorage.getItem('minhas-financas.theme') === 'dark';
                 document.documentElement.classList.toggle('dark', dark);
                 document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-                document.querySelector('meta[name="theme-color"]').content = dark ? '#0b1221' : '#f6f9ff';
+                document.querySelector('meta[name="theme-color"]').content = dark ? '#151f33' : '#ffffff';
             } catch { /* Default to the approved light theme. */ }
         </script>
         <meta name="description" content="Controle suas finanças com simplicidade.">

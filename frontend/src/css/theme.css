@@ -45,7 +45,7 @@
 .dark #app :where(.footer-rule,.budget-progress-track,.mf-smart-grip,.mf-date-grip,.icon-picker-grip) { background:var(--mf-border); }
 .dark #app :where(.transaction-row,.settings-container .settings-row + .settings-row,.settings-links,.category-icon-trigger,.history-real .category-filter .mf-smart-trigger,.filter-chip,.category-filter) { border-color:var(--mf-border); }
 .dark #app :where(.filter-chip,.category-filter) { background:var(--mf-surface); color:var(--mf-text); }
-.dark #app .workspace-toolbar.toolbar { background:rgb(21 31 51 / 97%); border-color:var(--mf-border); }
+.dark #app .workspace-toolbar.toolbar { background:var(--mf-surface); border-color:var(--mf-border); }
 .dark #app .workspace-nav .nav-link { color:var(--mf-muted); }
 .dark #app :where(.workspace-nav .nav-active,.workspace-nav .new-transaction,.icon-button,.all-transactions,.transaction-category-actions button,.budget-category-actions button,.mf-button-secondary,.category-state-button,.settings-profile-button > .f7-icons,.settings-container .settings-row > .f7-icons) { color:var(--mf-link); }
 .dark #app .icon-button:hover { background:var(--mf-raised); }
@@ -82,3 +82,6 @@
 
 .dark #app .report-period button:not([aria-pressed=true]) { color:var(--mf-muted); }
 .dark #app :where(.category-avatar,.category-badge,.budget-category-icon,.tx-category-icon,.report-insight-icon,.mf-smart-option-icon) { color:color-mix(in srgb,var(--category-color,var(--mf-link)) 70%,white); }
+
+/* Match the window surface and safe-area background to the bottom app menu. */
+html, body, html.dark, html.dark body { background:var(--mf-surface); }

@@ -8,7 +8,7 @@ export function installTheme(app) {
         const dark = theme === 'dark';
         app.setDarkMode(dark);
         document.documentElement.style.colorScheme = dark ? 'dark' : 'light';
-        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#0b1221' : '#f6f9ff');
+        document.querySelector('meta[name="theme-color"]')?.setAttribute('content', dark ? '#151f33' : '#ffffff');
         if (persist) {
             try { localStorage.setItem(STORAGE_KEY, dark ? 'dark' : 'light'); } catch { /* Private/blocked storage still allows this session's choice. */ }
         }
