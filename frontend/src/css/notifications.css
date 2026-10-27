@@ -18,28 +18,25 @@
 #app .mf-notification .notification-text { margin-top:3px; font-family:var(--mf-font); color:var(--mf-text); font-size:13px; line-height:1.5; overflow-wrap:anywhere; }
 @media(prefers-reduced-motion:reduce) { #app .mf-notification { transition-duration:0ms !important; } }
 
-/* Persistent update action, above the bottom navigation and below modal editors. */
+/* Automatic update toast: distinct from ordinary success notifications. */
 #app .mf-update-notice {
-    position:fixed; z-index:6000; left:14px; right:14px;
-    bottom:calc(88px + env(safe-area-inset-bottom, 0px));
-    width:calc(100% - 28px); max-width:420px; margin:0 auto;
-    border:1px solid var(--mf-border); border-radius:20px;
-    background:var(--mf-surface); box-shadow:0 12px 36px rgb(12 28 85 / 16%);
+    position:fixed; z-index:13500; top:calc(14px + env(safe-area-inset-top,0px)); left:14px; right:14px;
+    display:flex; align-items:center; gap:12px; overflow:hidden;
+    width:calc(100% - 28px); max-width:440px; margin:0 auto; padding:18px 18px 21px;
+    box-sizing:border-box; border:1px solid rgb(255 255 255 / 22%); border-radius:20px;
+    background:linear-gradient(115deg,#174ed6,#226cf4); color:white;
+    box-shadow:0 12px 36px rgb(12 40 110 / 26%); pointer-events:none;
+    animation:mf-update-enter .24s ease-out;
 }
 #app .mf-update-notice[hidden] { display:none; }
-.mf-update-action {
-    display:flex; align-items:center; gap:12px; width:100%; padding:16px;
-    border:0; border-radius:inherit; background:transparent; color:var(--mf-title);
-    text-align:left; font-family:var(--mf-font); cursor:pointer;
-}
-.mf-update-action:focus-visible { outline:3px solid var(--mf-primary); outline-offset:3px; }
-.mf-update-action:disabled { cursor:wait; }
-.mf-update-icon {
-    display:grid; place-items:center; flex:none; width:40px; height:40px;
-    border-radius:13px; background:var(--mf-background); color:var(--mf-primary);
-}
-.mf-update-icon .f7-icons { font-size:24px; }
+.mf-update-icon { display:grid; place-items:center; flex:none; width:42px; height:42px; border-radius:14px; background:rgb(255 255 255 / 16%); color:white; }
+.mf-update-icon .f7-icons { font-size:24px; animation:mf-update-spin 1.6s linear infinite; }
 .mf-update-copy { display:flex; flex:1; min-width:0; flex-direction:column; gap:4px; }
-.mf-update-copy strong { font-size:14px; line-height:1.4; font-weight:750; }
-.mf-update-copy > span { font-size:13px; line-height:1.5; color:var(--mf-primary); }
-.mf-update-action > .f7-icons { flex:none; font-size:15px; color:var(--mf-primary); }
+.mf-update-copy strong { color:white; font-size:15px; line-height:1.4; font-weight:750; }
+.mf-update-copy > span { font-size:13px; line-height:1.5; color:#e6efff; }
+.mf-update-progress { position:absolute; bottom:0; left:0; width:100%; height:3px; background:rgb(255 255 255 / 20%); }
+.mf-update-progress::after { content:''; display:block; width:40%; height:100%; border-radius:3px; background:#d8e8ff; animation:mf-update-progress 1.3s ease-in-out infinite; }
+@keyframes mf-update-spin { to { transform:rotate(360deg); } }
+@keyframes mf-update-progress { from { transform:translateX(-100%); } to { transform:translateX(350%); } }
+@keyframes mf-update-enter { from { opacity:0; transform:translateY(-12px); } to { opacity:1; transform:translateY(0); } }
+@media(prefers-reduced-motion:reduce) { #app .mf-update-notice,.mf-update-icon .f7-icons,.mf-update-progress::after { animation:none; } }

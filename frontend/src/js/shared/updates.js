@@ -34,31 +34,53 @@ export function createUpdater(app) {
     const watchedWorkers = new WeakSet();
     const enabled = Boolean(import.meta.env.PROD && window.isSecureContext && 'serviceWorker' in navigator && build);
     const available = () => waitingUpdate || reloadPending;
+    let autoTimer, retryAfter = 0, noticeUntil = 0;
+    const safe = () => document.visibilityState === 'visible' && navigator.onLine && !hasOpenWork();
+    function hideNotice() { if (notice && !notice.hidden) notice.hidden = true; }
     function signal() {
         window.dispatchEvent(new Event(UPDATE_EVENT));
-        if (available() && !notice) {
-            // Independent of transient success notifications: this action stays available.
-            notice = document.createElement('aside');
-            notice.className = 'mf-update-notice';
-            notice.setAttribute('aria-label', 'Atualização do aplicativo');
-            notice.innerHTML = `<button type="button" class="mf-update-action"><span class="mf-update-icon">${icon('arrow_clockwise')}</span><span class="mf-update-copy"><strong>Nova versão disponível</strong><span data-update-message role="status" aria-live="polite">Clique aqui para atualizar o aplicativo.</span></span>${icon('chevron_right')}</button>`;
-            notice.querySelector('button').addEventListener('click', () => void request());
-            document.querySelector('#app').append(notice);
-        }
-        if (notice) {
-            const hidden = !available() && !applying;
-            if (notice.hidden !== hidden) notice.hidden = hidden;
-            const button = notice.querySelector('button');
-            if (button.disabled !== applying) button.disabled = applying;
-            const busy = String(applying);
-            if (button.getAttribute('aria-busy') !== busy) button.setAttribute('aria-busy', busy);
-            const label = notice.querySelector('[data-update-message]');
-            const text = applying ? 'Atualizando aplicativo…' : 'Clique aqui para atualizar o aplicativo.';
-            if (label.textContent !== text) label.textContent = text;
+        if (!applying) hideNotice();
+        if (available() && !applying && !autoTimer) {
+            autoTimer = setTimeout(() => { autoTimer = null; void request(); }, 200);
         }
     }
-
-    const fail = () => app.dialog.alert('Não foi possível concluir a atualização agora. Continue usando o aplicativo e tente novamente mais tarde.', 'Atualização do aplicativo');
+    function showNotice() {
+        if (!notice) {
+            notice = document.createElement('aside');
+            notice.className = 'mf-update-notice';
+            notice.setAttribute('role', 'status');
+            notice.setAttribute('aria-live', 'polite');
+            notice.setAttribute('aria-atomic', 'true');
+            notice.innerHTML = `<span class="mf-update-icon">${icon('arrow_clockwise')}</span><span class="mf-update-copy"><strong>Uma nova versão chegou</strong><span>Atualizando seu aplicativo…</span></span><span class="mf-update-progress" aria-hidden="true"></span>`;
+            document.querySelector('#app').append(notice);
+        }
+        notice.hidden = false;
+    }
+    function pause(retry = false) {
+        clearTimeout(timeout);
+        applying = false;
+        if (retry) retryAfter = Date.now() + 60000;
+        signal();
+    }
+    function reload(version) {
+        // A stale HTML response must not produce a reload loop.
+        try {
+            const previous = JSON.parse(sessionStorage.getItem('minhas-financas.update-reload') || 'null');
+            if (previous?.build === build && previous?.version === version && Date.now() - previous.time < 60000) {
+                pause(true); return;
+            }
+            sessionStorage.setItem('minhas-financas.update-reload', JSON.stringify({ build, version, time:Date.now() }));
+        } catch { /* Storage restrictions do not prevent a safe update. */ }
+        window.location.reload();
+    }
+    async function finishActivation(info) {
+        if (!applying || !info || !notice || notice.hidden) return;
+        await new Promise(resolve => setTimeout(resolve, Math.max(0, noticeUntil - Date.now())));
+        if (!applying) return;
+        if (safe() && info.version !== build) {
+            clearTimeout(timeout); reload(info.version);
+        } else pause();
+    }
 
     async function inspectController() {
         let controller, waiting, info, candidate;
@@ -107,13 +129,7 @@ export function createUpdater(app) {
         });
         navigator.serviceWorker.addEventListener('controllerchange', async () => {
             const info = await inspectController();
-            if (!applying) return; // Other tabs never reload automatically.
-            if (!info) return;
-            clearTimeout(timeout); applying = false;
-            if (info && !hasOpenWork()) {
-                if (info.version !== build) window.location.reload();
-                else { reloadPending = false; signal(); }
-            } else signal(); // A form opened while activation was pending: leave it intact.
+            await finishActivation(info);
         });
         try {
             registration = await navigator.serviceWorker.register('/sw.js', { scope:'/', updateViaCache:'none' });
@@ -127,6 +143,8 @@ export function createUpdater(app) {
             window.addEventListener('online', () => void check(true));
             document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { void check(); signal(); } });
             setInterval(() => { if (document.visibilityState === 'visible') void check(); }, 15 * 60 * 1000);
+            // Also resume after a write finishes without changing the DOM.
+            setInterval(() => { if (available() && !applying) signal(); }, 1000);
             let scheduled = false;
             const observer = new MutationObserver(() => {
                 if (scheduled) return;
@@ -140,19 +158,22 @@ export function createUpdater(app) {
     else window.addEventListener('load', () => void start(), { once:true });
 
     async function request() {
-        if (!enabled || applying || !available()) return;
-        await inspectController();
-        if (applying || !available()) return;
-        if (hasOpenWork()) {
-            app.dialog.alert('Conclua ou feche o formulário antes de atualizar. Suas alterações serão preservadas enquanto você continua editando.', 'Conclua a edição');
-            return;
-        }
-        if (!navigator.onLine) { app.dialog.alert('Conecte-se à internet para atualizar o aplicativo.', 'Sem conexão'); return; }
+        if (!enabled || applying || !available() || Date.now() < retryAfter || !safe()) return;
+        // Reserve this attempt before awaiting worker replies.
+        applying = true;
+        const info = await inspectController();
+        if (!available() || !safe()) { pause(); return; }
+        noticeUntil = Date.now() + 1800;
+        showNotice(); signal();
+        await new Promise(resolve => setTimeout(resolve, 1800));
+        if (!applying) return;
+        if (!safe()) { pause(); return; }
         if (registration.waiting) {
-            applying = true; signal();
-            timeout = setTimeout(() => { applying = false; signal(); fail(); }, 15000);
-            registration.waiting.postMessage({ app:APP, type:'ACTIVATE_UPDATE' });
-        } else if (reloadPending && !hasOpenWork()) window.location.reload();
+            timeout = setTimeout(() => pause(true), 15000);
+            try { registration.waiting.postMessage({ app:APP, type:'ACTIVATE_UPDATE' }); }
+            catch { pause(true); }
+        } else if (reloadPending && info) await finishActivation(info);
+        else pause();
     }
     return {
         get available() { return available(); },
