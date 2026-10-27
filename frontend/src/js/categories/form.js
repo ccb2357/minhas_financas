@@ -1,3 +1,4 @@
+import { pageHeader } from '../shared/page-header.js';
 import { openIconPicker } from './icon-picker.js';
 import { iconLabel } from './icon-catalog.js';
 import { mountSmartSelects } from '../shared/smart-select.js';
@@ -10,6 +11,7 @@ let formSequence = 0;
 
 export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {}) {
     const editing = Boolean(category);
+    const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     const prefix = `category-form-${++formSequence}`;
     let chosenIcon = safeIcon(category?.icon || 'cart');
     let chosenColor = safeColor(category?.color || '#FF503F');
@@ -26,10 +28,10 @@ export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {
     if (!palette.includes(chosenColor)) palette[palette.length - 1] = chosenColor;
     const colorOptions = palette.map(color => `<button type="button" class="category-color-option" data-color="${color}" style="--swatch:${color}" aria-label="Cor ${color}" aria-pressed="${color === chosenColor}">${icon('checkmark')}</button>`).join('');
     const popup = ctx.app.popup.create({
-        closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
-        content: `<div class="popup category-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="category-popup-scroll"><div class="category-popup-content"><header><h2 id="${prefix}-title">${editing ? 'Editar categoria' : 'Nova categoria'}</h2><button class="icon-button" type="button" data-close aria-label="Fechar formulário">${icon('xmark')}</button></header><p class="category-form-intro">${editing ? 'Deixe esta categoria do seu jeito.' : 'Tudo começa com uma boa organização.'}</p><form id="${prefix}" novalidate><fieldset class="category-fieldset"><div class="category-live-preview"><span class="category-avatar" data-preview-icon></span><span><strong data-preview-name></strong><small data-preview-type></small></span></div><div data-field class="category-field"><label for="${prefix}-name">Nome da categoria</label><input id="${prefix}-name" name="name" type="text" maxlength="80" autocomplete="off" placeholder="Ex.: Alimentação" value="${esc(category?.name || '')}"><div id="${prefix}-name-error" class="field-error" hidden></div></div><div data-field class="category-field"><label for="${prefix}-type">Tipo</label><select id="${prefix}-type" name="type" ${editing ? 'disabled' : ''}><option value="">Selecione o tipo</option><option value="income" ${category?.type === 'income' ? 'selected' : ''}>Receita</option><option value="expense" ${category?.type === 'expense' ? 'selected' : ''}>Despesa</option></select><div id="${prefix}-type-error" class="field-error" hidden></div>${editing ? '<small class="category-field-hint">O tipo é definido na criação e não pode ser alterado.</small>' : ''}</div><div data-field class="category-field"><span id="${prefix}-icon-label" class="category-field-label">Ícone</span><input id="${prefix}-icon" type="hidden" name="icon" value="${chosenIcon}"><button type="button" class="category-icon-trigger" data-choose-icon aria-haspopup="dialog" aria-expanded="false" aria-labelledby="${prefix}-icon-label ${prefix}-icon-action"><span data-chosen-icon aria-hidden="true"></span><span><strong id="${prefix}-icon-action">Escolher ícone</strong><small data-chosen-icon-label></small></span>${icon('chevron_right')}</button><div id="${prefix}-icon-error" class="field-error" hidden></div></div><div data-field class="category-field"><span id="${prefix}-color-label" class="category-field-label">Cor</span><input id="${prefix}-color" type="hidden" name="color" value="${chosenColor}"><div class="category-color-grid" role="group" aria-labelledby="${prefix}-color-label">${colorOptions}</div><div id="${prefix}-color-error" class="field-error" hidden></div></div></fieldset><p class="auth-error category-form-error" role="alert" tabindex="-1" hidden></p><div class="category-form-actions"><button type="submit" class="mf-button mf-button-primary" data-save>Salvar categoria</button>${editing ? `<button type="button" class="category-state-button ${category.is_active ? 'category-deactivate' : ''}" data-status>${icon(category.is_active ? 'archivebox' : 'arrow_counterclockwise')} ${category.is_active ? 'Desativar categoria' : 'Reativar categoria'}</button>` : ''}<button type="button" class="category-cancel" data-close>Cancelar</button></div></form></div></div></div>`,
+        animate, closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
+        content: `<div class="popup category-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="category-popup-scroll"><div class="finance-container category-popup-content">${pageHeader(editing ? 'Editar categoria' : 'Nova categoria', editing ? 'Deixe esta categoria do seu jeito.' : 'Tudo começa com uma boa organização.')}<form id="${prefix}" novalidate><div class="finance-card category-form-card"><fieldset class="category-fieldset"><div class="category-live-preview"><span class="category-avatar" data-preview-icon></span><span><strong data-preview-name></strong><small data-preview-type></small></span></div><div data-field class="category-field"><label for="${prefix}-name">Nome da categoria</label><input id="${prefix}-name" name="name" type="text" maxlength="80" autocomplete="off" placeholder="Ex.: Alimentação" value="${esc(category?.name || '')}"><div id="${prefix}-name-error" class="field-error" hidden></div></div><div data-field class="category-field"><label for="${prefix}-type">Tipo</label><select id="${prefix}-type" name="type" ${editing ? 'disabled' : ''}><option value="">Selecione o tipo</option><option value="income" ${category?.type === 'income' ? 'selected' : ''}>Receita</option><option value="expense" ${category?.type === 'expense' ? 'selected' : ''}>Despesa</option></select><div id="${prefix}-type-error" class="field-error" hidden></div>${editing ? '<small class="category-field-hint">O tipo é definido na criação e não pode ser alterado.</small>' : ''}</div><div data-field class="category-field"><span id="${prefix}-icon-label" class="category-field-label">Ícone</span><input id="${prefix}-icon" type="hidden" name="icon" value="${chosenIcon}"><button type="button" class="category-icon-trigger" data-choose-icon aria-haspopup="dialog" aria-expanded="false" aria-labelledby="${prefix}-icon-label ${prefix}-icon-action"><span data-chosen-icon aria-hidden="true"></span><span><strong id="${prefix}-icon-action">Escolher ícone</strong><small data-chosen-icon-label></small></span>${icon('chevron_right')}</button><div id="${prefix}-icon-error" class="field-error" hidden></div></div><div data-field class="category-field"><span id="${prefix}-color-label" class="category-field-label">Cor</span><input id="${prefix}-color" type="hidden" name="color" value="${chosenColor}"><div class="category-color-grid" role="group" aria-labelledby="${prefix}-color-label">${colorOptions}</div><div id="${prefix}-color-error" class="field-error" hidden></div></div></fieldset><p class="auth-error category-form-error" role="alert" tabindex="-1" hidden></p></div>${editing ? `<button type="button" class="category-state-button ${category.is_active ? 'category-deactivate' : ''}" data-status>${icon(category.is_active ? 'archivebox' : 'arrow_counterclockwise')} ${category.is_active ? 'Desativar categoria' : 'Reativar categoria'}</button>` : ''}</form></div></div><footer class="category-form-footer"><button type="submit" form="${prefix}" class="mf-button mf-button-primary" data-save>Salvar categoria</button><button type="button" class="category-cancel" data-close>Cancelar</button></footer></div>`,
         on: {
-            opened() { popup.el.querySelector('[name="name"]').focus(); },
+            opened() { popup.el.querySelector('h1').focus({ preventScroll: true }); },
             closed(instance) {
                 if (!alive) return;
                 alive = false;
@@ -45,6 +47,7 @@ export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {
             },
         },
     });
+    popup.el.querySelector('h1').id = `${prefix}-title`;
     const form = popup.el.querySelector('form');
     const smartSelects = mountSmartSelects(form, ctx.app);
     const name = form.elements.name;
@@ -73,7 +76,7 @@ export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {
         form.setAttribute('aria-busy', String(value));
         form.querySelector('fieldset').disabled = value;
         for (const button of popup.el.querySelectorAll('[data-save], [data-status], [data-close]')) button.disabled = value;
-        form.querySelector('[data-save]').textContent = value ? 'Aguarde...' : 'Salvar categoria';
+        popup.el.querySelector('[data-save]').textContent = value ? 'Aguarde...' : 'Salvar categoria';
     }
 
     async function mutate(action, message) {
@@ -84,7 +87,7 @@ export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {
             await action();
             if (!alive) return;
             setBusy(false);
-            popup.close();
+            popup.close(animate);
             onSaved?.(message);
         } catch (error) {
             if (!alive) return;
@@ -105,12 +108,12 @@ export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {
             confirming = true;
             confirmation = ctx.app.dialog.confirm('As alterações ainda não foram salvas. Deseja descartá-las?', 'Descartar alterações?', () => {
                 confirming = false;
-                popup.close();
+                popup.close(animate);
             }, () => { confirming = false; });
             return;
         }
         confirmation?.close?.(false);
-        popup.close(!force);
+        popup.close(force ? false : animate);
     }
 
     const schema = {
