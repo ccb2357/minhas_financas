@@ -41,9 +41,21 @@ class TransactionController extends Controller
             $query->whereRaw("description LIKE ? ESCAPE '!'", ['%'.$search.'%']);
         }
 
-        $extra = ($filters['unbudgeted'] ?? false)
-            ? ['meta' => ['total_amount_cents' => (int) (clone $query)->sum('amount_cents')]]
-            : [];
+        $extra = [];
+        if ($filters['unbudgeted'] ?? false) {
+            $extra['meta'] = [
+                'total_amount_cents' => (int) (clone $query)->sum('amount_cents'),
+                // Aggregate the entire filtered cycle, independently of transaction pagination.
+                'by_category' => (clone $query)->select('category_id')
+                    ->selectRaw('SUM(amount_cents) AS total_cents')->groupBy('category_id')
+                    ->orderByDesc('total_cents')->orderBy('category_id')->get()
+                    ->map(fn ($row) => [
+                        'category' => ['id' => (int) $row->category->id, 'name' => $row->category->name,
+                            'icon' => $row->category->icon, 'color' => $row->category->color],
+                        'amount_cents' => (int) $row->total_cents,
+                    ])->values()->all(),
+            ];
+        }
         $extra['meta']['period'] = $calendar->present($cycle);
 
         return TransactionResource::collection(

@@ -1,3 +1,4 @@
+import { openBudgetCopy } from './budgets/copy.js';
 import { openGoalEditor } from './goals/editor.js';
 import { getCycleConfiguration } from './cycles/api.js';
 import { openCycleForm } from './cycles/form.js';
@@ -100,6 +101,19 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
                     notifySuccess(app, 'Perfil atualizado com sucesso.');
                 },
                 onPasswordChanged(email) { onPasswordChanged?.(email); },
+            });
+        },
+        openBudgetCopy(options) {
+            if (!state.user || editor) return;
+            if (!state.cycleConfiguration?.configured) { void context.openCycleSettings(); return; }
+            editor = openBudgetCopy(context, {
+                ...options,
+                onClosed() { editor = null; },
+                onSaved(row) {
+                    state.budgetMonth = `${row.year}-${String(row.month).padStart(2, '0')}`;
+                    context.events.dispatchEvent(new CustomEvent('budgets:changed', { detail: { row, kind: 'copied' } }));
+                    notifySuccess(app, `${row.copied_count} ${row.copied_count === 1 ? 'orçamento copiado' : 'orçamentos copiados'} para o ciclo selecionado.`);
+                },
             });
         },
         openBudget(options = {}) {

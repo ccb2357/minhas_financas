@@ -53,6 +53,7 @@ Route::middleware('auth:sanctum')->group(function (): void {
 
     Route::get('/budgets', [BudgetController::class, 'index']);
     Route::post('/budgets', [BudgetController::class, 'store']);
+    Route::post('/budgets/copy', [BudgetController::class, 'copy']);
     Route::get('/budgets/{budget}', [BudgetController::class, 'show'])->whereNumber('budget');
     Route::patch('/budgets/{budget}', [BudgetController::class, 'update'])->whereNumber('budget');
     Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->whereNumber('budget');

@@ -61,3 +61,11 @@ test('nomes, cores e ícones vindos da API não inserem HTML ou estilos arbitrá
     assert.match(html, /&lt;img/);
     assert.doesNotMatch(html, /<img|<script|position:fixed/);
 });
+
+test('resumo sem orçamento mostra todas as categorias sem duplicar o total', () => {
+    const rows = Array.from({ length: 9 }, (_, i) => item(i + 1, 100 + i));
+    const html = renderSpendingRanking(rows, 936, { limit: null, showTotal: false });
+    assert.equal((html.match(/<li /g) || []).length, 9);
+    assert.doesNotMatch(html, /Demais categorias|spending-rank-total|Total de gastos/);
+    assert.match(renderSpendingRanking(rows, 936), /spending-rank-total/);
+});

@@ -21,3 +21,9 @@ export function budgetError(error) {
     if (error.status >= 500) return 'Não foi possível concluir agora. Tente novamente em instantes.';
     return 'Não foi possível confirmar a operação. Confira sua conexão e atualize a lista antes de tentar novamente.';
 }
+
+export async function copyBudget(source, destination) {
+    await prepareCsrf();
+    const [source_year, source_month] = source.split('-').map(Number);
+    return apiRequest('/budgets/copy', { method: 'POST', data: { source_year, source_month, ...destination } });
+}

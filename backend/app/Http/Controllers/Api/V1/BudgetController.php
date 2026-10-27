@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api\V1;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Budget\ListBudgetRequest;
+use App\Http\Requests\Budget\CopyBudgetRequest;
 use App\Http\Requests\Budget\StoreBudgetRequest;
 use App\Http\Requests\Budget\UpdateBudgetRequest;
 use App\Http\Resources\BudgetResource;
@@ -33,6 +34,11 @@ class BudgetController extends Controller
     {
         $budget = $writer->save($request->user(), $request->validated());
         return (new BudgetResource($reader->find($request->user(), (string) $budget->id)))->response()->setStatusCode(201);
+    }
+
+    public function copy(CopyBudgetRequest $request, BudgetWriter $writer): JsonResponse
+    {
+        return response()->json(['data' => $writer->copyCycle($request->user(), $request->validated())], 201);
     }
 
     public function show(Request $request, BudgetReader $reader, string $budget): BudgetResource

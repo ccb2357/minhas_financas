@@ -14,6 +14,8 @@ class AuthController extends Controller
 {
     public function login(LoginRequest $request): JsonResponse
     {
+        Auth::guard('web')->setRememberDuration(365 * 24 * 60);
+        
         $authenticated = Auth::guard('web')->attempt(
             $request->safe()->only(['email', 'password']),
             $request->boolean('remember')

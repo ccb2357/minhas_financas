@@ -11,10 +11,10 @@ import { progressPercent, percentLabel, shortPercentLabel, budgetRingTone, budge
 export function mountBudgets(root, ctx, route) {
     let alive = true, revision = 0, loading = false, page = 0, lastPage = 1, rows = [];
     if (validMonth(route.query?.month)) ctx.state.budgetMonth = route.query.month;
-    let unbudgetedModal;
+    let unbudgetedModal, cycleSummary;
     const events = new AbortController();
     root.classList.add('budgets-container');
-    root.innerHTML = `${pageHeader('Orçamentos', 'Planeje seus gastos por ciclo')}<div data-budget-month></div><p class="budget-feedback" role="status" hidden></p><section class="budget-results" aria-label="Orçamentos do ciclo" aria-busy="false"><div data-budget-summary></div><button type="button" class="budget-unbudgeted" data-budget-unbudgeted hidden aria-haspopup="dialog"></button><div class="budget-list"></div><div class="budget-list-state" role="status"></div><button type="button" class="mf-button mf-button-secondary budget-more" data-budget-more hidden>Carregar mais</button></section><button type="button" class="budget-create-button" data-budget-create>${icon('plus')}<span>Novo orçamento</span></button>`;
+    root.innerHTML = `${pageHeader('Orçamentos', 'Planeje seus gastos por ciclo')}<div data-budget-month></div><p class="budget-feedback" role="status" hidden></p><section class="budget-results" aria-label="Orçamentos do ciclo" aria-busy="false"><div data-budget-summary></div><button type="button" class="budget-unbudgeted" data-budget-unbudgeted hidden aria-haspopup="dialog"></button><div class="budget-list"></div><div class="budget-list-state" role="status"></div><button type="button" class="mf-button mf-button-secondary budget-more" data-budget-more hidden>Carregar mais</button><div class="budget-cycle-actions"><button type="button" class="budget-copy-button" data-budget-copy-cycle hidden aria-haspopup="dialog"><span class="budget-copy-card-icon" aria-hidden="true">${icon('doc_on_doc')}</span><span class="budget-copy-card-text"><strong>Copiar orçamentos</strong><span>Leve este planejamento para outro ciclo</span></span>${icon('chevron_right')}</button></div></section><button type="button" class="budget-create-button" data-budget-create>${icon('plus')}<span>Novo orçamento</span></button>`;
     const monthBox = root.querySelector('[data-budget-month]'), results = root.querySelector('.budget-results');
     const summaryBox = root.querySelector('[data-budget-summary]'), unbudgeted = root.querySelector('.budget-unbudgeted');
     const list = root.querySelector('.budget-list');
@@ -27,8 +27,12 @@ export function mountBudgets(root, ctx, route) {
     function renderSummary(summary) {
         const label = percentLabel(summary.used_percent), progress = progressPercent(summary.used_percent);
         summaryBox.innerHTML = `<section class="budget-summary" aria-label="Orçamento total utilizado"><div class="budget-summary-copy"><p>Orçamento total utilizado</p><strong class="${label.length > 8 ? 'budget-percent-compact' : ''}" data-budget-percent>${label}</strong><span class="budget-summary-values" data-budget-summary-values>${summary.budget_count ? `${money(summary.spent_cents)} de ${money(summary.limit_cents)}` : 'Nenhum orçamento definido neste ciclo'}</span></div><div class="budget-summary-ring budget-ring-${budgetRingTone(summary.used_percent)} ${label.length > 6 ? 'budget-ring-compact' : ''}" role="img" aria-label="${summary.budget_count ? `${label} do orçamento utilizado` : 'Sem orçamento definido'}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="budget-ring-track" cx="60" cy="60" r="48"/><circle class="budget-ring-value" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="${progress} 100" opacity="${progress > 0 ? 1 : 0}"/></svg><strong>${summary.budget_count ? shortPercentLabel(summary.used_percent) : '—'}</strong></div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>`;
-        unbudgeted.textContent = summary.unbudgeted_expense_cents > 0 ? `${money(summary.unbudgeted_expense_cents)} em despesas sem orçamento neste ciclo.` : '';
-        unbudgeted.hidden = !unbudgeted.textContent;
+        cycleSummary = summary;
+        root.querySelector('[data-budget-copy-cycle]').hidden = !(summary.budget_count > 0);
+        const unbudgetedAmount = summary.unbudgeted_expense_cents;
+        unbudgeted.innerHTML = unbudgetedAmount > 0 ? `<span class="budget-unbudgeted-icon" aria-hidden="true">${icon('doc_text')}</span><span class="budget-unbudgeted-copy"><span>Sem orçamento</span><strong>${money(unbudgetedAmount)}</strong></span>${icon('chevron_right')}` : '';
+        unbudgeted.setAttribute('aria-label', `Consultar despesas sem orçamento: ${money(unbudgetedAmount)}`);
+        unbudgeted.hidden = !(unbudgetedAmount > 0);
     }
     function renderRows() {
         list.innerHTML = rows.map(row => {
@@ -46,7 +50,7 @@ export function mountBudgets(root, ctx, route) {
             const url = `/orcamentos/?${new URLSearchParams({ month: ctx.state.budgetMonth })}`;
             if (router.currentRoute.url !== url) router.updateCurrentUrl(url);
         }
-        if (!append) { rows = []; list.replaceChildren(); summaryBox.replaceChildren(); unbudgeted.hidden = true; }
+        if (!append) { rows = []; list.replaceChildren(); summaryBox.replaceChildren(); unbudgeted.hidden = true; cycleSummary = null; root.querySelector('[data-budget-copy-cycle]').hidden = true; }
         stateBox.innerHTML = '<span class="mf-spinner" aria-hidden="true"></span><span>Carregando orçamentos...</span>';
         try {
             const response = await listBudgets(ctx.state.budgetMonth, append ? page + 1 : 1);
@@ -76,11 +80,17 @@ export function mountBudgets(root, ctx, route) {
         if (button.hasAttribute('data-budget-create')) ctx.openBudget({ month: ctx.state.budgetMonth });
         if (button.hasAttribute('data-budget-more')) void load(true);
         if (button.hasAttribute('data-budget-retry')) void load(button.dataset.budgetRetry === 'more');
-        if (button.dataset.budgetId) {
+        if (button.hasAttribute('data-budget-copy-cycle') && cycleSummary && !loading) {
+            ctx.openBudgetCopy({ source: ctx.state.budgetMonth, summary: cycleSummary });
+        }
+        const budgetId = button.dataset.budgetId;
+        if (budgetId) {
             const current = revision; button.disabled = true;
             try {
-                const response = await getBudget(button.dataset.budgetId);
-                if (alive && current === revision && root.closest('.page').classList.contains('page-current')) ctx.openBudget({ budget: response.data });
+                const response = await getBudget(budgetId);
+                if (alive && current === revision && root.closest('.page').classList.contains('page-current')) {
+                    ctx.openBudget({ budget: response.data });
+                }
             } catch (error) {
                 if (!alive || current !== revision) return;
                 if (error.status === 401) { ctx.expireSession(); return; }

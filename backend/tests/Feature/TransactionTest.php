@@ -405,13 +405,43 @@ class TransactionTest extends TestCase
 
         $this->getJson(self::API.self::MONTH.'&unbudgeted=1&type=expense')->assertOk()
             ->assertJsonPath('meta.total', 29)->assertJsonCount(25, 'data')
-            ->assertJsonPath('meta.total_amount_cents', 36090);
+            ->assertJsonPath('meta.total_amount_cents', 36090)
+            ->assertJsonCount(2, 'meta.by_category')
+            ->assertJsonPath('meta.by_category.0.category.id', $free->id)
+            ->assertJsonPath('meta.by_category.0.amount_cents', 26190)
+            ->assertJsonPath('meta.by_category.1.category.id', $removed->id)
+            ->assertJsonPath('meta.by_category.1.amount_cents', 9900);
         $this->getJson(self::API.self::MONTH.'&unbudgeted=1&type=expense&page=2')->assertOk()
-            ->assertJsonCount(4, 'data')->assertJsonPath('meta.total_amount_cents', 36090);
+            ->assertJsonCount(4, 'data')->assertJsonPath('meta.total_amount_cents', 36090)
+            ->assertJsonCount(2, 'meta.by_category')
+            ->assertJsonPath('meta.by_category.0.category.id', $free->id)
+            ->assertJsonPath('meta.by_category.0.amount_cents', 26190)
+            ->assertJsonPath('meta.by_category.1.category.id', $removed->id)
+            ->assertJsonPath('meta.by_category.1.amount_cents', 9900);
         $this->getJson('/api/v1/budgets'.self::MONTH)->assertOk()
             ->assertJsonPath('meta.summary.unbudgeted_expense_cents', 36090);
         $this->getJson(self::API.self::MONTH.'&unbudgeted=1&search=nao-existe')->assertOk()
-            ->assertJsonCount(0, 'data')->assertJsonPath('meta.total_amount_cents', 0);
+            ->assertJsonCount(0, 'data')->assertJsonPath('meta.total_amount_cents', 0)->assertJsonCount(0, 'meta.by_category');
+    }
+
+    public function test_unbudgeted_ranking_includes_every_category_before_pagination(): void
+    {
+        [$user, $first] = $this->signedIn();
+        $categories = [$first];
+        for ($i = 1; $i < 8; $i++) $categories[] = $this->category($user);
+        foreach ($categories as $i => $category) $this->transaction($user, $category, ['amount_cents' => ($i + 1) * 100]);
+        $this->transaction($user, $first, ['amount_cents' => 50]);
+        $response = $this->getJson(self::API.self::MONTH.'&unbudgeted=1&per_page=1')->assertOk()
+            ->assertJsonCount(1, 'data')->assertJsonCount(8, 'meta.by_category')
+            ->assertJsonPath('meta.total_amount_cents', 3650)
+            ->assertJsonPath('meta.by_category.0.category.id', $categories[7]->id)
+            ->assertJsonPath('meta.by_category.0.amount_cents', 800)
+            ->assertJsonPath('meta.by_category.7.amount_cents', 150);
+        $ranking = $response->json('meta.by_category');
+        $this->assertSame(3650, array_sum(array_column($ranking, 'amount_cents')));
+        $this->getJson(self::API.self::MONTH.'&unbudgeted=1&per_page=1&page=9')->assertOk()
+            ->assertJsonCount(1, 'data')->assertJsonPath('meta.by_category', $ranking);
+        $this->getJson(self::API.self::MONTH)->assertOk()->assertJsonMissingPath('meta.by_category');
     }
 
     public function test_unbudgeted_filter_requires_a_valid_boolean(): void

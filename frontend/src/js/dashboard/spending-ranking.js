@@ -24,5 +24,5 @@ export function renderSpendingRanking(categories, total, options = {}) {
     const rows = ranking.leading.map(item => rankingRow(item.category.name, item.amount_cents, total,
         safeColor(item.category.color), safeIcon(item.category.icon)));
     if (ranking.remaining > 0) rows.push(rankingRow('Demais categorias', ranking.remaining, total, '#94A3B8', 'ellipsis', true));
-    return `<div class="spending-rank-total"><span>Total de gastos no período</span><strong>${money(total)}</strong></div>${rows.length ? `<ul class="spending-rank-list">${rows.join('')}</ul>` : `<p class="spending-rank-empty">${esc(options.emptyMessage || 'Nenhuma despesa neste mês.')}</p>`}`;
+    return `${options.showTotal === false ? '' : `<div class="spending-rank-total"><span>Total de gastos no período</span><strong>${money(total)}</strong></div>`}${rows.length ? `<ul class="spending-rank-list">${rows.join('')}</ul>` : `<p class="spending-rank-empty">${esc(options.emptyMessage || 'Nenhuma despesa neste mês.')}</p>`}`;
 }
