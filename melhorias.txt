@@ -1,6 +1,5 @@
 tela de objetivos omnde fica definido o objetivo e quanto de dinheiro ja tem guardado para ele
 
-add opção de copiar orçamento de um mes para o outro
 
 tem que add manualmnete os lançpamentos que ainda faltam
 colchão castor

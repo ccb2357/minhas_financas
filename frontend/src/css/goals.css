@@ -102,3 +102,6 @@
 
 /* Match the edit icon to the other goal actions in both themes. */
 .goal-detail .goal-management-actions [data-goal-edit] > .f7-icons { color:var(--mf-muted); }
+
+.goals-popup.goal-editor textarea[name="notes"]:focus,
+.goals-popup.goal-editor textarea[name="notes"]:focus-visible { outline:none; box-shadow:none; }

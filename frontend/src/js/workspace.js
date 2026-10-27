@@ -160,7 +160,7 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
 
     function updateNavigation(route) {
         const section = route.path?.split('/').filter(Boolean)[0] || 'inicio';
-        const navigationSection = ['categorias', 'conciliacao', 'objetivos'].includes(section) ? 'mais' : section;
+        const navigationSection = ['categorias', 'conciliacao'].includes(section) ? 'mais' : section === 'relatorios' ? 'inicio' : section;
         for (const link of container.querySelectorAll('[data-section]')) {
             const active = link.dataset.section === navigationSection;
             link.classList.toggle('nav-active', active);

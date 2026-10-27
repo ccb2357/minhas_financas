@@ -83,18 +83,21 @@
     .spending-rank-heading, .spending-rank-heading > strong { font-size: 16px; }
     .spending-rank-percent { font-size: 14px; }
 }
-.dashboard-history-card { display: flex; align-items: center; gap: 13px; width: 100%; min-height: 80px; margin-top: 12px; padding: 15px; text-decoration: none; }
+:is(.dashboard-history-card, .dashboard-reports-card) { display: flex; align-items: center; gap: 13px; width: 100%; min-height: 80px; margin-top: 12px; padding: 15px; text-decoration: none; }
 .dashboard-history-icon { display: grid; place-items: center; flex: 0 0 44px; width: 44px; height: 44px; border-radius: 13px; color: var(--mf-primary); background: color-mix(in srgb, var(--mf-primary) 12%, var(--mf-surface)); }
 .dashboard-history-icon .f7-icons { font-size: 27px; }
 .dashboard-history-copy { display: grid; min-width: 0; flex: 1; gap: 5px; }
 .dashboard-history-copy > strong { color: var(--mf-title); font-size: 16px; line-height: 1.3; }
 .dashboard-history-copy > span { color: var(--mf-muted); font-size: 12px; line-height: 1.4; }
-.dashboard-history-card > .f7-icons { flex-shrink: 0; color: var(--mf-primary); font-size: 18px; }
-.dashboard-history-card:focus-visible { outline: 3px solid var(--mf-primary); outline-offset: 3px; }
-.dashboard-history-card:hover { border-color: color-mix(in srgb, var(--mf-primary) 35%, var(--mf-border)); }
+:is(.dashboard-history-card, .dashboard-reports-card) > .f7-icons { flex-shrink: 0; color: var(--mf-primary); font-size: 18px; }
+:is(.dashboard-history-card, .dashboard-reports-card):focus-visible { outline: 3px solid var(--mf-primary); outline-offset: 3px; }
+:is(.dashboard-history-card, .dashboard-reports-card):hover { border-color: color-mix(in srgb, var(--mf-primary) 35%, var(--mf-border)); }
 @media (min-width: 760px) {
-    .dashboard-history-card { gap: 18px; min-height: 96px; padding: 20px 22px; margin-top: 16px; }
+    :is(.dashboard-history-card, .dashboard-reports-card) { gap: 18px; min-height: 96px; padding: 20px 22px; margin-top: 16px; }
     .dashboard-history-icon { flex-basis: 52px; width: 52px; height: 52px; border-radius: 16px; }
     .dashboard-history-copy > strong { font-size: 20px; }
     .dashboard-history-copy > span { font-size: 14px; }
 }
+
+.dashboard-reports-card { margin-bottom:12px; }
+@media(min-width:760px) { .dashboard-reports-card { margin-bottom:16px; } }

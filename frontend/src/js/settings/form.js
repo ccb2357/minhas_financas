@@ -1,3 +1,4 @@
+import { pageHeader } from '../shared/page-header.js';
 import { createValidation, validationRules as rules } from '../validation.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { emailChanged, profilePayload, validPasswordLength, validPasswordBytes } from './data.js';
@@ -8,13 +9,14 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
     const passwordMode = mode === 'password', prefix = `settings-form-${++sequence}`;
     const original = { ...ctx.state.user }, previousFocus = document.activeElement;
     const events = new AbortController();
+    const animate = !window.matchMedia('(prefers-reduced-motion: reduce)').matches;
     let alive = true, busy = false, confirming = false, closing = false, validation, confirmation, afterClose;
     const field = (name, label, { type = 'text', value = '', autocomplete = '', maxLength = '' } = {}) => `<div class="settings-field" data-field><label for="${prefix}-${name}">${label}</label><div class="settings-input-wrap"><input id="${prefix}-${name}" name="${name}" type="${type}" value="${esc(value)}" autocomplete="${autocomplete}" ${maxLength ? `maxlength="${maxLength}"` : ''} ${type === 'password' ? '' : 'autocapitalize="none"'}>${type === 'password' ? `<button type="button" data-settings-toggle="${name}" aria-label="Mostrar ${label.toLowerCase()}" aria-controls="${prefix}-${name}" aria-pressed="false">${icon('eye')}</button>` : ''}</div><div class="settings-error-slot"><div class="field-error" id="${prefix}-${name}-error" hidden></div></div></div>`;
     const popup = ctx.app.popup.create({
-        closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
-        content: `<div class="popup settings-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="settings-popup-scroll"><div class="settings-form-container"><header><h2 id="${prefix}-title" tabindex="-1">${passwordMode ? 'Alterar senha' : 'Editar perfil'}</h2><button class="icon-button" type="button" data-settings-close aria-label="Fechar formulário">${icon('xmark')}</button></header><p class="settings-form-intro">${passwordMode ? 'Escolha uma senha com pelo menos 12 caracteres. Após salvar, entre novamente com a nova senha.' : 'Mantenha seu nome e e-mail atualizados.'}</p><form id="${prefix}" novalidate><fieldset>${passwordMode ? field('current_password', 'Senha atual', { type: 'password', autocomplete: 'current-password' }) + field('password', 'Nova senha', { type: 'password', autocomplete: 'new-password' }) + field('password_confirmation', 'Confirmar nova senha', { type: 'password', autocomplete: 'new-password' }) : field('name', 'Nome', { value: original.name, autocomplete: 'name', maxLength: 255 }) + field('email', 'E-mail', { type: 'email', value: original.email, autocomplete: 'email', maxLength: 255 }) + `<div data-settings-email-password hidden>${field('current_password', 'Senha atual', { type: 'password', autocomplete: 'current-password' })}<p class="settings-field-note">Para sua segurança, confirme a senha atual ao alterar o e-mail.</p></div>`}</fieldset><p class="auth-error settings-form-error" role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary" data-settings-save>${passwordMode ? 'Salvar nova senha' : 'Salvar perfil'}</button><button type="button" class="settings-cancel" data-settings-close>Cancelar</button></form></div></div></div>`,
+        animate, closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
+        content: `<div class="popup settings-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="settings-popup-scroll"><div class="settings-form-container finance-container">${pageHeader(passwordMode ? 'Alterar senha' : 'Editar perfil', passwordMode ? 'Proteja o acesso à sua conta' : 'Mantenha seu nome e e-mail atualizados')}<form id="${prefix}" novalidate><fieldset><section class="finance-card settings-form-card">${passwordMode ? '<p class="settings-form-intro">Escolha uma senha com pelo menos 12 caracteres. Após salvar, entre novamente com a nova senha.</p>' : ''}${passwordMode ? field('current_password', 'Senha atual', { type: 'password', autocomplete: 'current-password' }) + field('password', 'Nova senha', { type: 'password', autocomplete: 'new-password' }) + field('password_confirmation', 'Confirmar nova senha', { type: 'password', autocomplete: 'new-password' }) : field('name', 'Nome', { value: original.name, autocomplete: 'name', maxLength: 255 }) + field('email', 'E-mail', { type: 'email', value: original.email, autocomplete: 'email', maxLength: 255 }) + `<div data-settings-email-password hidden>${field('current_password', 'Senha atual', { type: 'password', autocomplete: 'current-password' })}<p class="settings-field-note">Para sua segurança, confirme a senha atual ao alterar o e-mail.</p></div>`}</section></fieldset><p class="auth-error settings-form-error" role="alert" tabindex="-1" hidden></p></form></div></div><footer class="settings-form-footer"><button type="submit" form="${prefix}" class="mf-button mf-button-primary" data-settings-save>${passwordMode ? 'Salvar nova senha' : 'Salvar perfil'}</button><button type="button" class="settings-cancel" data-settings-close>Cancelar</button></footer></div>`,
         on: {
-            opened() { popup.el.querySelector('h2').focus(); },
+            opened() { popup.el.querySelector('h1').focus({ preventScroll: true }); },
             closed(instance) {
                 if (!alive) return;
                 alive = false; events.abort(); confirmation?.close?.(false); validation?.destroy();
@@ -26,8 +28,9 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
             },
         },
     });
+    popup.el.querySelector('h1').id = `${prefix}-title`;
     const form = popup.el.querySelector('form'), fields = form.elements;
-    const errorBox = form.querySelector('.settings-form-error'), save = form.querySelector('[data-settings-save]');
+    const errorBox = form.querySelector('.settings-form-error'), save = popup.el.querySelector('[data-settings-save]');
     const values = () => [...form.querySelectorAll('input')].map(input => input.value);
     const initial = JSON.stringify(values());
     const dirty = () => JSON.stringify(values()) !== initial;
@@ -47,7 +50,7 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
         if (busy || confirming || closing) { cancel(); return; }
         if (!dirty()) { finishClose(done); return; }
         confirming = true;
-        confirmation = ctx.app.dialog.create({ title: 'Descartar alterações?', text: 'As alterações ainda não foram salvas.', buttons: [
+        confirmation = ctx.app.dialog.create({ animate, title: 'Descartar alterações?', text: 'As alterações ainda não foram salvas.', buttons: [
             { text: 'Continuar editando', onClick() { confirming = false; cancel(); } },
             { text: 'Descartar', bold: true, onClick() { confirming = false; finishClose(done); } },
         ] }).open();
@@ -119,6 +122,6 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
         if (event.shiftKey && (document.activeElement === first || !controls.includes(document.activeElement))) { event.preventDefault(); last?.focus(); }
         else if (!event.shiftKey && (document.activeElement === last || !controls.includes(document.activeElement))) { event.preventDefault(); first?.focus(); }
     }, { signal: events.signal });
-    popup.open();
+    popup.open(animate);
     return { close(force = false) { if (force) { afterClose = undefined; popup.close(false); } else confirmLeave(() => {}); }, beforeLeave: confirmLeave };
 }

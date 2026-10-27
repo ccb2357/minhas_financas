@@ -86,3 +86,6 @@
     .transaction-input { gap: 9px; padding-left: 10px; padding-right: 10px; }
     .transaction-input input, .transaction-input select, .transaction-input textarea { font-size: 15px; }
 }
+
+.transaction-form-container.transaction-create-form { padding:0; }
+.transaction-create-form .page-hero { margin-bottom:22px; }

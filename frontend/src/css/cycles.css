@@ -18,3 +18,17 @@
 .budget-cycle-dates { color: var(--mf-muted); font-size: 12px; line-height: 1.5; margin: 8px 0; }
 @media (min-width: 760px) { .month-picker-label small { font-size: 12px; } }
 .dark #app .cycle-popup { background: var(--mf-background); }
+
+/* Shared editorial header, content cards and fixed actions for cycle settings. */
+.cycle-popup-scroll { position:absolute; inset:0 0 calc(130px + env(safe-area-inset-bottom)); overflow-y:auto; overscroll-behavior:contain; padding:max(20px,env(safe-area-inset-top)) 16px 24px; }
+.finance-container.cycle-form-container { max-width:580px; padding:0; margin:0 auto; }
+.cycle-form-container .page-hero { margin-bottom:18px; }
+.cycle-form-container fieldset { min-width:0; padding:0; margin:0; border:0; }
+.cycle-form-footer { position:absolute; z-index:5; inset:auto 0 0; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--mf-border); background:var(--mf-surface); }
+.cycle-form-footer > .mf-button { display:block; width:100%; min-height:52px; margin:0; padding:12px; font-size:15px; }
+.cycle-form-footer .transaction-cancel { margin-top:4px; min-height:44px; color:var(--mf-muted); }
+.cycle-field .mf-smart-trigger { justify-content:flex-start; min-height:60px; border:0; gap:12px; background:color-mix(in srgb,var(--mf-link) 7%,var(--mf-surface)); font-weight:600; }
+.cycle-field .mf-smart-trigger > span:not(.cycle-cut-icon) { flex:1; min-width:0; }
+.cycle-cut-icon { display:grid; place-items:center; flex:0 0 34px; width:34px; height:34px; border-radius:10px; background:var(--mf-surface); color:var(--mf-link); }
+.cycle-cut-icon .f7-icons { font-size:21px; }
+@media(min-width:768px) { .cycle-current,.cycle-preview,.cycle-field { padding:22px; } }
