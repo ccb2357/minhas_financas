@@ -22,8 +22,8 @@ class CategoriesSeederTest extends TestCase
         $original = $existing->fresh()->getRawOriginal();
         $this->seed(CategoriesSeeder::class);
         $this->seed(CategoriesSeeder::class);
-        $this->assertDatabaseCount('categories', 54);
-        $this->assertSame(16, $user->categories()->where('type', 'income')->count());
+        $this->assertDatabaseCount('categories', 53);
+        $this->assertSame(15, $user->categories()->where('type', 'income')->count());
         $this->assertSame(38, $user->categories()->where('type', 'expense')->count());
         $this->assertSame($original, $existing->fresh()->getRawOriginal());
         $this->assertSame($before, $user->fresh()->getRawOriginal());
