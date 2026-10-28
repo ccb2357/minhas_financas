@@ -191,7 +191,7 @@ export function mountDateFields(root, app) {
         input.before(wrapper);wrapper.append(input,button);input.classList.add('mf-date-native');input.tabIndex=-1;
         let sheet, destroyed=false;
         function sync() {
-            text.textContent = monthOnly ? (validMonth(input.value)?monthLabel(input.value):'Selecione o mês') : (dateText(input.value)||'Selecione a data');
+            text.textContent = input.dataset.dateLabel || (monthOnly ? (validMonth(input.value)?monthLabel(input.value):'Selecione o mês') : (dateText(input.value)||'Selecione a data'));
             button.disabled=input.matches(':disabled');button.setAttribute('aria-label',`${title}: ${text.textContent}`);
             for (const attr of ['aria-invalid','aria-describedby']) { const val=input.getAttribute(attr);if(val)button.setAttribute(attr,val);else button.removeAttribute(attr); }
             button.classList.toggle('mf-input-invalid',input.classList.contains('mf-input-invalid'));

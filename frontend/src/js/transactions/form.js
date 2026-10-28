@@ -24,7 +24,7 @@ export function openTransactionForm(ctx, { transaction = null, draft = null, pre
     const previousFocus = document.activeElement;
     const popup = ctx.app.popup.create({
         closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
-        content: `<div class="popup transaction-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="transaction-popup-scroll"><div class="transaction-form-container${editing ? '' : ' finance-container transaction-create-form'}">${editing ? `<header class="transaction-form-header"><button type="button" class="icon-button" data-tx-close aria-label="Voltar">${icon('chevron_left')}</button><h2 id="${prefix}-title">Editar lançamento</h2><span></span></header>` : pageHeader('Novo lançamento', 'Registre suas entradas e saídas')}<form id="${prefix}" novalidate><fieldset><div class="transaction-type-picker" role="group" aria-label="Tipo de lançamento">${[['income', 'Entrada', 'arrow_up'], ['expense', 'Saída', 'arrow_down']].map(([value, label, glyph]) => `<button type="button" data-tx-type="${value}" aria-pressed="${type === value}"><span class="transaction-type-icon ${value}">${icon(glyph)}</span>${label}</button>`).join('')}</div><input type="hidden" name="type" id="${prefix}-type" value="${type}"><div id="${prefix}-type-error" class="field-error" hidden></div><section class="finance-card transaction-amount" data-field><label for="${prefix}-amount">Valor</label><div><span aria-hidden="true">R$</span><input id="${prefix}-amount" name="amount" data-mask="moedaBRL" type="text" inputmode="decimal" autocomplete="off" maxlength="22" placeholder="0,00" value="${initialValues ? amountText(initialValues.amount_cents) : ''}" aria-label="Valor em reais"></div><div id="${prefix}-amount-error" class="field-error" hidden></div></section><section class="finance-card transaction-fields"><div class="transaction-field" data-field><label for="${prefix}-description">Descrição</label><div class="transaction-input">${icon('doc_text')}<input type="text" id="${prefix}-description" name="description" maxlength="255" placeholder="Ex.: Salário, supermercado, aluguel..." value="${esc(initialValues?.description || '')}"></div><div id="${prefix}-description-error" class="field-error" hidden></div></div><div class="transaction-field" data-field><label for="${prefix}-category">Categoria</label><div class="transaction-input transaction-category-input"><span class="tx-category-icon" data-tx-category-icon>${icon('tag')}</span><select name="category_id" id="${prefix}-category" aria-describedby="${prefix}-category-note" disabled><option value="">Carregando categorias...</option></select></div><div id="${prefix}-category-error" class="field-error" hidden></div><p id="${prefix}-category-note" class="transaction-field-hint" data-tx-category-note role="status"></p><div class="transaction-category-actions"><button type="button" data-tx-categories-retry>Atualizar categorias</button><button type="button" data-tx-manage>Criar categoria</button></div></div><div class="transaction-field" data-field><label for="${prefix}-date">Data</label><div class="transaction-input">${icon('calendar')}<input type="date" name="transaction_date" id="${prefix}-date" min="1900-01-01" max="2100-12-31" value="${esc(initialValues?.transaction_date || todayBrazil())}"></div><div id="${prefix}-date-error" class="field-error" hidden></div></div><div class="transaction-field" data-field><label for="${prefix}-notes">Observação <span>(opcional)</span></label><div class="transaction-input transaction-notes">${icon('doc_text')}<textarea id="${prefix}-notes" name="notes" maxlength="2000" placeholder="Adicione uma observação...">${esc(initialValues?.notes || '')}</textarea></div><small class="transaction-note-count" data-tx-note-count></small><div id="${prefix}-notes-error" class="field-error" hidden></div></div></section></fieldset><p class="auth-error transaction-error" role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary transaction-save" data-tx-save>${icon('checkmark_alt')}<span>Salvar lançamento</span></button>${editing ? `<button type="button" class="transaction-delete" data-tx-delete>${icon('trash')} Excluir lançamento</button>` : ''}<button type="button" class="transaction-cancel" data-tx-close>Cancelar</button></form></div></div></div>`,
+        content: `<div class="popup transaction-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="transaction-popup-scroll"><div class="transaction-form-container finance-container transaction-create-form">${pageHeader(editing ? 'Editar lançamento' : 'Novo lançamento', editing ? 'Atualize os dados do seu lançamento' : 'Registre suas entradas e saídas')}<form id="${prefix}" novalidate><fieldset><div class="transaction-type-picker" role="group" aria-label="Tipo de lançamento">${[['income', 'Entrada', 'arrow_up'], ['expense', 'Saída', 'arrow_down']].map(([value, label, glyph]) => `<button type="button" data-tx-type="${value}" aria-pressed="${type === value}"><span class="transaction-type-icon ${value}">${icon(glyph)}</span>${label}</button>`).join('')}</div><input type="hidden" name="type" id="${prefix}-type" value="${type}"><div id="${prefix}-type-error" class="field-error" hidden></div><section class="finance-card transaction-amount" data-field><label for="${prefix}-amount">Valor</label><div><span aria-hidden="true">R$</span><input id="${prefix}-amount" name="amount" data-mask="moedaBRL" type="text" inputmode="decimal" autocomplete="off" maxlength="22" placeholder="0,00" value="${initialValues ? amountText(initialValues.amount_cents) : ''}" aria-label="Valor em reais"></div><div id="${prefix}-amount-error" class="field-error" hidden></div></section><section class="finance-card transaction-fields"><div class="transaction-field" data-field><label for="${prefix}-description">Descrição</label><div class="transaction-input">${icon('doc_text')}<input type="text" id="${prefix}-description" name="description" maxlength="255" placeholder="Ex.: Salário, supermercado, aluguel..." value="${esc(initialValues?.description || '')}"></div><div id="${prefix}-description-error" class="field-error" hidden></div></div><div class="transaction-field" data-field><label for="${prefix}-category">Categoria</label><div class="transaction-input transaction-category-input"><span class="tx-category-icon" data-tx-category-icon>${icon('tag')}</span><select name="category_id" id="${prefix}-category" aria-describedby="${prefix}-category-note" disabled><option value="">Carregando categorias...</option></select></div><div id="${prefix}-category-error" class="field-error" hidden></div><p id="${prefix}-category-note" class="transaction-field-hint" data-tx-category-note role="status"></p></div><div class="transaction-field" data-field><label for="${prefix}-date">Data</label><div class="transaction-input">${icon('calendar')}<input type="date" name="transaction_date" id="${prefix}-date" min="1900-01-01" max="2100-12-31" value="${esc(initialValues?.transaction_date || todayBrazil())}"></div><div id="${prefix}-date-error" class="field-error" hidden></div></div><div class="transaction-field" data-field><label for="${prefix}-notes">Observação <span>(opcional)</span></label><div class="transaction-input transaction-notes">${icon('doc_text')}<textarea id="${prefix}-notes" name="notes" maxlength="2000" placeholder="Adicione uma observação...">${esc(initialValues?.notes || '')}</textarea></div><div id="${prefix}-notes-error" class="field-error" hidden></div></div></section></fieldset><p class="auth-error transaction-error" role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary transaction-save" data-tx-save><span>Salvar lançamento</span></button>${editing ? `<button type="button" class="transaction-delete" data-tx-delete>${icon('trash')} Excluir lançamento</button>` : ''}<button type="button" class="transaction-cancel" data-tx-close>Cancelar</button></form></div></div></div>`,
         on: {
             closed(instance) {
                 if (!alive) return;
@@ -41,14 +41,13 @@ export function openTransactionForm(ctx, { transaction = null, draft = null, pre
             },
         },
     });
-    if (!editing) popup.el.querySelector('.page-hero h1').id = `${prefix}-title`;
+    popup.el.querySelector('.page-hero h1').id = `${prefix}-title`;
     const form = popup.el.querySelector('form');
     if (preview) {
         const notice = document.createElement('p');
         notice.className = 'reconciliation-preview-note';
         notice.textContent = 'Demonstração: este lançamento não será gravado nas suas finanças.';
         form.prepend(notice);
-        form.querySelector('[data-tx-manage]').hidden = true;
     }
     const smartSelects = mountSmartSelects(form, ctx.app);
     const dateFields = mountDateFields(form, ctx.app);
@@ -111,7 +110,7 @@ export function openTransactionForm(ctx, { transaction = null, draft = null, pre
             if (!alive) return;
             if (error.status === 401) { ctx.expireSession(); return; }
             failed = true;
-            form.querySelector('[data-tx-category-note]').textContent = 'Não foi possível carregar as categorias. Confira sua conexão e tente atualizar.';
+            form.querySelector('[data-tx-category-note]').textContent = 'Não foi possível carregar as categorias. Confira sua conexão e reabra este formulário para tentar novamente.';
         } finally {
             if (alive) { loading = false; renderCategories(preferred); }
         }
@@ -168,7 +167,7 @@ export function openTransactionForm(ctx, { transaction = null, draft = null, pre
         notes: { selector: `#${prefix}-notes`, errorsContainer: `#${prefix}-notes-error`, rules: [rules.maxLength(2000)] },
     }, {
         isBusy: () => busy || loading || failed || confirming || closing,
-        onInput() { errorBox.hidden = true; form.querySelector('[data-tx-note-count]').textContent = `${fields.notes.value.length}/2000`; },
+        onInput() { errorBox.hidden = true; },
         onValid() {
             const data = { type, amount_cents: amountMask.getCents(), category_id: Number(select.value),
                 description: fields.description.value.trim(), transaction_date: fields.transaction_date.value, notes: fields.notes.value.trim() || null };
@@ -186,8 +185,6 @@ export function openTransactionForm(ctx, { transaction = null, draft = null, pre
             renderCategories(''); validation.reset();
         }
         if (target.hasAttribute('data-tx-close')) confirmLeave(() => {});
-        if (target.hasAttribute('data-tx-categories-retry') && !loading) void loadCategories();
-        if (target.hasAttribute('data-tx-manage')) confirmLeave(() => ctx.navigate('/categorias/'));
         if (target.hasAttribute('data-tx-delete')) {
             confirming = true;
             confirmation = ctx.app.dialog.create({ animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches, title: 'Excluir lançamento?', text: `“${esc(transaction.description)}” será removido do Histórico e dos cálculos.`, buttons: [
@@ -208,7 +205,7 @@ export function openTransactionForm(ctx, { transaction = null, draft = null, pre
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
     }, { signal: listeners.signal });
-    form.querySelector('[data-tx-note-count]').textContent = `${fields.notes.value.length}/2000`;
+   
     popup.open(!window.matchMedia('(prefers-reduced-motion: reduce)').matches); void loadCategories();
     return {
         close(force = false) { if (force) { afterClose = undefined; popup.close(false); } else confirmLeave(() => {}); },

@@ -30,7 +30,7 @@
 .goals-popup { --goal-footer-space:145px; background:var(--mf-background); }
 .dark #app .goals-popup { background:var(--mf-background); }
 .goals-popup-scroll { position:absolute; inset:0 0 calc(var(--goal-footer-space) + env(safe-area-inset-bottom)); overflow-y:auto; overscroll-behavior:contain; padding:max(16px,env(safe-area-inset-top)) 16px 24px; }
-.goal-detail .goals-popup-scroll { inset:0 0 calc(77px + env(safe-area-inset-bottom)); padding-bottom:24px; }
+.goal-detail .goals-popup-scroll { inset:0; padding-bottom:max(24px,env(safe-area-inset-bottom)); }
 .finance-container.goals-popup-content { padding:0; max-width:580px; }
 .goals-popup-footer { position:absolute; inset:auto 0 0; padding:12px 16px calc(12px + env(safe-area-inset-bottom)); border-top:1px solid var(--mf-border); background:var(--mf-surface); display:grid; gap:8px; }
 .goals-popup-footer .mf-button { min-height:52px; padding:12px; font-size:15px; gap:6px; }
@@ -82,12 +82,15 @@
 .goal-money { display:flex; align-items:center; gap:10px; min-width:0; min-height:62px; border:1px solid var(--mf-border); padding:12px; border-radius:14px; background:var(--mf-surface); }
 .goal-money > span { color:var(--mf-muted); font-size:18px; flex:none; line-height:1; }
 .goal-money > input { min-width:0; width:100%; padding:0; margin:0; border:0; background:transparent; color:var(--mf-title); font-family:inherit; font-size:25px; line-height:1; font-weight:650; }
-.goal-choose-icon { display:flex; align-items:center; width:100%; gap:12px; border:0; padding:0 0 16px; border-bottom:1px solid var(--mf-border); background:transparent; cursor:pointer; font:inherit; text-align:left; }
-.goal-choose-icon > span:first-child { flex:1; }
-.goal-choose-icon strong, .goal-choose-icon small { display:block; }
-.goal-choose-icon strong { color:var(--mf-title); font-size:15px; }
-.goal-choose-icon small { color:var(--mf-muted); margin-top:6px; font-size:13px; }
-.goal-choose-icon > .f7-icons { color:var(--mf-muted); font-size:16px; }
+.goal-icon-field { margin-top:0; }
+.goal-choose-icon { display:flex; align-items:center; width:100%; min-width:0; min-height:60px; gap:13px; padding:11px 13px; border:1px solid #e1e8f5; border-radius:12px; background:#f8faff; color:var(--mf-title); cursor:pointer; font:inherit; font-size:16px; text-align:left; }
+.goal-choose-icon > [data-goal-icon-label] { flex:1; min-width:0; overflow-wrap:anywhere; }
+.goal-icon-choice-preview { display:grid; place-items:center; flex:none; width:36px; height:36px; border-radius:50%; color:#2463eb; background:color-mix(in srgb,#2463eb 12%,white); }
+.goal-icon-choice-preview .f7-icons { font-size:24px; }
+.goal-choose-icon > .f7-icons { color:var(--mf-muted); font-size:13px; flex:none; }
+.goal-deadline-field { margin-top:20px; }
+.dark #app .goal-choose-icon { background:var(--mf-raised); border-color:var(--mf-border); }
+.dark #app .goal-icon-choice-preview { color:var(--mf-link); background:var(--mf-blue-soft); }
 .goal-deadline-switch { display:flex; align-items:center; justify-content:space-between; gap:12px; color:var(--mf-title); font-size:15px; font-weight:650; }
 .goal-deadline-switch small { display:block; font-size:12px; font-weight:400; color:var(--mf-muted); margin-top:5px; }
 .goal-deadline-switch input { appearance:none; width:46px; height:28px; border:0; border-radius:20px; background:var(--mf-border); position:relative; flex:none; margin:0; cursor:pointer; }
@@ -105,3 +108,17 @@
 
 .goals-popup.goal-editor textarea[name="notes"]:focus,
 .goals-popup.goal-editor textarea[name="notes"]:focus-visible { outline:none; box-shadow:none; }
+
+/* Keep the name field neutral while typing, in both create and edit forms. */
+.goals-popup.goal-editor .goal-field > input[name="name"]:focus,
+.goals-popup.goal-editor .goal-field > input[name="name"]:focus-visible { outline:none; box-shadow:none; }
+
+/* All goal editors use the same scrolling actions as transaction and budget forms. */
+.goal-editor-inline .goals-popup-scroll { inset:0; padding-bottom:max(24px,env(safe-area-inset-bottom)); }
+.goal-form-actions .mf-button { min-height:59px; margin-top:20px; font-size:17px; }
+.goal-form-actions [data-goal-cancel] { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; min-height:48px; padding:13px; margin-top:12px; border:0; border-radius:13px; background:transparent; color:var(--mf-muted); font-size:14px; font-weight:600; }
+
+.goal-detail-actions .mf-button { min-height:59px; margin-top:20px; font-size:17px; }
+
+.goal-form-actions [data-goal-remove-movement] { display:flex; align-items:center; justify-content:center; width:100%; min-height:48px; padding:13px; margin-top:12px; border:0; border-radius:13px; background:#ffedf0; color:#b42a40; font-size:14px; font-weight:600; }
+.dark #app .goal-form-actions [data-goal-remove-movement] { background:var(--mf-danger-soft); color:var(--mf-expense); }

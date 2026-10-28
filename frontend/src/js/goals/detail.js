@@ -12,7 +12,7 @@ export function openGoalDetail(ctx, id, { onChanged, onClosed } = {}) {
     const popup = ctx.app.popup.create({
         animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         closeByBackdropClick: false, closeOnEscape: true, swipeToClose: false,
-        content: '<div class="popup goals-popup goal-detail" role="dialog" aria-modal="true" aria-label="Detalhes do objetivo"><div class="goals-popup-scroll"><main class="finance-container goals-popup-content"><div data-goal-detail-content></div><p class="goal-feedback" role="alert" hidden></p></main></div><footer class="goals-popup-footer goal-detail-footer"><button type="button" class="mf-button mf-button-primary" data-goal-back>Voltar aos objetivos</button></footer></div>',
+        content: '<div class="popup goals-popup goal-detail" role="dialog" aria-modal="true" aria-label="Detalhes do objetivo"><div class="goals-popup-scroll"><main class="finance-container goals-popup-content"><div data-goal-detail-content></div><p class="goal-feedback" role="alert" hidden></p><div class="goal-detail-actions"><button type="button" class="mf-button mf-button-primary" data-goal-back>Voltar aos objetivos</button></div></main></div></div>',
         on: {
             opened() { popup.el.querySelector('h1')?.focus({ preventScroll: true }); },
             closed(instance) {
