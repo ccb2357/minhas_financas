@@ -14,9 +14,12 @@ export function openUnbudgetedExpenses(ctx, month, onClosed) {
     const popup = ctx.app.popup.create({
         animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         closeByBackdropClick: true, closeOnEscape: true, swipeToClose: false,
-        content: `<div class="popup unbudgeted-popup" role="dialog" aria-modal="true" aria-labelledby="unbudgeted-title"><div class="unbudgeted-scroll"><div class="unbudgeted-content finance-container"><div class="unbudgeted-heading">${pageHeader('Sem orçamento', 'Gastos fora do planejamento')}</div><section class="finance-card unbudgeted-summary"><p class="unbudgeted-period">${esc(cycleDates(knownCycle(month)))}</p><strong class="unbudgeted-total" data-unbudgeted-total>—</strong><section class="unbudgeted-ranking" aria-label="Gastos por categoria"><h2>Gastos por categoria</h2><div data-unbudgeted-ranking></div></section></section><div class="finance-card unbudgeted-transactions"><ul class="transaction-list" data-unbudgeted-list></ul></div><div class="unbudgeted-state" role="status"></div><button type="button" class="mf-button mf-button-secondary" data-unbudgeted-more hidden>Carregar mais</button></div></div><footer class="unbudgeted-footer"><button type="button" class="mf-button mf-button-primary" data-unbudgeted-close>Voltar ao orçamento</button></footer></div>`,
+        content: `<div class="popup unbudgeted-popup" role="dialog" aria-modal="true" aria-labelledby="unbudgeted-title"><div class="unbudgeted-scroll"><div class="unbudgeted-content finance-container"><div class="unbudgeted-heading">${pageHeader('Sem orçamento', 'Gastos fora do planejamento')}</div><section class="finance-card unbudgeted-summary"><p class="unbudgeted-period">${esc(cycleDates(knownCycle(month)))}</p><strong class="unbudgeted-total" data-unbudgeted-total>—</strong><section class="unbudgeted-ranking" aria-label="Gastos por categoria"><h2>Gastos por categoria</h2><div data-unbudgeted-ranking></div></section></section><div class="finance-card unbudgeted-transactions"><ul class="transaction-list" data-unbudgeted-list></ul></div><div class="unbudgeted-state" role="status"></div><button type="button" class="mf-button mf-button-secondary" data-unbudgeted-more hidden>Carregar mais</button><div class="unbudgeted-actions"><button type="button" class="mf-button mf-button-primary" data-unbudgeted-close>Voltar ao orçamento</button></div></div></div></div>`,
         on: {
-            opened() { popup.el.querySelector('[data-unbudgeted-close]').focus(); },
+            opened() {
+                popup.el.querySelector('.unbudgeted-scroll').scrollTop = 0;
+                popup.el.querySelector('.page-hero h1').focus({ preventScroll: true });
+            },
             closed(instance) {
                 alive = false; revision++; events.abort();
                 const element = instance.el;

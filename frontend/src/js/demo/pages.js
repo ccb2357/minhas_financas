@@ -45,7 +45,7 @@ export function mountMore(root, ctx) {
         finally { signingOut = false; button.disabled = false; }
     };
     root.addEventListener('click', handler, { signal: events.signal });
-    ctx.events.addEventListener('profile:changed', () => { render(); root.querySelector('[data-settings-profile]').focus(); }, { signal: events.signal });
+    ctx.events.addEventListener('profile:changed', () => { render(); root.querySelector('[data-settings-profile]').focus({ preventScroll: true }); }, { signal: events.signal });
     render();
     return { refresh: render, destroy() { events.abort(); } };
 }

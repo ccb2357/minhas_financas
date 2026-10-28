@@ -24,9 +24,9 @@ export function minhasFinancasPwa() {
                     .filter(name => name.startsWith('assets/') && !name.endsWith('.map'))
                     .map(name => ({ url:'/' + name, digest:digest(readFileSync(resolve(directory,name))) }));
                 const manifest = JSON.parse(readFileSync(resolve(config.publicDir,'manifest.webmanifest'), 'utf8'));
-                const staticPaths = ['manifest.webmanifest','offline.html','offline.css','offline.js','icons/apple-touch-icon.png','icons/favicon-32.png',...manifest.icons.map(icon => icon.src.slice(1))];
+                const staticPaths = ['fonts/nunito-variable-114b3da0bf32.woff2','manifest.webmanifest','offline.html','offline.css','offline.js','icons/apple-touch-icon.png','icons/favicon-32.png',...manifest.icons.map(icon => icon.src.slice(1))];
                 for (const path of new Set(staticPaths)) {
-                    if (!/^(icons\/[a-z0-9-]+\.png|manifest\.webmanifest|offline\.(html|css|js))$/.test(path)) throw new Error('PWA: unexpected public resource');
+                    if (!/^(icons\/[a-z0-9-]+\.png|fonts\/nunito-variable-[a-f0-9]{12}\.woff2|manifest\.webmanifest|offline\.(html|css|js))$/.test(path)) throw new Error('PWA: unexpected public resource');
                     resources.push({ url:'/' + path, digest:digest(readFileSync(resolve(directory,path))) });
                 }
                 resources.sort((a,b) => a.url.localeCompare(b.url));

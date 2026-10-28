@@ -30,7 +30,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
                 if (!alive) return;
                 alive = false; confirmation?.close?.(false); events.abort(); categoryChoiceObserver.disconnect(); dateFields.destroy(); smartSelects.destroy(); validation?.destroy(); masks.destroy();
                 const element = instance.el; instance.destroy(); element.remove(); onClosed?.();
-                if (previousFocus?.isConnected) previousFocus.focus();
+                if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
                 afterClose?.();
             },
         },

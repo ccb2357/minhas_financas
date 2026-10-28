@@ -57,6 +57,8 @@ export function mountCharts(root, summary, history) {
     });
     const onTheme = () => { for (const {chart,option} of instances) if (!chart.isDisposed()) chart.setOption(themed(option), { notMerge:true }); };
     window.addEventListener(THEME_EVENT, onTheme);
+    // Canvas labels must be repainted if the local font finishes loading later.
+    document.fonts?.load('400 12px Nunito').then(onTheme).catch(() => {});
     const observer = new ResizeObserver(() => {
         for (const { chart, element } of instances) if (element.clientWidth && element.clientHeight && !chart.isDisposed()) chart.resize();
     });

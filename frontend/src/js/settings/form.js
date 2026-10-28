@@ -24,7 +24,7 @@ export function openSettingsForm(ctx, { mode = 'profile', onSaved, onPasswordCha
                 // Limpa também os campos revelados antes de remover o modal.
                 for (const input of instance.el.querySelectorAll('input')) input.value = '';
                 const element = instance.el; instance.destroy(); element.remove(); onClosed?.();
-                if (previousFocus?.isConnected) previousFocus.focus();
+                if (previousFocus?.isConnected) previousFocus.focus({ preventScroll: true });
                 afterClose?.();
             },
         },

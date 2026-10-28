@@ -43,7 +43,7 @@ export function openCategoryForm(ctx, { category = null, onSaved, onClosed } = {
                 instance.destroy();
                 element.remove();
                 onClosed?.();
-                if (originalFocus?.isConnected) originalFocus.focus();
+                if (originalFocus?.isConnected) originalFocus.focus({ preventScroll: true });
             },
         },
     });
