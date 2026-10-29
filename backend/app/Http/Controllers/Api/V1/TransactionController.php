@@ -21,7 +21,13 @@ class TransactionController extends Controller
         $calendar = app(\App\Services\FinancialCycles::class);
         $label = $calendar->selected($filters);
         $cycle = $calendar->forLabel($label);
-        $start = $calendar->start($cycle); $end = $calendar->endExclusive($cycle);
+        $range = $filters['range'] ?? 'month';
+        $firstLabel = match ($range) {
+            'three_months' => $label->subMonths(2),
+            'year' => $label->startOfYear(),
+            default => $label,
+        };
+        $start = $calendar->start($calendar->forLabel($firstLabel)); $end = $calendar->endExclusive($cycle);
         $query = $request->user()->transactions()->with('category')
             ->where('transaction_date', '>=', $start->format('Y-m-d'))
             ->where('transaction_date', '<', $end->format('Y-m-d'));
@@ -56,12 +62,14 @@ class TransactionController extends Controller
                     ])->values()->all(),
             ];
         }
-        $extra['meta']['period'] = $calendar->present($cycle);
+        $extra['meta']['period'] = array_replace($calendar->present($cycle), [
+            'range' => $range, 'start_date' => $start->toDateString(), 'end_date' => $end->subDay()->toDateString(),
+        ]);
 
         return TransactionResource::collection(
             $query->orderByDesc('transaction_date')->orderByDesc('id')
                 ->paginate($filters['per_page'] ?? 25)
-                ->appends($request->only(['year', 'month', 'type', 'category_id', 'search', 'per_page', 'unbudgeted']))
+                ->appends($request->only(['year', 'month', 'type', 'category_id', 'search', 'per_page', 'unbudgeted', 'range']))
         )->additional($extra);
     }
 

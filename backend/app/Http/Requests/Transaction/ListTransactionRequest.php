@@ -25,6 +25,8 @@ class ListTransactionRequest extends FormRequest
         return [
             'year' => ['required_with:month', 'integer', 'between:1900,2100'],
             'month' => ['required_with:year', 'integer', 'between:1,12'],
+            'range' => ['sometimes', 'required', Rule::in(['month', 'three_months', 'year']),
+                Rule::prohibitedIf(fn () => $this->boolean('unbudgeted') && $this->input('range') !== 'month')],
             'type' => ['sometimes', 'required', Rule::enum(FinancialType::class)],
             'category_id' => ['sometimes', 'bail', 'required', 'integer', 'min:1',
                 Rule::exists('categories', 'id')->where('user_id', $this->user()->id)],

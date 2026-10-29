@@ -69,3 +69,16 @@ test('resumo sem orçamento mostra todas as categorias sem duplicar o total', ()
     assert.doesNotMatch(html, /Demais categorias|spending-rank-total|Total de gastos/);
     assert.match(renderSpendingRanking(rows, 936), /spending-rank-total/);
 });
+
+
+test('links das categorias usam IDs e o grupo agregado não cria filtro falso', () => {
+    const rows = Array.from({ length: 5 }, (_, i) => item(i + 1, 100 + i));
+    const html = renderSpendingRanking(rows, 510, { categoryUrl: id => `/historico/?month=2026-10&tipo=expense&category_id=${id}` });
+    assert.equal((html.match(/class="link spending-rank-action"/g) || []).length, 4);
+    assert.match(html, /category_id=5/);
+    assert.match(html, /&amp;tipo=expense/);
+    assert.match(html, /spending-rank-other[^]*Demais categorias/);
+    assert.equal((renderSpendingRanking(rows, 510).match(/spending-rank-action/g) || []).length, 0);
+    const full = renderSpendingRanking(rows, 510, { limit: null, categoryUrl: id => `/historico/?category_id=${id}` });
+    assert.equal((full.match(/class="link spending-rank-action"/g) || []).length, 5);
+});

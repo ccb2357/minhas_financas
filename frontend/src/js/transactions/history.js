@@ -1,15 +1,19 @@
+import { cycleDates } from '../cycles/state.js';
 import { pageHeader } from '../shared/page-header.js';
 import { mountSmartSelects } from '../shared/smart-select.js';
 import { escapeHtml as esc, icon } from '../shared/html.js';
 import { moneyText } from '../shared/money.js';
-import { validMonth, dateText, dayLabel, todayBrazil } from '../shared/calendar.js';
+import { validMonth, monthLabel, dateText, dayLabel, todayBrazil } from '../shared/calendar.js';
 import { monthPicker, wireMonthPicker } from '../shared/month-picker.js';
 import { safeIcon, safeColor } from '../categories/catalog.js';
 import { listTransactions, getTransaction, categoryOptions, transactionError } from './api.js';
 
 export function mountHistory(root, ctx, route) {
     let type = ['income', 'expense'].includes(route.query?.tipo) ? route.query.tipo : '';
-    let category = '', search = '', rows = [], categories = [];
+    let category = /^[1-9]\d*$/.test(route.query?.category_id || '') && Number.isSafeInteger(Number(route.query.category_id)) ? String(route.query.category_id) : '';
+    let range = ['three_months', 'year'].includes(route.query?.range) ? route.query.range : 'month';
+    let search = typeof route.query?.search === 'string' ? route.query.search.slice(0, 255) : '';
+    let rows = [], categories = [], period = null;
     let revision = 0, alive = true, loading = false, page = 0, lastPage = 1, debounce;
     let optionsRevision = 0;
     if (validMonth(route.query?.month)) ctx.state.historyMonth = route.query.month;
@@ -24,7 +28,16 @@ export function mountHistory(root, ctx, route) {
     const more = root.querySelector('[data-history-more]');
     const searchInput = root.querySelector('input[type="search"]');
     const categoryStatus = root.querySelector('.history-category-status');
-    root.querySelector('[data-history-month]').innerHTML = monthPicker(ctx.state.historyMonth);
+    searchInput.value = search;
+    renderMonth();
+
+    function renderMonth() {
+        const box = root.querySelector('[data-history-month]');
+        box.innerHTML = monthPicker(ctx.state.historyMonth);
+        if (range === 'month') return;
+        const selected = period && `${period.year}-${String(period.month).padStart(2, '0')}` === ctx.state.historyMonth ? period : null;
+        box.querySelector('[data-month-open] > span').innerHTML = `${range === 'three_months' ? '3 ciclos' : 'Ano de ciclos'} · ${esc(monthLabel(ctx.state.historyMonth))}<small>${esc(cycleDates(selected))}</small>`;
+    }
 
     function categoryLabel() {
         const text = categorySelect.selectedOptions[0]?.textContent || 'Categorias';
@@ -56,6 +69,9 @@ export function mountHistory(root, ctx, route) {
         if (router?.currentRoute.path === '/historico/') {
             const query = new URLSearchParams({ month: ctx.state.historyMonth });
             if (type) query.set('tipo', type);
+            if (category) query.set('category_id', category);
+            if (search) query.set('search', search);
+            if (range !== 'month') query.set('range', range);
             const url = `/historico/?${query}`;
             if (router.currentRoute.url !== url) router.updateCurrentUrl(url);
         }
@@ -66,9 +82,10 @@ export function mountHistory(root, ctx, route) {
         if (!append) { rows = []; list.replaceChildren(); root.querySelector('[data-history-count]').textContent = ''; }
         stateBox.innerHTML = '<span class="mf-spinner" aria-hidden="true"></span><span>Carregando lançamentos...</span>';
         try {
-            const response = await listTransactions({ month: ctx.state.historyMonth, type, category, search, page: append ? page + 1 : 1 });
+            const response = await listTransactions({ month: ctx.state.historyMonth, type, category, search, range, page: append ? page + 1 : 1 });
             if (!alive || current !== revision) return;
             rows = append ? [...new Map([...rows, ...response.data].map(row => [row.id, row])).values()] : response.data;
+            period = response.meta.period; renderMonth();
             page = response.meta.current_page; lastPage = response.meta.last_page;
             root.querySelector('[data-history-count]').textContent = `${response.meta.total} ${response.meta.total === 1 ? 'lançamento encontrado' : 'lançamentos encontrados'}`;
             renderRows();
@@ -88,7 +105,8 @@ export function mountHistory(root, ctx, route) {
         try {
             const response = await categoryOptions('all', () => !alive || current !== optionsRevision);
             if (!alive || current !== optionsRevision) return;
-            categories = response; filters(); categoryStatus.hidden = true;
+            categories = response; const previous = category; filters(); categoryStatus.hidden = true;
+            if (previous !== category) void load();
         } catch (error) {
             if (!alive || current !== optionsRevision) return;
             if (error.status === 401) { ctx.expireSession(); return; }
@@ -99,7 +117,7 @@ export function mountHistory(root, ctx, route) {
 
     const unbindMonth = wireMonthPicker(root, () => ctx.state.historyMonth, month => {
         ctx.state.historyMonth = month;
-        root.querySelector('[data-history-month]').innerHTML = monthPicker(month);
+        period = null; renderMonth();
         feedback.hidden = true; void load();
     }, ctx.app);
     root.addEventListener('input', event => {
@@ -140,14 +158,14 @@ export function mountHistory(root, ctx, route) {
             if (search && !row.description.toLocaleLowerCase('pt-BR').includes(search.trim().toLocaleLowerCase('pt-BR'))) search = '';
         }
         searchInput.value = search; filters();
-        root.querySelector('[data-history-month]').innerHTML = monthPicker(ctx.state.historyMonth);
+        renderMonth();
         feedback.textContent = ctx.state.historyFeedback; feedback.hidden = !ctx.state.historyFeedback;
         if (root.closest('.page').classList.contains('page-current')) void load();
     }, { signal: events.signal });
 
     return {
         refresh() {
-            root.querySelector('[data-history-month]').innerHTML = monthPicker(ctx.state.historyMonth);
+            renderMonth();
             if (ctx.state.historyFeedback) { feedback.textContent = ctx.state.historyFeedback; feedback.hidden = !ctx.state.historyFeedback; }
             void loadOptions(); void load();
         },

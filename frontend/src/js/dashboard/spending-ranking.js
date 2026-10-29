@@ -12,17 +12,17 @@ export function spendingRanking(categories, total, { limit = 4 } = {}) {
     };
 }
 
-function rankingRow(name, amount, total, color, glyph, remaining = false) {
+function rankingRow(name, amount, total, color, glyph, remaining = false, href = '') {
     const percentage = total > 0 ? amount / total * 100 : 0;
     const share = percentage > 0 && percentage < 1 ? '<1%' : `${Math.round(percentage)}%`;
     const width = Math.min(100, Math.max(0, percentage));
-    return `<li class="spending-rank-row${remaining ? ' spending-rank-other' : ''}" style="--rank-color:${color}"><span class="spending-rank-icon" aria-hidden="true">${icon(glyph)}</span><div class="spending-rank-copy"><div class="spending-rank-heading"><span>${esc(name)}</span><strong>${money(amount)}</strong></div><div class="spending-rank-share"><span class="spending-rank-track" aria-hidden="true"><span style="width:${width}%"></span></span><span class="spending-rank-percent">${esc(share)}</span></div></div></li>`;
+    return `<li class="spending-rank-row${remaining ? ' spending-rank-other' : ''}" style="--rank-color:${color}">${href ? `<a class="link spending-rank-action" href="${esc(href)}" aria-label="Ver despesas de ${esc(name)} no histórico">` : ''}<span class="spending-rank-icon" aria-hidden="true">${icon(glyph)}</span><div class="spending-rank-copy"><div class="spending-rank-heading"><span>${esc(name)}</span><strong>${money(amount)}</strong></div><div class="spending-rank-share"><span class="spending-rank-track" aria-hidden="true"><span style="width:${width}%"></span></span><span class="spending-rank-percent">${esc(share)}</span></div></div>${href ? '</a>' : ''}</li>`;
 }
 
 export function renderSpendingRanking(categories, total, options = {}) {
     const ranking = spendingRanking(categories, total, options);
     const rows = ranking.leading.map(item => rankingRow(item.category.name, item.amount_cents, total,
-        safeColor(item.category.color), safeIcon(item.category.icon)));
+        safeColor(item.category.color), safeIcon(item.category.icon), false, options.categoryUrl?.(item.category.id) || ''));
     if (ranking.remaining > 0) rows.push(rankingRow('Demais categorias', ranking.remaining, total, '#94A3B8', 'ellipsis', true));
     return `${options.showTotal === false ? '' : `<div class="spending-rank-total"><span>Total de gastos no período</span><strong>${money(total)}</strong></div>`}${rows.length ? `<ul class="spending-rank-list">${rows.join('')}</ul>` : `<p class="spending-rank-empty">${esc(options.emptyMessage || 'Nenhuma despesa neste mês.')}</p>`}`;
 }

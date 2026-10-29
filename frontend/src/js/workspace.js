@@ -160,9 +160,8 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
 
     function updateNavigation(route) {
         const section = route.path?.split('/').filter(Boolean)[0] || 'inicio';
-        const navigationSection = ['categorias', 'conciliacao'].includes(section) ? 'mais' : section === 'relatorios' ? 'inicio' : section;
         for (const link of container.querySelectorAll('[data-section]')) {
-            const active = link.dataset.section === navigationSection;
+            const active = link.dataset.section === section;
             link.classList.toggle('nav-active', active);
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
