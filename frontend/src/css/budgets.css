@@ -172,10 +172,10 @@
 .budget-copy-dialog .mf-date-trigger { gap:10px; min-height:54px; border:0; border-radius:14px; background:color-mix(in srgb,var(--mf-link) 7%,var(--mf-surface)); font-size:15px; }
 .budget-copy-calendar { color:var(--mf-muted); flex:none; }
 .budget-copy-calendar .f7-icons { font-size:21px; }
-.budget-copy-dialog .mf-date-trigger > span:not(.budget-copy-calendar) { flex:1; min-width:0; text-align:left; }
-.budget-copy-period { margin:8px 0 18px; color:var(--mf-muted); font-size:12px; line-height:1.5; text-align:left; }
+.budget-copy-dialog .mf-date-trigger > span:not(.budget-copy-calendar) { flex:1; min-width:0; text-align:left; white-space:normal; overflow:visible; text-overflow:clip; font-size:13px; line-height:1.45; }
 .budget-copy-error { margin:12px 0; color:var(--mf-expense); font-size:13px; line-height:1.5; text-align:left; }
 .budget-copy-dialog .mf-button { display:block; width:100%; min-height:48px; padding:10px 12px; margin:0; font-size:15px; }
+.budget-copy-dialog [data-copy-confirm] { margin-top:18px; }
 .budget-copy-dialog .budget-cancel { margin-top:8px; color:var(--mf-muted); }
 .budget-copy-dialog button:disabled { opacity:.6; cursor:wait; }
 #app:has(.budget-copy-dialog.modal-in) .mf-month-sheet { z-index:15001; }

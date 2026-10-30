@@ -17,7 +17,7 @@ export function openBudgetCopy(ctx, { source: sourceMonth, summary, onSaved, onC
         cssClass: 'budget-copy-dialog', animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         title: 'Copiar orçamentos', text: `${monthLabel(source)} · ${summary.budget_count} ${summary.budget_count === 1 ? 'categoria' : 'categorias'}`,
         buttons: [], closeByBackdropClick: false,
-        content: `<form id="${id}" novalidate><label for="${id}-period">Ciclo de destino</label><input id="${id}-period" type="month" name="period" min="1900-01" max="2100-12" value="${initial}"><p class="budget-copy-period" data-copy-period></p><p class="budget-copy-error" data-copy-error role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary" data-copy-confirm>Confirmar</button><button type="button" class="budget-cancel" data-copy-cancel>Cancelar</button></form>`,
+        content: `<form id="${id}" novalidate><label for="${id}-period">Ciclo de destino</label><input id="${id}-period" type="month" name="period" min="1900-01" max="2100-12" value="${initial}"><p class="budget-copy-error" data-copy-error role="alert" tabindex="-1" hidden></p><button type="submit" class="mf-button mf-button-primary" data-copy-confirm>Confirmar</button><button type="button" class="budget-cancel" data-copy-cancel>Cancelar</button></form>`,
         on: {
             opened() { dialog.el.querySelector('.mf-date-trigger')?.focus({ preventScroll: true }); },
             closed(instance) {
@@ -41,13 +41,13 @@ export function openBudgetCopy(ctx, { source: sourceMonth, summary, onSaved, onC
         form.setAttribute('aria-busy', String(busy)); confirm.textContent = busy ? 'Copiando...' : 'Confirmar';
     }
     async function showPeriod() {
-        const current = ++revision, value = period.value, label = form.querySelector('[data-copy-period]');
+        const current = ++revision, value = period.value;
         error.hidden = true;
-        if (!validMonth(value)) { label.textContent = 'Selecione um ciclo válido.'; return; }
-        label.textContent = cycleDates(knownCycle(value));
+        if (!validMonth(value)) { period.dataset.dateLabel = 'Selecione um ciclo válido.'; return; }
+        period.dataset.dateLabel = cycleDates(knownCycle(value));
         if (knownCycle(value)) return;
-        try { await getCycleConfiguration(value); if (alive && current === revision) label.textContent = cycleDates(knownCycle(value)); }
-        catch { if (alive && current === revision) label.textContent = 'O período será confirmado ao copiar.'; }
+        try { await getCycleConfiguration(value); if (alive && current === revision) period.dataset.dateLabel = cycleDates(knownCycle(value)); }
+        catch { if (alive && current === revision) period.dataset.dateLabel = 'Período indisponível. Tente selecionar o ciclo novamente.'; }
     }
     function close(done) {
         if (!alive || closing) return;
