@@ -122,3 +122,11 @@
 
 .goal-form-actions [data-goal-remove-movement] { display:flex; align-items:center; justify-content:center; width:100%; min-height:48px; padding:13px; margin-top:12px; border:0; border-radius:13px; background:#ffedf0; color:#b42a40; font-size:14px; font-weight:600; }
 .dark #app .goal-form-actions [data-goal-remove-movement] { background:var(--mf-danger-soft); color:var(--mf-expense); }
+
+/* Fundo deslizante do seletor. */
+.goals-tabs { position: relative; isolation: isolate; }
+.goals-tabs::before { content: ''; position: absolute; z-index: -1; pointer-events: none; top: 5px; bottom: 5px; left: 5px; width: calc(50% - 8px); border-radius: 14px; background: var(--mf-primary); box-shadow: 0 4px 12px rgb(21 100 255 / 12%); transform: translateX(0); transition: transform 260ms cubic-bezier(.22, 1, .36, 1); }
+.goals-tabs button { transition: color 180ms ease; min-width: 0; }
+.goals-tabs button[aria-pressed="true"] { background: transparent; box-shadow: none; }
+.goals-tabs:has([data-goals-status="archived"][aria-pressed="true"])::before { transform: translateX(calc(100% + 6px)); }
+@media (prefers-reduced-motion: reduce) { .goals-tabs::before, .goals-tabs button { transition: none; } }

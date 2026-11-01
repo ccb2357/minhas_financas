@@ -89,3 +89,34 @@
 
 .transaction-form-container.transaction-create-form { padding:0; }
 .transaction-create-form .page-hero { margin-bottom:22px; }
+
+.transaction-input.transaction-description { background: var(--mf-surface, #fff); }
+.transaction-description input:focus, .transaction-description input:focus-visible { outline: none; box-shadow: none; }
+.dark #app .transaction-input.transaction-description:focus-within { border-color: var(--mf-border); box-shadow: none; }
+
+.transaction-input.transaction-notes { background: var(--mf-surface, #fff); }
+.transaction-notes textarea:focus, .transaction-notes textarea:focus-visible { outline: none; box-shadow: none; }
+.dark #app .transaction-input.transaction-notes:focus-within { border-color: var(--mf-border); box-shadow: none; }
+
+.transaction-input.transaction-date { background: var(--mf-surface, #fff); }
+.transaction-date .mf-date-trigger:focus, .transaction-date .mf-date-trigger:focus-visible { outline: none; box-shadow: none; }
+.dark #app .transaction-input.transaction-date:focus-within { border-color: var(--mf-border); box-shadow: none; }
+
+.transaction-input.transaction-value-input { background: var(--mf-surface, #fff); }
+.transaction-value-input .transaction-currency { flex-shrink: 0; color: #929db8; font-size: 16px; font-weight: 600; line-height: 1.5; }
+.transaction-value-input input { font-variant-numeric: tabular-nums; }
+.transaction-value-input input:focus, .transaction-value-input input:focus-visible { outline: none; box-shadow: none; }
+.dark #app .transaction-input.transaction-value-input:focus-within { border-color: var(--mf-border); box-shadow: none; }
+
+.transaction-value-input input, .transaction-value-input .transaction-currency { font-weight: 700; }
+.transaction-fields > .transaction-type-picker { margin: 0; }
+
+/* O fundo selecionado desliza sem deslocar os botões. */
+.transaction-type-picker { position: relative; isolation: isolate; }
+.transaction-type-picker::before { content: ''; position: absolute; z-index: -1; pointer-events: none; top: 3px; bottom: 3px; left: 3px; width: calc(50% - 4.5px); border-radius: 16px; background: linear-gradient(115deg, #1870ff, #125dff); box-shadow: 0 4px 14px rgb(21 100 255 / 16%); transform: translateX(0); transition: transform 260ms cubic-bezier(.22, 1, .36, 1); }
+.transaction-type-picker:has([data-tx-type="expense"][aria-pressed="true"])::before { transform: translateX(calc(100% + 3px)); }
+.transaction-type-picker button { transition: color 180ms ease; }
+.transaction-type-picker button[aria-pressed="true"] { background: transparent; box-shadow: none; }
+@media (prefers-reduced-motion: reduce) {
+    .transaction-type-picker::before, .transaction-type-picker button { transition: none; }
+}

@@ -20,3 +20,12 @@ export function dashboardData(data) {
 export function resultChange(current, previous) {
     return previous > 0 ? Math.round((current - previous) / previous * 100) : null;
 }
+
+export function incomeUsage(income, expense) {
+    const percent = income > 0 ? expense / income * 100 : expense > 0 ? null : 0;
+    return {
+        percent,
+        progress: percent === null ? 100 : Math.max(0, Math.min(100, percent)),
+        tone: percent === null || percent > 85 ? 'red' : percent > 60 ? 'orange' : 'green',
+    };
+}

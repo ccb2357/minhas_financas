@@ -23,3 +23,11 @@ export function budgetRingTone(value) {
     if (value <= 90) return 'orange';
     return 'red';
 }
+
+// Percentual inteiro apenas no centro dos donuts; cálculos mantêm a precisão.
+export function ringPercentLabel(value) {
+    if (!Number.isFinite(value)) return '—';
+    const rounded = Math.round(value);
+    const full = `${new Intl.NumberFormat('pt-BR', { maximumFractionDigits: 0 }).format(rounded)}%`;
+    return full.length <= 8 ? full : `${new Intl.NumberFormat('pt-BR', { notation: 'compact', maximumFractionDigits: 0 }).format(rounded)}%`;
+}

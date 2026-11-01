@@ -106,3 +106,12 @@
     .category-live-preview .category-avatar { width: 56px; height: 56px; flex-basis: 56px; }
     .category-live-preview .f7-icons { font-size: 32px; }
 }
+
+/* Fundo deslizante do seletor. */
+.category-tabs { position: relative; isolation: isolate; }
+.category-tabs::before { content: ''; position: absolute; z-index: -1; pointer-events: none; top: 3px; bottom: 3px; left: 3px; width: calc(33.333333% - 4px); border-radius: 21px; background: linear-gradient(115deg, #1870ff, #125dff); box-shadow: 0 4px 12px rgb(21 100 255 / 12%); transform: translateX(0); transition: transform 260ms cubic-bezier(.22, 1, .36, 1); }
+.category-tabs button { transition: color 180ms ease; min-width: 0; }
+.category-tabs button[aria-pressed="true"] { background: transparent; box-shadow: none; }
+.category-tabs:has([data-category-type="income"][aria-pressed="true"])::before { transform: translateX(calc(100% + 3px)); }
+.category-tabs:has([data-category-type="expense"][aria-pressed="true"])::before { transform: translateX(calc(200% + 6px)); }
+@media (prefers-reduced-motion: reduce) { .category-tabs::before, .category-tabs button { transition: none; } }

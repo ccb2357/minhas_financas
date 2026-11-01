@@ -23,7 +23,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     const popup = ctx.app.popup.create({
         animate: !window.matchMedia('(prefers-reduced-motion: reduce)').matches,
         closeByBackdropClick: false, closeOnEscape: false, swipeToClose: false,
-        content: `<div class="popup budget-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="budget-popup-scroll"><div class="budget-form-container finance-container">${pageHeader(editing ? 'Editar orçamento' : 'Novo orçamento', editing ? 'Ajuste seu limite por ciclo' : 'Planeje seus gastos por ciclo')}<form id="${prefix}" novalidate><fieldset><section class="finance-card budget-form-card"><div class="budget-field" data-field><label for="${prefix}-period">Ciclo do orçamento</label><input id="${prefix}-period" name="period" type="month" min="1900-01" max="2100-12" value="${esc(selectedMonth)}" ${editing ? 'disabled' : ''}><div class="budget-error-slot"><div class="field-error" id="${prefix}-period-error" hidden></div></div></div><div class="budget-field" data-field><label for="${prefix}-category">Categoria de despesa</label><select id="${prefix}-category" name="category_id" disabled>${editing ? `<option value="${budget.category_id}" data-option-icon="${safeIcon(budget.category.icon)}" data-option-color="${safeColor(budget.category.color)}">${esc(budget.category.name)}${budget.category.is_active ? '' : ' (inativa)'}</option>` : '<option value="">Carregando categorias...</option>'}</select><div class="budget-error-slot"><div class="field-error" id="${prefix}-category-error" hidden></div></div><p class="budget-category-note" data-budget-category-note role="status" ${editing ? 'hidden' : ''}></p><button type="button" class="budget-options-retry" data-budget-options-retry hidden>Tentar novamente</button></div><div class="budget-field budget-limit-field" data-field><label for="${prefix}-limit">Limite do ciclo</label><div><span aria-hidden="true">R$</span><input id="${prefix}-limit" name="limit" data-mask="moedaBRL" type="text" inputmode="decimal" autocomplete="off" maxlength="22" placeholder="0,00" aria-label="Limite do ciclo em reais" value="${editing ? amountText(budget.limit_cents) : ''}"></div><div class="budget-error-slot"><div class="field-error" id="${prefix}-limit-error" hidden></div></div></div></section></fieldset><p class="auth-error budget-form-error" role="alert" tabindex="-1" hidden></p><div class="budget-form-actions"><button type="submit" class="mf-button mf-button-primary budget-save" data-budget-save>Salvar orçamento</button>${editing ? `<button type="button" class="budget-remove" data-budget-remove>${icon('trash')} Remover orçamento</button>` : ''}<button type="button" class="budget-cancel" data-budget-close>Cancelar</button></div></form></div></div></div>`,
+        content: `<div class="popup budget-popup" role="dialog" aria-modal="true" aria-labelledby="${prefix}-title"><div class="budget-popup-scroll"><div class="budget-form-container finance-container">${pageHeader(editing ? 'Editar orçamento' : 'Novo orçamento', editing ? 'Ajuste seu limite por ciclo' : 'Planeje seus gastos por ciclo')}<form id="${prefix}" novalidate><fieldset><section class="finance-card budget-form-card"><div class="budget-field" data-field><label for="${prefix}-period">Ciclo do orçamento</label><input id="${prefix}-period" name="period" type="month" min="1900-01" max="2100-12" value="${esc(selectedMonth)}" ${editing ? 'disabled' : ''}><div class="budget-error-slot"><div class="field-error" id="${prefix}-period-error" hidden></div></div></div><div class="budget-field" data-field><label for="${prefix}-category">Categoria de despesa</label><select id="${prefix}-category" name="category_id" disabled>${editing ? `<option value="${budget.category_id}" data-option-icon="${safeIcon(budget.category.icon)}" data-option-color="${safeColor(budget.category.color)}">${esc(budget.category.name)}${budget.category.is_active ? '' : ' (inativa)'}</option>` : '<option value="">Carregando categorias...</option>'}</select><div class="budget-error-slot"><div class="field-error" id="${prefix}-category-error" hidden></div></div><p class="budget-category-note" data-budget-category-note role="status" ${editing ? 'hidden' : ''}></p><button type="button" class="budget-options-retry" data-budget-options-retry hidden>Tentar novamente</button></div><div class="budget-field budget-limit-field" data-field><label for="${prefix}-limit">Limite do ciclo</label><div><span aria-hidden="true">R$</span><input id="${prefix}-limit" name="limit" data-mask="moedaBRL" type="text" inputmode="decimal" autocomplete="off" maxlength="22" placeholder="0,00" aria-label="Limite do ciclo em reais" value="${editing ? amountText(budget.limit_cents) : ''}"></div><div class="budget-error-slot"><div class="field-error" id="${prefix}-limit-error" hidden></div></div></div><div class="budget-field" data-field><label for="${prefix}-notes">Observação</label><textarea id="${prefix}-notes" name="notes" rows="3" maxlength="2000">${esc(budget?.notes ?? '')}</textarea><div class="budget-error-slot"><div class="field-error" id="${prefix}-notes-error" hidden></div></div></div></section></fieldset><p class="auth-error budget-form-error" role="alert" tabindex="-1" hidden></p><div class="budget-form-actions"><button type="submit" class="mf-button mf-button-primary budget-save" data-budget-save>Salvar orçamento</button>${editing ? `<button type="button" class="budget-remove" data-budget-remove>${icon('trash')} Remover orçamento</button>` : ''}<button type="button" class="budget-cancel" data-budget-close>Cancelar</button></div></form></div></div></div>`,
         on: {
             opened() { popup.el.querySelector('h1').focus({ preventScroll: true }); },
             closed(instance) {
@@ -69,7 +69,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     }
     fields.period.addEventListener('change', () => { void showPeriod(); }, { signal: events.signal });
     void showPeriod();
-    function values() { return { period: fields.period.value, category_id: fields.category_id.value, limit: limitMask.getCents() ?? fields.limit.value.trim() }; }
+    function values() { return { period: fields.period.value, category_id: fields.category_id.value, notes: fields.notes.value.trim(), limit: limitMask.getCents() ?? fields.limit.value.trim() }; }
     const initial = JSON.stringify(values());
     const dirty = () => JSON.stringify(values()) !== initial;
     function setBusy(value) {
@@ -134,6 +134,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
         } finally { if (alive) setBusy(false); }
     }
     const schema = {
+        notes: { selector: `#${prefix}-notes`, errorsContainer: `#${prefix}-notes-error`, rules: [{ validator: value => [...value].length <= 2000, errorMessage: 'Use até 2.000 caracteres.' }] },
         limit_cents: { selector: `#${prefix}-limit`, errorsContainer: `#${prefix}-limit-error`, rules: [
             rules.required('Informe o limite por ciclo.'), { validator: () => limitMask.getCents() !== null, errorMessage: 'Informe de R$ 0,01 a R$ 999.999.999,99.' },
         ] },
@@ -148,7 +149,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
         isBusy: () => busy || loading || failed || confirming || closing,
         onInput() { errorBox.hidden = true; },
         onValid() {
-            const data = { limit_cents: limitMask.getCents() };
+            const data = { limit_cents: limitMask.getCents(), notes: fields.notes.value.trim() || null };
             if (!Number.isSafeInteger(data.limit_cents)) return;
             if (!editing) {
                 const [year, month] = fields.period.value.split('-').map(Number);
@@ -175,7 +176,7 @@ export function openBudgetForm(ctx, { budget = null, month = ctx.state.budgetMon
     popup.el.addEventListener('keydown', event => {
         if (event.key === 'Escape') { event.preventDefault(); confirmLeave(() => {}); }
         if (event.key !== 'Tab') return;
-        const controls = [...popup.el.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled)')].filter(item => item.offsetParent !== null);
+        const controls = [...popup.el.querySelectorAll('button:not(:disabled), input:not(:disabled), select:not(:disabled), textarea:not(:disabled)')].filter(item => item.offsetParent !== null);
         const first = controls[0], last = controls.at(-1);
         if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
         else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }

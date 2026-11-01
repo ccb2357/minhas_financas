@@ -14,6 +14,7 @@ class BudgetResource extends JsonResource
             'financial_cycle_id' => $this->financial_cycle_id, 'id' => $this->id, 'category_id' => $this->category_id,
             'year' => $this->year, 'month' => $this->month,
             'limit_cents' => $this->limit_cents,
+            'notes' => $this->notes,
             ...BudgetMetrics::calculate($this->limit_cents, $this->spent_cents),
             'category' => new CategoryResource($this->whenLoaded('category')),
             'created_at' => $this->created_at?->toISOString(),

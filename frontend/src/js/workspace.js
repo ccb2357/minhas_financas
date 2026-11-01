@@ -131,15 +131,11 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
         },
         openTransaction(options = {}) {
             if (!state.user || editor) return;
-            if (!options.preview && !state.cycleConfiguration?.configured) { void context.openCycleSettings(); return; }
+            if (!state.cycleConfiguration?.configured) { void context.openCycleSettings(); return; }
             editor = openTransactionForm(context, {
                 ...options,
                 onClosed() { editor = null; options.onClosed?.(); },
                 onSaved(row, kind) {
-                    if (options.preview) {
-                        options.onSaved?.(row, kind);
-                        return;
-                    }
                     if (kind !== 'deleted') state.historyMonth = row.cycle_key || row.transaction_date.slice(0, 7);
                     state.historyFeedback = '';
                     state.dashboardFeedback = '';
@@ -166,7 +162,7 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
             if (active) link.setAttribute('aria-current', 'page');
             else link.removeAttribute('aria-current');
         }
-        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', conciliacao: 'Sincronização bancária', objetivos: 'Objetivos', orcamentos: 'Orçamento mensal' };
+        const titles = { inicio: 'Início', historico: 'Histórico', relatorios: 'Relatórios', mais: 'Mais', categorias: 'Categorias', objetivos: 'Objetivos', orcamentos: 'Orçamento mensal' };
         document.title = `${titles[section] || 'Início'} · Minhas Finanças`;
     }
 
@@ -233,7 +229,6 @@ export function createWorkspace(app, { logout, onSessionExpired, onPasswordChang
             financeView.classList.remove('view-main');
             authView.hidden = false;
             authView.classList.add('view-main');
-            delete state.reconciliationDemo;
             delete state.cycleConfiguration; clearCycles();
             state.user = null;
             state.budgetMonth = todayBrazil().slice(0, 7);

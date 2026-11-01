@@ -6,7 +6,7 @@ import { validMonth } from '../shared/calendar.js';
 import { monthPicker, wireMonthPicker } from '../shared/month-picker.js';
 import { safeColor, safeIcon } from '../categories/catalog.js';
 import { listBudgets, getBudget, budgetError } from './api.js';
-import { progressPercent, percentLabel, shortPercentLabel, budgetRingTone, budgetTone, remainingLabel } from './data.js';
+import { progressPercent, percentLabel, shortPercentLabel, ringPercentLabel, budgetRingTone, budgetTone, remainingLabel } from './data.js';
 
 export function mountBudgets(root, ctx, route) {
     let alive = true, revision = 0, loading = false, page = 0, lastPage = 1, rows = [];
@@ -25,8 +25,8 @@ export function mountBudgets(root, ctx, route) {
         feedback.textContent = message; feedback.hidden = !message; feedback.classList.toggle('budget-feedback-error', error);
     }
     function renderSummary(summary) {
-        const label = percentLabel(summary.used_percent), progress = progressPercent(summary.used_percent);
-        summaryBox.innerHTML = `<section class="budget-summary" aria-label="Orçamento total utilizado"><div class="budget-summary-copy"><p>Orçamento total utilizado</p><strong class="${label.length > 8 ? 'budget-percent-compact' : ''}" data-budget-percent>${label}</strong><span class="budget-summary-values" data-budget-summary-values>${summary.budget_count ? `${money(summary.spent_cents)} de ${money(summary.limit_cents)}` : 'Nenhum orçamento definido neste ciclo'}</span></div><div class="budget-summary-ring budget-ring-${budgetRingTone(summary.used_percent)} ${label.length > 6 ? 'budget-ring-compact' : ''}" role="img" aria-label="${summary.budget_count ? `${label} do orçamento utilizado` : 'Sem orçamento definido'}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="budget-ring-track" cx="60" cy="60" r="48"/><circle class="budget-ring-value" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="${progress} 100" opacity="${progress > 0 ? 1 : 0}"/></svg><strong>${summary.budget_count ? shortPercentLabel(summary.used_percent) : '—'}</strong></div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>`;
+        const label = percentLabel(summary.used_percent), ringLabel = ringPercentLabel(summary.used_percent), progress = progressPercent(summary.used_percent);
+        summaryBox.innerHTML = `<section class="budget-summary" aria-label="Orçamento total utilizado"><div class="budget-summary-copy"><p>Orçamento total utilizado</p><span class="budget-summary-values" data-budget-summary-values>${summary.budget_count ? `${money(summary.spent_cents)} de ${money(summary.limit_cents)}` : 'Nenhum orçamento definido neste ciclo'}</span></div><div class="budget-summary-ring budget-ring-${budgetRingTone(summary.used_percent)} ${ringLabel.length > 6 ? 'budget-ring-compact' : ''}" role="img" aria-label="${summary.budget_count ? `${label} do orçamento utilizado` : 'Sem orçamento definido'}"><svg viewBox="0 0 120 120" aria-hidden="true"><circle class="budget-ring-track" cx="60" cy="60" r="48"/><circle class="budget-ring-value" cx="60" cy="60" r="48" pathLength="100" stroke-dasharray="${progress} 100" opacity="${progress > 0 ? 1 : 0}"/></svg><strong>${summary.budget_count ? ringLabel : '—'}</strong></div><svg class="result-waves" aria-hidden="true" viewBox="0 0 600 130" preserveAspectRatio="none"><path d="M0 90C120-10 150 150 290 75S420 0 600 65V130H0Z"/><path d="M0 110C170 130 180-30 300 60S490 120 600 20"/></svg></section>`;
         cycleSummary = summary;
         root.querySelector('[data-budget-copy-cycle]').hidden = !(summary.budget_count > 0);
         const unbudgetedAmount = summary.unbudgeted_expense_cents;

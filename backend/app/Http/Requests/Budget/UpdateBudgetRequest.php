@@ -16,6 +16,7 @@ class UpdateBudgetRequest extends BudgetRequest
         // somente o limite; outra categoria/mês deve ter seu próprio orçamento.
         return [
             'limit_cents' => $this->limitRules(),
+            'notes' => ['nullable', 'string', 'max:2000'],
             'category_id' => ['prohibited'], 'year' => ['prohibited'], 'month' => ['prohibited'],
             ...$this->controlledFields(),
         ];

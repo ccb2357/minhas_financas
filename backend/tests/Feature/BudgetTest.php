@@ -436,4 +436,27 @@ class BudgetTest extends TestCase
         $this->assertSame($budget->id, $category->monthlyBudgets()->first()->id);
         $this->assertSame($budget->id, $user->monthlyBudgets()->first()->id);
     }
+
+    public function test_notes_can_be_created_edited_cleared_and_copied(): void
+    {
+        $user = $this->signIn();
+        $category = $this->category($user);
+        $response = $this->postJson(self::API, $this->payload($category, ['notes' => "Reserva para mercado\nInclui limpeza"]))->assertCreated();
+        $id = $response->json('data.id');
+        $response->assertJsonPath('data.notes', "Reserva para mercado\nInclui limpeza");
+        $this->patchJson(self::API.'/'.$id, ['limit_cents' => 20000, 'notes' => 'Revisado'])->assertOk()->assertJsonPath('data.notes', 'Revisado');
+        $this->patchJson(self::API.'/'.$id, ['limit_cents' => 25000])->assertOk()->assertJsonPath('data.notes', 'Revisado');
+        $this->postJson(self::API.'/copy', ['source_year' => 2026, 'source_month' => 10, 'year' => 2026, 'month' => 11])->assertCreated();
+        $this->assertDatabaseHas('monthly_budgets', ['user_id' => $user->id, 'month' => 11, 'notes' => 'Revisado']);
+        $this->patchJson(self::API.'/'.$id, ['limit_cents' => 25000, 'notes' => null])->assertOk()->assertJsonPath('data.notes', null);
+    }
+
+    public function test_notes_reject_invalid_type_and_excess_length(): void
+    {
+        $user = $this->signIn();
+        $category = $this->category($user);
+        foreach ([['invalid'], str_repeat('a', 2001)] as $notes) {
+            $this->postJson(self::API, $this->payload($category, ['notes' => $notes]))->assertUnprocessable()->assertJsonValidationErrors('notes');
+        }
+    }
 }

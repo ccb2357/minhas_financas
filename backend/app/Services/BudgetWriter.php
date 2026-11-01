@@ -38,7 +38,7 @@ class BudgetWriter
             }
             foreach ($budgets as $budget) {
                 $this->save($user, [
-                    'category_id' => $budget->category_id, 'limit_cents' => $budget->limit_cents,
+                    'category_id' => $budget->category_id, 'limit_cents' => $budget->limit_cents, 'notes' => $budget->notes,
                     'year' => (int) $data['year'], 'month' => (int) $data['month'],
                 ]);
             }
@@ -58,7 +58,7 @@ class BudgetWriter
             return DB::transaction(function () use ($user, $data, $id): MonthlyBudget {
                 if ($id !== null) {
                     $budget = $user->monthlyBudgets()->lockForUpdate()->findOrFail($id);
-                    $budget->update(['limit_cents' => $data['limit_cents']]);
+                    $budget->update(array_intersect_key($data, array_flip(['limit_cents', 'notes'])));
                     return $budget;
                 }
                 // O lock serializa criações para a mesma categoria e protege
@@ -77,6 +77,7 @@ class BudgetWriter
                 }
                 if ($existing) {
                     $existing->limit_cents = $data['limit_cents'];
+                    $existing->notes = $data['notes'] ?? null;
                     $existing->restore();
                     return $existing;
                 }
