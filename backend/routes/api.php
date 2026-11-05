@@ -59,6 +59,8 @@ Route::middleware('auth:sanctum')->group(function (): void {
     Route::delete('/budgets/{budget}', [BudgetController::class, 'destroy'])->whereNumber('budget');
 
 
+    Route::post('/transactions/voice/prepare', \App\Http\Controllers\Api\V1\TransactionVoiceController::class)->middleware('throttle:5,1');
+
     Route::get('/transactions', [TransactionController::class, 'index']);
     Route::post('/transactions', [TransactionController::class, 'store']);
     Route::get('/transactions/{transaction}', [TransactionController::class, 'show'])

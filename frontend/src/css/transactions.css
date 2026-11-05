@@ -120,3 +120,46 @@
 @media (prefers-reduced-motion: reduce) {
     .transaction-type-picker::before, .transaction-type-picker button { transition: none; }
 }
+
+/* Captura de voz com visualização do microfone em tempo real. */
+.transaction-has-voice .transaction-popup-scroll { padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+.transaction-has-voice:has(.voice-overlay:not([hidden])) .transaction-popup-scroll { overflow: hidden; }
+.transaction-voice { display: contents; }
+.transaction-voice [hidden], .voice-overlay[hidden], .voice-overlay [hidden] { display: none; }
+.transaction-voice-main { position: fixed; z-index: 20; right: calc(18px + env(safe-area-inset-right)); bottom: calc(20px + env(safe-area-inset-bottom)); display: grid; place-items: center; width: 48px; height: 48px; padding: 0; border: 0; border-radius: 50%; background: var(--mf-primary, #1564ff); color: #fff; box-shadow: 0 5px 16px rgb(21 100 255 / 24%); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.transaction-voice-main .f7-icons { font-size: 23px; }
+.transaction-voice-main:disabled { opacity: .5; cursor: default; }
+.voice-overlay { position: fixed; z-index: 30; inset: 0; display: flex; align-items: center; justify-content: center; padding: max(24px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(24px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left)); box-sizing: border-box; overflow-y: auto; overscroll-behavior: contain; touch-action: none; background: rgb(255 255 255 / 78%); -webkit-backdrop-filter: blur(9px); backdrop-filter: blur(9px); color: #102755; }
+.voice-overlay-content { display: flex; flex-direction: column; align-items: center; width: 100%; gap: 20px; }
+.voice-orbit { position: relative; display: grid; place-items: center; width: min(74vw, 300px); height: min(74vw, 300px); flex-shrink: 0; }
+.voice-orbit canvas { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+.voice-center-button { position: relative; display: grid; place-items: center; width: clamp(112px, 34vw, 140px); height: clamp(112px, 34vw, 140px); border: 1px solid rgb(255 255 255 / 50%); border-radius: 50%; padding: 0; color: white; background: linear-gradient(145deg, #04b6ff, #0754ec 75%); box-shadow: 0 7px 25px rgb(21 100 255 / 16%); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.voice-center-button .f7-icons { font-size: 44px; }
+.voice-center-button:disabled { cursor: default; }
+.voice-microphone { display: grid; place-items: center; }
+.voice-processing-spinner { display: none; width: 34px; height: 34px; box-sizing: border-box; border: 3px solid rgb(255 255 255 / 35%); border-top-color: #fff; border-radius: 50%; animation: voice-spin 800ms linear infinite; }
+.voice-overlay[data-voice-state="permission"] .voice-microphone, .voice-overlay[data-voice-state="processing"] .voice-microphone { display: none; }
+.voice-overlay[data-voice-state="permission"] .voice-processing-spinner, .voice-overlay[data-voice-state="processing"] .voice-processing-spinner { display: block; }
+.voice-clock { color: #102755; font-size: 30px; line-height: 1.2; font-weight: 800; font-variant-numeric: tabular-nums; letter-spacing: .025em; }
+.voice-stage { margin: 0; color: #61779b; font-size: 13px; }
+.transaction-voice-cancel { display: grid; place-items: center; flex-shrink: 0; margin-top: 14px; width: 48px; height: 48px; border: 0; border-radius: 50%; padding: 0; background: #ef4352; color: #fff; box-shadow: 0 5px 15px rgb(239 67 82 / 15%); cursor: pointer; -webkit-tap-highlight-color: transparent; }
+.transaction-voice-cancel .f7-icons { font-size: 23px; }
+@keyframes voice-spin { to { transform: rotate(360deg); } }
+@media (max-height: 500px) {
+    .voice-overlay-content { gap: 10px; }
+    .voice-orbit { width: 190px; height: 190px; }
+    .voice-center-button { width: 92px; height: 92px; }
+    .voice-center-button .f7-icons { font-size: 34px; }
+    .voice-clock { font-size: 24px; }
+    .transaction-voice-cancel { margin-top: 4px; }
+}
+@media (prefers-reduced-motion: reduce) { .voice-processing-spinner { animation: none; } }
+@media (max-height: 380px) {
+    .voice-overlay { padding-top: 16px; padding-bottom: 16px; }
+    .voice-overlay-content { gap: 8px; }
+    .voice-orbit { width: 140px; height: 140px; }
+    .voice-center-button { width: 76px; height: 76px; }
+    .voice-center-button .f7-icons { font-size: 29px; }
+    .voice-clock { font-size: 22px; }
+    .transaction-voice-cancel { width: 44px; height: 44px; }
+}
