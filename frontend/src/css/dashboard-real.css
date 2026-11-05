@@ -104,3 +104,25 @@
 
 /* Category rows keep their editorial layout while acting as history links. */
 .spending-rank-row > .spending-rank-action { grid-column:1 / -1; display:grid; grid-template-columns:inherit; align-items:center; gap:inherit; min-width:0; width:100%; color:inherit; text-decoration:none; -webkit-tap-highlight-color:transparent; }
+
+/* Cartão compacto aprovado: resultado à esquerda e anel à direita. */
+.dashboard-real .result-card { gap: 8px; min-height: 0; padding: 12px 16px; border-radius: 22px; background: linear-gradient(115deg, #1551ec, #2466fa); box-shadow: 0 6px 16px rgb(32 83 199 / 10%); }
+.dashboard-real .result-copy { flex: 1; min-width: 0; container-type: inline-size; }
+.dashboard-real .result-copy > p { margin-bottom: 10px; color: #e5efff; font-size: 13px; font-weight: 600; }
+.dashboard-real .result-copy > strong { font-size: clamp(20px, 14.7cqi, 68px); letter-spacing: normal; line-height: 1.25; font-weight: 800; white-space: nowrap; }
+.dashboard-real .result-card.result-card-long .result-copy > strong { font-size: clamp(12px, 10.8cqi, 56px); }
+.dashboard-real .dashboard-usage { flex-shrink: 0; display: grid; place-items: center; }
+.dashboard-usage .budget-summary-ring { flex-basis: auto; width: 84px; height: 84px; }
+.dashboard-usage .budget-summary-ring strong { color: #fff; }
+.dashboard-usage .budget-summary-ring.budget-ring-compact strong { font-size: 11px; }
+.dashboard-real .result-waves { opacity: .13; }
+@media (min-width: 760px) {
+    .dashboard-real .result-card { min-height: 0; padding: 18px 32px; gap: 24px; }
+    .dashboard-real .result-copy > p { font-size: 16px; }
+    .dashboard-usage .budget-summary-ring { width: 112px; height: 112px; }
+}
+@media (max-width: 359px) {
+    .dashboard-real .result-card { gap: 8px; padding: 10px 14px; min-height: 0; border-radius: 18px; }
+    .dashboard-real .result-copy > p { font-size: 12px; }
+    .dashboard-usage .budget-summary-ring { width: 72px; height: 72px; }
+}

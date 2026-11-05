@@ -24,50 +24,32 @@
 }
 
 .reports-real .summary-card { align-items: flex-start; }
-.reports-real .report-change { display: inline-flex; align-items: center; max-width: 100%; margin-top: 8px; padding: 4px 7px; border-radius: 10px; color: #617394; background: #f0f4fa; font-size: 11px; font-weight: 650; line-height: 1.4; overflow-wrap: anywhere; }
-.reports-real .report-change.favorable { color: #087a43; background: #e5f7ed; }
-.reports-real .report-change.unfavorable { color: #c02c43; background: #fff0f2; }
-.reports-real .summary-card .report-previous, .reports-real .summary-card .report-difference { font-size: 10px; line-height: 1.5; overflow-wrap: anywhere; }
-.report-comparison-period { margin: 8px 2px; font-size: 12px; line-height: 1.5; color: #7181a2; }
-.report-calendar-note { margin: 8px 0 13px; padding: 11px 13px; border: 1px solid #ffe3af; border-radius: 13px; background: #fff8ea; color: #8a6427; font-size: 12px; line-height: 1.7; }
-.report-result-comparison { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; gap: 10px 14px; margin: 10px 0 15px; padding: 14px; }
-.report-result-comparison > div { min-width: 0; }
-.report-result-comparison > div:first-child { flex: 1; }
-.report-result-comparison > div:first-child > span { display: block; color: #7181a2; font-size: 12px; }
-.report-result-comparison strong { display: block; margin-top: 4px; font-size: 21px; overflow-wrap: anywhere; }
-.report-result-change { flex: 1; text-align: right; }
-.report-result-change small { display: block; margin-top: 4px; color: #7181a2; font-size: 11px; line-height: 1.5; overflow-wrap: anywhere; }
-.report-result-comparison > p { flex-basis: 100%; margin: 0; color: #7181a2; font-size: 11px; line-height: 1.6; }
-.report-insights-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; margin: 12px 0; }
-.report-insight-card { display: flex; align-items: flex-start; gap: 10px; padding: 14px 12px; }
-.report-insight-card > div { min-width: 0; }
-.report-insight-icon { display: grid; place-items: center; flex: 0 0 36px; width: 36px; height: 36px; border-radius: 50%; color: var(--category-color); background: color-mix(in srgb, var(--category-color) 12%, white); }
+/* Resultado consolidado do período selecionado. */
+.reports-real .report-net-card { display: flex; align-items: center; gap: 16px; margin: 12px 0; padding: 20px; border: 1px solid color-mix(in srgb, currentColor 15%, transparent); background: linear-gradient(115deg, color-mix(in srgb, currentColor 7%, var(--mf-surface, white)), var(--mf-surface, white)); }
+.report-net-card.income { color: var(--mf-income, #05944a); }
+.report-net-card.expense { color: var(--mf-expense, #d13249); }
+.report-net-card.neutral { color: var(--mf-muted, #7181a2); }
+.report-net-icon { display: grid; place-items: center; flex: 0 0 48px; width: 48px; height: 48px; border-radius: 16px; background: color-mix(in srgb, currentColor 12%, transparent); }
+.report-net-icon .f7-icons { font-size: 30px; }
+.report-net-card > div { min-width: 0; }
+.report-net-card h2 { margin: 0; color: var(--mf-title); font-size: 14px; font-weight: 700; }
+.report-net-card strong { display: block; margin: 5px 0; font-size: clamp(24px, 6.8vw, 34px); font-weight: 800; line-height: 1.25; overflow-wrap: anywhere; }
+.report-net-card p { margin: 0; color: var(--mf-muted, #7181a2); font-size: 12px; }
+.reports-real .report-insight-card { display: flex; align-items: flex-start; gap: 12px; margin: 12px 0; padding: 18px 20px; }
+.report-insight-card > div { flex: 1; min-width: 0; }
+.report-insight-icon { display: grid; place-items: center; flex: 0 0 38px; width: 38px; height: 38px; border-radius: 12px; color: var(--category-color); background: color-mix(in srgb, var(--category-color) 9%, var(--mf-surface, white)); }
 .report-insight-icon .f7-icons { font-size: 23px; }
-.report-insight-card h2 { margin: 0 0 6px; color: var(--mf-title); font-size: 14px; line-height: 1.4; }
-.report-insight-name { margin: 0 0 5px; color: #64759a; font-size: 13px; line-height: 1.5; overflow-wrap: anywhere; }
-.report-insight-meta, .report-insight-empty, .report-insight-card small { display: block; margin: 0; color: #7181a2; font-size: 11px; line-height: 1.6; overflow-wrap: anywhere; }
-.report-insight-card small { margin-top: 5px; }
-.report-insight-card strong { display: block; margin-top: 8px; font-size: 19px; line-height: 1.4; overflow-wrap: anywhere; }
-@media (max-width: 759px) {
-    .report-insight-card { flex-direction: column; }
-}
-@media (max-width: 420px) {
-    .reports-real .summary-card-wide .report-change, .reports-real .summary-card-wide .report-previous, .reports-real .summary-card-wide .report-difference { grid-column: 1 / -1; }
-    .report-result-comparison strong { font-size: 17px; }
+.report-insight-card h2 { margin: 0 0 6px; color: var(--mf-muted, #7181a2); font-size: 12px; font-weight: 600; line-height: 1.4; }
+.report-insight-name { margin: 0 0 4px; color: var(--mf-title, #152347); font-size: 16px; font-weight: 700; line-height: 1.4; overflow-wrap: anywhere; }
+.report-insight-meta, .report-insight-empty { margin: 0; color: var(--mf-muted, #7181a2); font-size: 12px; line-height: 1.5; overflow-wrap: anywhere; }
+.report-insight-card strong { display: block; margin-top: 10px; font-size: 23px; font-weight: 750; line-height: 1.3; overflow-wrap: anywhere; }
+@media (max-width: 359px) {
+    .reports-real .report-insight-card { gap: 10px; padding: 16px; }
 }
 @media (min-width: 760px) {
-    .reports-real .report-change { font-size: 14px; }
-    .reports-real .summary-card .report-previous, .reports-real .summary-card .report-difference { font-size: 12px; }
-    .report-insights-grid { gap: 16px; margin: 16px 0; }
-    .report-insight-card { padding: 22px; gap: 16px; }
-    .report-insight-icon { flex-basis: 52px; width: 52px; height: 52px; }
-    .report-insight-icon .f7-icons { font-size: 30px; }
-    .report-insight-card h2 { font-size: 18px; }
-    .report-insight-name { font-size: 17px; }
-    .report-insight-meta, .report-insight-card small { font-size: 12px; }
+    .reports-real .report-insight-card { padding: 22px; }
+    .report-insight-name { font-size: 18px; }
     .report-insight-card strong { font-size: 26px; }
-    .report-result-comparison { padding: 18px 22px; }
-    .report-result-comparison strong { font-size: 26px; }
 }
 .report-comparison-scroll { width: 100%; overflow-x: auto; overscroll-behavior-x: contain; }
 .report-comparison-chart { width: 100%; height: 300px; }
@@ -75,3 +57,12 @@
 @media (min-width: 760px) {
     .report-comparison-chart { height: 330px; }
 }
+
+/* Fundo deslizante do seletor. */
+.report-period { position: relative; isolation: isolate; }
+.report-period::before { content: ''; position: absolute; z-index: -1; pointer-events: none; top: 3px; bottom: 3px; left: 3px; width: calc((100% - 6px) / 3); border-radius: 14px; background: #1564ff; box-shadow: 0 4px 12px rgb(21 100 255 / 12%); transform: translateX(0); transition: transform 260ms cubic-bezier(.22, 1, .36, 1); }
+.report-period button { transition: color 180ms ease; min-width: 0; }
+.report-period button[aria-pressed="true"] { background: transparent; box-shadow: none; }
+.report-period:has([data-report-range="three_months"][aria-pressed="true"])::before { transform: translateX(100%); }
+.report-period:has([data-report-range="year"][aria-pressed="true"])::before { transform: translateX(200%); }
+@media (prefers-reduced-motion: reduce) { .report-period::before, .report-period button { transition: none; } }

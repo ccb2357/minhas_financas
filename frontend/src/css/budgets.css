@@ -1,12 +1,12 @@
 .budgets-container .finance-header, .unbudgeted-content .finance-header { margin-bottom: 10px; }
 .budget-feedback { margin: 10px 2px; padding: 11px 13px; background: #e7f7ef; border-radius: 12px; color: #0c794a; font-size: 13px; line-height: 1.5; }
 .budget-feedback-error { color: #b3283c; background: #fff0f2; }
-.budget-summary { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 160px; padding: 18px; border-radius: 20px; color: #fff; background: linear-gradient(115deg, #1551ec, #2466fa); box-shadow: 0 6px 16px rgb(32 83 199 / 10%); }
+.budget-summary { position: relative; isolation: isolate; overflow: hidden; display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 0; padding: 12px 18px; border-radius: 20px; color: #fff; background: linear-gradient(115deg, #1551ec, #2466fa); box-shadow: 0 6px 16px rgb(32 83 199 / 10%); }
 .budget-summary-copy { min-width: 0; }
 .budget-summary-copy > p { display: flex; align-items: center; margin: 0; font-size: 13px; line-height: 1.4; }
-.budget-summary-copy > strong { display: block; margin: 4px 0 8px; font-size: clamp(36px, 11vw, 52px); line-height: 1.1; letter-spacing: -1px; overflow-wrap: anywhere; }
-.budget-summary-values { display: block; font-size: 12px; line-height: 1.6; overflow-wrap: anywhere; }
-.budget-summary-ring { position: relative; flex: 0 0 100px; width: 100px; height: 100px; }
+.budget-summary-copy > strong { display: block; margin: 4px 0 8px; font-size: clamp(32px, 9.5vw, 46px); line-height: 1.1; letter-spacing: -1px; overflow-wrap: anywhere; }
+.budget-summary-values { display: block; margin-top: 10px; font-size: 14px; font-weight: 700; line-height: 1.6; overflow-wrap: anywhere; }
+.budget-summary-ring { position: relative; flex: 0 0 84px; width: 84px; height: 84px; }
 .budget-summary-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
 .budget-summary-ring circle { fill: none; stroke-width: 14; }
 .budget-ring-track { stroke: rgb(255 255 255 / 23%); }
@@ -70,11 +70,11 @@
 .budget-popup button:disabled { opacity: .6; cursor: wait; }
 @media (max-width: 359px) {
     .budgets-container .finance-header h1, .unbudgeted-content .finance-header h1 { font-size: 19px; }
-    .budget-summary { padding: 15px; gap: 8px; }
+    .budget-summary { padding: 10px 15px; gap: 8px; }
     .budget-summary-copy > p { font-size: 11px; }
-    .budget-summary-copy > strong { font-size: 34px; }
-    .budget-summary-values { font-size: 11px; }
-    .budget-summary-ring { flex-basis: 80px; width: 80px; height: 80px; }
+    .budget-summary-copy > strong { font-size: 30px; }
+    .budget-summary-values { font-size: 13px; }
+    .budget-summary-ring { flex-basis: 72px; width: 72px; height: 72px; }
     .budget-summary-ring strong { font-size: 12px; }
     .finance-card.budget-card { gap: 9px; padding: 15px 11px; }
     .budget-category-icon { flex-basis: 34px; width: 34px; height: 34px; }
@@ -82,11 +82,11 @@
     .budget-card-values { font-size: 12px; }
 }
 @media (min-width: 760px) {
-    .budget-summary { min-height: 215px; padding: 27px 32px; border-radius: 25px; }
+    .budget-summary { min-height: 0; padding: 18px 32px; border-radius: 25px; }
     .budget-summary-copy > p { font-size: 20px; }
-    .budget-summary-copy > strong { font-size: 68px; }
-    .budget-summary-values { font-size: 19px; }
-    .budget-summary-ring { flex-basis: 145px; width: 145px; height: 145px; }
+    .budget-summary-copy > strong { font-size: 60px; }
+    .budget-summary-values { font-size: 21px; }
+    .budget-summary-ring { flex-basis: 112px; width: 112px; height: 112px; }
     .budget-summary-ring strong { font-size: 21px; }
     .budget-list { gap: 18px; }
     .finance-card.budget-card { padding: 23px; gap: 20px; border-radius: 25px; }
@@ -191,3 +191,7 @@
 .budget-popup .budget-category-note:empty { display:none; }
 
 .budget-form-actions .budget-cancel { gap:10px; min-height:48px; padding:13px; margin-top:12px; border:0; border-radius:13px; background:transparent; color:var(--mf-muted); font-size:14px; font-weight:600; }
+
+.budget-field > textarea { display: block; box-sizing: border-box; width: 100%; min-height: 96px; padding: 12px 13px; border: 1px solid var(--mf-border, #dfe7f4); border-radius: 13px; background: var(--mf-surface, #fff); color: var(--mf-title); font: inherit; font-size: 15px; line-height: 1.5; resize: vertical; }
+.budget-field > textarea:focus, .budget-field > textarea:focus-visible { outline: none; box-shadow: none; border-color: var(--mf-border, #dfe7f4); }
+.budget-field > label > span { color: var(--mf-muted, #7181a2); font-size: 12px; font-weight: 400; }

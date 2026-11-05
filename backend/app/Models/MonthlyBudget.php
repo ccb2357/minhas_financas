@@ -10,7 +10,7 @@ class MonthlyBudget extends Model
 {
     use SoftDeletes;
 
-    protected $fillable = ['category_id', 'year', 'month', 'limit_cents', 'financial_cycle_id'];
+    protected $fillable = ['category_id', 'year', 'month', 'limit_cents', 'notes', 'financial_cycle_id'];
 
     protected static function booted(): void
     {

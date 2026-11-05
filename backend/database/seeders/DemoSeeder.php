@@ -95,7 +95,6 @@ class DemoSeeder extends Seeder
             ['Farmácia', 'Medicamentos e higiene', 7800, 2, 1],
             ['Saúde', 'Consulta médica', 22000, 1, 4],
             ['Terapia e Bem-estar', 'Sessão de terapia', 12000, 2, 2],
-            ['Educação', 'Mensalidade de estudos', 29000, 1, 1],
             ['Cursos e Livros', 'Livro ou curso', 9500, 1, 3],
             ['Filhos', 'Atividades e material infantil', 13500, 1, 2],
             ['Pets', 'Ração e cuidados', 11000, 1, 2],
@@ -104,7 +103,7 @@ class DemoSeeder extends Seeder
             ['Lazer', 'Cinema e passeio', 9500, 2, 1],
             ['Academia', 'Mensalidade academia', 12990, 1, 1],
             ['Assinaturas', 'Streaming e serviços', 6990, 1, 1],
-            ['Jogos e Aplicativos', 'Aplicativo ou jogo', 3990, 1, 3],
+            ['Jogos e Apps', 'Aplicativo ou jogo', 3990, 1, 3],
             ['Gás', 'Botijão de gás', 12000, 1, 3],
             ['Manutenção do Veículo', 'Revisão do veículo', 48000, 1, 6],
             ['Casa e Manutenção', 'Reparos na residência', 22500, 1, 4],
@@ -119,8 +118,8 @@ class DemoSeeder extends Seeder
             ['Outras Despesas', 'Despesa eventual', 7500, 1, 4],
         ];
         $otherIncomes = ['Aluguéis recebidos', 'Aposentadoria e pensão', 'Benefícios e auxílios',
-            'Bônus e comissões', 'Cashback', 'Dividendos', 'Férias', 'Outras receitas',
-            'Prestação de Serviços', 'Presentes Recebidos', 'Reembolsos',
+            'Bônus e comissões', 'Cashback', 'Dividendos', 'Férias',
+            'Prestação de Serviços', 'Presentes', 'Reembolsos',
             'Resgates de Investimentos', 'Trabalhos Extras', 'Vendas'];
         $rows = [];
         $add = function (string $type, string $name, string $description, int $amount, Date $date) use (&$rows, $user, $category, $today): void {
@@ -157,7 +156,7 @@ class DemoSeeder extends Seeder
             'Energia Elétrica' => 21000, 'Internet' => 12000, 'Telefone e Celular' => 6500,
             'Supermercado' => 125000, 'Alimentação' => 18000, 'Restaurantes e Delivery' => 32000,
             'Combustível' => 52000, 'Transporte' => 13000, 'Plano de Saúde' => 48000,
-            'Farmácia' => 19000, 'Educação' => 34000, 'Lazer' => 25000,
+            'Farmácia' => 19000, 'Lazer' => 25000,
             'Assinaturas' => 8500, 'Academia' => 15000, 'Seguros' => 16000];
         $rows = [];
         foreach ($cycles as $index => $cycle) foreach ($limits as $name => $limit) {

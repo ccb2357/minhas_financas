@@ -16,6 +16,7 @@ class StoreBudgetRequest extends BudgetRequest
             'year' => ['required', 'integer', 'between:1900,2100'],
             'month' => ['required', 'integer', 'between:1,12'],
             'limit_cents' => $this->limitRules(),
+            'notes' => ['nullable', 'string', 'max:2000'],
             ...$this->controlledFields(),
         ];
     }
